@@ -1,117 +1,52 @@
 /* ──────────────────────────────────────────────
-   Hero — Floating icon columns with
-   Continuous Idle Floating + CSS Scroll-Driven Parallax
+   Hero — Full-Canvas Distributed Floating Icons
+   with Varying Opacities + Idle Floating + Parallax
    ────────────────────────────────────────────── */
 
 :host {
   display: block;
 }
 
-/* ── Floating icon columns ── */
-.hero__icon-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+/* ── Full Hero Backdrop Container ── */
+.hero__floating-container {
   position: absolute;
-  top: 1rem;
-  height: 100%;
+  inset: 0;
   pointer-events: none;
-  opacity: 0.45;
-  transition: opacity 0.3s ease;
-}
-
-.hero__icon-column:hover {
-  opacity: 0.85;
-}
-
-.hero__icon-column--left {
-  left: clamp(0.75rem, 4vw, 4rem);
-}
-
-.hero__icon-column--right {
-  right: clamp(0.75rem, 4vw, 4rem);
-}
-
-/* Inner track — scroll-driven parallax using view() timeline */
-.hero__icon-track {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  overflow: hidden;
   will-change: transform;
 }
 
 @supports (animation-timeline: view()) {
-  .hero__icon-track {
-    animation: float-up 1s linear both;
+  .hero__floating-container {
+    animation: parallax-scroll 1s linear both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
   }
-
-  .hero__icon-track--reverse {
-    animation-name: float-down;
-  }
 }
 
-@keyframes float-up {
+@keyframes parallax-scroll {
   from {
-    transform: translateY(80px);
+    transform: translateY(30px);
   }
   to {
-    transform: translateY(-80px);
+    transform: translateY(-40px);
   }
 }
 
-@keyframes float-down {
-  from {
-    transform: translateY(-80px);
-  }
-  to {
-    transform: translateY(80px);
-  }
-}
-
-/* Individual icon chip with continuous idle floating effect */
+/* ── Individual Icon Chip (Pure background element, no hover) ── */
 .hero__icon-chip {
+  position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  padding: 0.65rem;
   border-radius: 0.85rem;
   border: 1px solid var(--color-border);
   background: var(--color-surface-2);
   color: var(--color-text);
-  pointer-events: auto;
-  backdrop-filter: blur(8px);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              background-color 0.25s ease,
-              border-color 0.25s ease,
-              box-shadow 0.25s ease;
-  animation: float-idle 3.5s ease-in-out infinite alternate;
-}
-
-/* Stagger animation delays for natural floating rhythm */
-.hero__icon-chip:nth-child(2n) {
-  animation-delay: -0.6s;
-  animation-duration: 4s;
-}
-
-.hero__icon-chip:nth-child(3n) {
-  animation-delay: -1.2s;
-  animation-duration: 3.2s;
-}
-
-.hero__icon-chip:nth-child(4n) {
-  animation-delay: -1.8s;
-  animation-duration: 4.5s;
-}
-
-.hero__icon-chip:hover {
-  background: color-mix(in oklch, var(--color-accent) 18%, var(--color-surface-2));
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  transform: scale(1.2) translateY(-4px) !important;
-  box-shadow: 0 8px 24px color-mix(in oklch, var(--color-accent) 25%, transparent);
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  animation: float-idle 4.5s ease-in-out infinite alternate;
 }
 
 @keyframes float-idle {
@@ -123,12 +58,5 @@
   }
   100% {
     transform: translateY(6px) rotate(-2deg);
-  }
-}
-
-/* Hide floating columns on small screens */
-@media (max-width: 1024px) {
-  .hero__icon-column {
-    display: none;
   }
 }
