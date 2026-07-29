@@ -18,8 +18,12 @@
       <tbody>
         @for (prop of apiProps; track prop.name) {
           <tr>
-            <td><code class="api__code api__code--name">{{ prop.name }}</code></td>
-            <td><code class="api__code api__code--type">{{ prop.type }}</code></td>
+            <td>
+              <code class="api__code api__code--name">{{ prop.name }}</code>
+            </td>
+            <td>
+              <code class="api__code api__code--type">{{ prop.type }}</code>
+            </td>
             <td>
               @if (prop.required) {
                 <span class="api__badge api__badge--required">required</span>
