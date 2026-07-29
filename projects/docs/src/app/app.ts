@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NavbarComponent } from './components/navbar.component';
-import { HeroSectionComponent } from './components/hero-section.component';
-import { DemoSectionComponent } from './components/demo-section.component';
-import { ApiTableSectionComponent } from './components/api-table-section.component';
-import { FooterSectionComponent } from './components/footer-section.component';
+import { ApiTableSectionComponent } from './components/api-table-section/api-table-section.component';
+import { DemoSectionComponent } from './components/demo-section/demo-section.component';
+import { FooterSectionComponent } from './components/footer-section/footer-section.component';
+import { HeroSectionComponent } from './components/hero-section/hero-section.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
