@@ -43,10 +43,9 @@
           <input
             id="icon-input"
             type="text"
-            class="block w-full pl-10 pr-4 py-3 bg-neutral-950 border border-neutral-855 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+            class="block w-full pl-10 pr-4 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
             placeholder="e.g. lucide:zap, mdi:heart, line-md:loading-loop"
-            [ngModel]="config().iconId"
-            (ngModelChange)="updateConfig('iconId', $event)"
+            [formField]="sandboxForm.iconId"
           />
         </div>
         <p class="text-xs text-neutral-500">
@@ -57,21 +56,15 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Size Control -->
         <div class="space-y-2">
-          <label
-            for="size-range"
-            class="flex justify-between text-sm font-medium text-neutral-300"
-          >
+          <label for="size-range" class="flex justify-between text-sm font-medium text-neutral-300">
             <span>Size</span>
-            <span class="text-red-500 font-mono font-semibold">{{ config().size }}px</span>
+            <span class="text-red-500 font-mono font-semibold">{{ model().size }}px</span>
           </label>
           <input
             id="size-range"
             type="range"
-            min="16"
-            max="96"
             step="4"
-            [ngModel]="config().size"
-            (ngModelChange)="updateConfig('size', $event)"
+            [formField]="sandboxForm.size"
             class="w-full h-2 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-red-500"
           />
         </div>
@@ -85,14 +78,12 @@
             <input
               id="color-input"
               type="color"
-              [ngModel]="config().color"
-              (ngModelChange)="updateConfig('color', $event)"
+              [formField]="sandboxForm.color"
               class="h-10 w-12 bg-neutral-950 border border-neutral-800 rounded cursor-pointer"
             />
             <input
               type="text"
-              [ngModel]="config().color"
-              (ngModelChange)="updateConfig('color', $event)"
+              [formField]="sandboxForm.color"
               class="flex-1 px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white font-mono"
               placeholder="#ffffff"
             />
@@ -108,29 +99,23 @@
             class="flex justify-between text-sm font-medium text-neutral-300"
           >
             <span>Rotation</span>
-            <span class="text-red-500 font-mono font-semibold">{{ config().rotate }}°</span>
+            <span class="text-red-500 font-mono font-semibold">{{ model().rotate }}°</span>
           </label>
           <input
             id="rotate-range"
             type="range"
-            min="0"
-            max="360"
             step="1"
-            [ngModel]="config().rotate"
-            (ngModelChange)="updateConfig('rotate', $event)"
+            [formField]="sandboxForm.rotate"
             class="w-full h-2 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-red-500"
           />
         </div>
 
         <!-- Flip Control -->
         <div class="space-y-2">
-          <label for="flip-select" class="block text-sm font-medium text-neutral-300"
-            >Flip</label
-          >
+          <label for="flip-select" class="block text-sm font-medium text-neutral-300">Flip</label>
           <select
             id="flip-select"
-            [ngModel]="config().flip"
-            (ngModelChange)="updateConfig('flip', $event)"
+            [formField]="sandboxForm.flip"
             class="block w-full px-3 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
           >
             <option value="">None</option>
@@ -149,8 +134,7 @@
           >
           <select
             id="mode-select"
-            [ngModel]="config().mode"
-            (ngModelChange)="updateConfig('mode', $event)"
+            [formField]="sandboxForm.mode"
             class="block w-full px-3 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
           >
             <option value="">Default (Auto)</option>
@@ -167,8 +151,7 @@
           >
             <input
               type="checkbox"
-              [ngModel]="config().inline"
-              (ngModelChange)="updateConfig('inline', $event)"
+              [formField]="sandboxForm.inline"
               class="w-4 h-4 rounded border-neutral-800 bg-neutral-950 text-red-500 focus:ring-red-500"
             />
             <span>Render Inline (aligns with text)</span>
@@ -178,8 +161,7 @@
           >
             <input
               type="checkbox"
-              [ngModel]="config().noObserver"
-              (ngModelChange)="updateConfig('noObserver', $event)"
+              [formField]="sandboxForm.noObserver"
               class="w-4 h-4 rounded border-neutral-800 bg-neutral-950 text-red-500 focus:ring-red-500"
             />
             <span>Disable Lazy Loading</span>
@@ -201,22 +183,22 @@
 
         <div
           class="flex items-center justify-center p-8 rounded-2xl bg-neutral-950/60 border border-neutral-850/50 shadow-inner transition-all duration-300 hover:scale-105"
-          [style.color]="config().color"
+          [style.color]="model().color"
         >
           <ngx-icon
             class="transition-all"
-            [icon]="config().iconId || 'mdi:help-circle-outline'"
-            [size]="config().size"
-            [flip]="config().flip || undefined"
-            [rotate]="config().rotate || undefined"
-            [mode]="config().mode || undefined"
-            [inline]="config().inline"
-            [noObserver]="config().noObserver"
+            [icon]="model().iconId || 'mdi:help-circle-outline'"
+            [size]="model().size"
+            [flip]="model().flip || undefined"
+            [rotate]="model().rotate || undefined"
+            [mode]="model().mode || undefined"
+            [inline]="model().inline"
+            [noObserver]="model().noObserver"
           />
         </div>
 
         <span class="mt-4 font-mono text-sm text-neutral-400">{{
-          config().iconId || 'mdi:help-circle-outline'
+          model().iconId || 'mdi:help-circle-outline'
         }}</span>
       </div>
 
@@ -243,7 +225,7 @@
         </div>
 
         <pre
-          class="bg-neutral-950 p-4 rounded-xl text-xs font-mono text-neutral-300 overflow-x-auto border border-neutral-855"
+          class="bg-neutral-950 p-4 rounded-xl text-xs font-mono text-neutral-300 overflow-x-auto border border-neutral-800"
         ><code>{{ generatedCode() }}</code></pre>
       </div>
     </div>
