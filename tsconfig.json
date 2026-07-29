@@ -7,6 +7,9 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "ngx-icon-stack": ["./dist/ngx-icon-stack"]
+    },
     "skipLibCheck": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
@@ -19,5 +22,19 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true
   },
-  "files": []
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/ngx-icon-stack/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ngx-icon-stack/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/docs/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/docs/tsconfig.spec.json"
+    }
+  ]
 }
