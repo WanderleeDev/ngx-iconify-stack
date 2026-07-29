@@ -1,4 +1,4 @@
-name: Deploy Documentation
+name: Deploy Documentation to Cloudflare Pages
 
 on:
   push:
@@ -12,21 +12,10 @@ on:
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: 'pages'
-  cancel-in-progress: true
-
 jobs:
-  build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  deploy:
     runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Pages
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,14 +32,11 @@ jobs:
       - name: Build Docs
         run: npm run build:docs
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
         with:
-          path: 'dist/docs/browser'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ngx-icon-stack-docs
+          directory: dist/docs/browser
+          gitToCommitMetadata: true
