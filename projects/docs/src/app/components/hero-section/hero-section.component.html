@@ -1,26 +1,53 @@
-<section class="hero" aria-labelledby="hero-title">
-  <div class="hero__badge">
+<section class="relative flex flex-col items-center text-center pt-28 px-6 pb-20 gap-6 min-h-[85vh] justify-center overflow-clip" aria-labelledby="hero-title">
+
+  <!-- ── Floating icon column LEFT ── -->
+  <div class="hero__icon-column hero__icon-column--left" aria-hidden="true">
+    <div class="hero__icon-track">
+      @for (item of leftIcons; track item.icon) {
+        <div class="hero__icon-chip" [title]="item.label">
+          <ngx-icon [icon]="item.icon" [size]="22" />
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Floating icon column RIGHT ── -->
+  <div class="hero__icon-column hero__icon-column--right" aria-hidden="true">
+    <div class="hero__icon-track hero__icon-track--reverse">
+      @for (item of rightIcons; track item.icon) {
+        <div class="hero__icon-chip" [title]="item.label">
+          <ngx-icon [icon]="item.icon" [size]="22" />
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Badge ── -->
+  <div class="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-[color-mix(in_oklch,var(--color-accent)_12%,transparent)] border border-[color-mix(in_oklch,var(--color-accent)_30%,transparent)] text-accent text-[0.78rem] font-semibold tracking-[0.03em]">
     <ngx-icon icon="logos:angular-icon" [size]="18" />
     <span>Angular 22 · Standalone · Signal-based</span>
   </div>
 
-  <h1 id="hero-title" class="hero__title">
-    <span class="hero__title-gradient">ngx-icon-stack</span>
+  <!-- ── Title ── -->
+  <h1 id="hero-title" class="m-0 text-[clamp(2.8rem,8vw,5.5rem)] font-extrabold leading-none tracking-[-0.04em]">
+    <span class="bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]">ngx-icon-stack</span>
   </h1>
 
-  <p class="hero__subtitle">
+  <!-- ── Subtitle ── -->
+  <p class="max-w-[54ch] text-lg leading-relaxed text-muted m-0">
     A lightweight, SSR-safe Angular wrapper for
-    <strong>Iconify</strong> — 200,000+ icons from 150+ icon sets,
+    <strong class="text-body">Iconify</strong> — 200,000+ icons from 150+ icon sets,
     driven by signals and zero runtime overhead.
   </p>
 
-  <div class="hero__cta">
+  <!-- ── CTAs ── -->
+  <div class="flex flex-wrap gap-3.5 justify-center mt-3">
     <a
       id="hero-npm-link"
       href="https://www.npmjs.com/package/ngx-icon-stack"
       target="_blank"
       rel="noopener noreferrer"
-      class="btn btn--primary"
+      class="inline-flex items-center gap-2 py-3 px-6 rounded-xl text-sm font-semibold no-underline transition-all duration-200 cursor-pointer bg-gradient-brand text-white shadow-[0_4px_24px_color-mix(in_oklch,var(--color-accent)_35%,transparent)] hover:-translate-y-0.5 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-accent)_45%,transparent)]"
     >
       <ngx-icon icon="mdi:npm" [size]="20" />
       npm install ngx-icon-stack
@@ -30,18 +57,10 @@
       href="https://github.com"
       target="_blank"
       rel="noopener noreferrer"
-      class="btn btn--ghost"
+      class="inline-flex items-center gap-2 py-3 px-6 rounded-xl text-sm font-semibold no-underline transition-all duration-200 cursor-pointer bg-transparent text-body border-[1.5px] border-solid border-border hover:bg-surface-2 hover:border-accent"
     >
       <ngx-icon icon="mdi:github" [size]="20" />
       View on GitHub
     </a>
-  </div>
-
-  <div class="hero__icons" aria-hidden="true">
-    @for (item of iconShowcase; track item.icon) {
-      <div class="hero__icon-chip" [title]="item.label">
-        <ngx-icon [icon]="item.icon" [size]="28" />
-      </div>
-    }
   </div>
 </section>

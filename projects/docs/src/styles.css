@@ -1,5 +1,15 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-body: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+  --color-accent: var(--color-accent);
+  --background-image-gradient-brand: var(--gradient-brand);
+}
+
 *,
 *::before,
 *::after {

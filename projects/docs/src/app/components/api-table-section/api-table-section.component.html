@@ -1,91 +1,97 @@
-<section class="api" aria-labelledby="api-title">
-  <div class="section-header">
-    <h2 id="api-title" class="section-title">API Reference</h2>
-    <p class="section-desc">All inputs are signal-based and fully typed.</p>
+<section class="py-16 px-6 max-w-[900px] mx-auto" aria-labelledby="api-title">
+  <div class="text-center mb-10">
+    <h2
+      id="api-title"
+      class="text-[clamp(1.8rem,4vw,2.6rem)] font-extrabold tracking-[-0.03em] m-0 mb-3 bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]"
+    >
+      API Reference
+    </h2>
+    <p class="text-muted text-base m-0">
+      Everything you need to configure <code class="font-mono text-sm px-1.5 py-0.5 rounded bg-surface-2 border border-border">&lt;ngx-icon&gt;</code> components.
+    </p>
   </div>
 
-  <div class="api__table-wrap" role="region" aria-label="API inputs table" tabindex="0">
-    <table class="api__table">
-      <thead>
+  <div class="overflow-x-auto rounded-[0.85rem] border-[1.5px] border-border mb-12">
+    <table class="w-full border-collapse text-[0.875rem]">
+      <thead class="bg-surface-2">
         <tr>
-          <th scope="col">Input</th>
-          <th scope="col">Type</th>
-          <th scope="col">Required</th>
-          <th scope="col">Default</th>
-          <th scope="col">Description</th>
+          <th scope="col" class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap">Input</th>
+          <th scope="col" class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap">Type</th>
+          <th scope="col" class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap">Required</th>
+          <th scope="col" class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap">Default</th>
+          <th scope="col" class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap">Description</th>
         </tr>
       </thead>
       <tbody>
         @for (prop of apiProps; track prop.name) {
-          <tr>
-            <td>
-              <code class="api__code api__code--name">{{ prop.name }}</code>
+          <tr class="hover:bg-[color-mix(in_oklch,var(--color-accent)_4%,transparent)]">
+            <td class="py-3.5 px-4 border-t border-border align-top">
+              <code class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-accent">{{ prop.name }}</code>
             </td>
-            <td>
-              <code class="api__code api__code--type">{{ prop.type }}</code>
+            <td class="py-3.5 px-4 border-t border-border align-top">
+              <code class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-[color-mix(in_oklch,var(--color-accent)_70%,var(--color-text))]">{{ prop.type }}</code>
             </td>
-            <td>
+            <td class="py-3.5 px-4 border-t border-border align-top">
               @if (prop.required) {
-                <span class="api__badge api__badge--required">required</span>
+                <span class="inline-block px-2 py-0.5 rounded-full text-[0.72rem] font-bold bg-[color-mix(in_oklch,oklch(60%_0.2_25)_15%,transparent)] text-[oklch(60%_0.2_25)] border border-[color-mix(in_oklch,oklch(60%_0.2_25)_30%,transparent)]">required</span>
               } @else {
-                <span class="api__badge api__badge--optional">optional</span>
+                <span class="inline-block px-2 py-0.5 rounded-full text-[0.72rem] font-bold bg-surface-2 text-muted border border-border">optional</span>
               }
             </td>
-            <td>
+            <td class="py-3.5 px-4 border-t border-border align-top">
               @if (prop.default !== '—') {
-                <code class="api__code">{{ prop.default }}</code>
+                <code class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border">{{ prop.default }}</code>
               } @else {
-                <span class="api__em">{{ prop.default }}</span>
+                <span class="text-muted italic">{{ prop.default }}</span>
               }
             </td>
-            <td class="api__desc">{{ prop.description }}</td>
+            <td class="py-3.5 px-4 border-t border-border align-top text-muted leading-[1.5] min-w-[200px]">{{ prop.description }}</td>
           </tr>
         }
       </tbody>
     </table>
   </div>
 
-  <div class="api__examples" aria-labelledby="examples-title">
-    <h3 id="examples-title" class="api__examples-title">Usage Examples</h3>
-    <div class="api__tabs" role="tablist" aria-label="Code examples">
+  <div aria-labelledby="examples-title">
+    <h3 id="examples-title" class="text-[1.3rem] font-bold m-0 mb-5 tracking-[-0.02em]">Usage Examples</h3>
+
+    <div class="flex flex-wrap gap-1.5 m-0 p-0 border-b-[1.5px] border-border">
       @for (example of examples; track example.id) {
         <button
-          class="api__tab"
-          [class.api__tab--active]="activeExample === example.id"
-          [id]="'tab-' + example.id"
-          role="tab"
-          [attr.aria-selected]="activeExample === example.id"
-          [attr.aria-controls]="'panel-' + example.id"
+          class="px-4 py-2 border-none bg-transparent text-[0.85rem] font-semibold cursor-pointer border-b-2 mb-[-1.5px] transition-all duration-150 font-inherit"
+          [class]="
+            activeExample === example.id
+              ? 'text-accent border-accent'
+              : 'text-muted border-transparent hover:text-body'
+          "
           (click)="activeExample = example.id"
+          [attr.aria-selected]="activeExample === example.id"
+          role="tab"
         >
           {{ example.label }}
         </button>
       }
     </div>
+
     @for (example of examples; track example.id) {
       @if (activeExample === example.id) {
-        <div
-          class="api__code-block"
-          [id]="'panel-' + example.id"
-          role="tabpanel"
-          [attr.aria-labelledby]="'tab-' + example.id"
-        >
-          <div class="api__code-header">
-            <span class="api__code-lang">HTML</span>
+        <div class="border-[1.5px] border-t-0 border-border rounded-b-[0.85rem] overflow-hidden">
+          <div class="flex items-center justify-between py-2.5 px-4 bg-surface-2 border-b border-border">
+            <span class="text-[0.75rem] font-bold text-muted uppercase tracking-[0.06em]">HTML / TS</span>
             <button
-              class="api__copy-btn"
-              [id]="'copy-' + example.id"
               (click)="copyCode(example.code, example.id)"
-              aria-label="Copy code"
+              class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-md border border-border bg-transparent text-muted text-[0.78rem] font-semibold cursor-pointer transition-all duration-150 font-inherit hover:text-accent hover:border-accent"
             >
-              <ngx-icon
-                [icon]="copiedId === example.id ? 'mdi:check' : 'mdi:content-copy'"
-                [size]="16"
-              />
-              {{ copiedId === example.id ? 'Copied!' : 'Copy' }}
+              @if (copiedId === example.id) {
+                <ngx-icon icon="mdi:check" [size]="14" class="text-green-500" />
+                <span>Copied!</span>
+              } @else {
+                <ngx-icon icon="mdi:content-copy" [size]="14" />
+                <span>Copy code</span>
+              }
             </button>
           </div>
-          <pre class="api__pre"><code>{{ example.code }}</code></pre>
+          <pre class="m-0 p-6 overflow-x-auto font-mono text-[0.85rem] leading-[1.7] text-body bg-surface"><code>{{ example.code }}</code></pre>
         </div>
       }
     }

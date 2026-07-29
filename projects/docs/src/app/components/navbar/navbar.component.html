@@ -1,17 +1,17 @@
-<header class="navbar" role="banner">
-  <nav class="navbar__inner" aria-label="Main navigation">
-    <a href="/" class="navbar__logo" aria-label="ngx-icon-stack home">
-      <ngx-icon icon="tabler:package" [size]="20" class="navbar__logo-icon" />
-      <span class="navbar__logo-text">ngx-icon-stack</span>
+<header class="sticky top-0 z-[100] border-b border-border bg-[color-mix(in_oklch,var(--color-surface)_85%,transparent)] backdrop-blur-[12px] [-webkit-backdrop-filter:blur(12px)]" role="banner">
+  <nav class="max-w-[900px] mx-auto px-6 h-14 flex items-center justify-between" aria-label="Main navigation">
+    <a href="/" class="flex items-center gap-2 no-underline font-bold text-[0.95rem]" aria-label="ngx-icon-stack home">
+      <ngx-icon icon="tabler:package" [size]="20" class="text-accent" />
+      <span class="bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]">ngx-icon-stack</span>
     </a>
 
-    <div class="navbar__actions">
+    <div class="flex items-center gap-2">
       <a
         id="nav-npm-link"
         href="https://www.npmjs.com/package/ngx-icon-stack"
         target="_blank"
         rel="noopener noreferrer"
-        class="navbar__link"
+        class="flex items-center justify-center w-8 h-8 rounded-[0.45rem] text-muted no-underline transition-all duration-150 hover:text-accent hover:bg-surface-2"
         aria-label="NPM"
       >
         <ngx-icon icon="mdi:npm" [size]="18" />
@@ -21,7 +21,7 @@
         href="https://github.com"
         target="_blank"
         rel="noopener noreferrer"
-        class="navbar__link"
+        class="flex items-center justify-center w-8 h-8 rounded-[0.45rem] text-muted no-underline transition-all duration-150 hover:text-accent hover:bg-surface-2"
         aria-label="GitHub"
       >
         <ngx-icon icon="mdi:github" [size]="18" />
@@ -30,7 +30,7 @@
       @if (theme.isHydrated()) {
         <button
           id="nav-theme-toggle"
-          class="navbar__link navbar__link--btn"
+          class="flex items-center justify-center w-8 h-8 rounded-[0.45rem] text-muted no-underline transition-all duration-150 hover:text-accent hover:bg-surface-2 border-none bg-transparent cursor-pointer font-inherit"
           (click)="theme.toggle()"
           [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
           [title]="theme.isDark() ? 'Light mode' : 'Dark mode'"
@@ -41,7 +41,7 @@
           />
         </button>
       } @else {
-        <div class="navbar__toggle-skeleton" aria-hidden="true"></div>
+        <div class="w-8 h-8 rounded-[0.45rem] bg-surface-2" aria-hidden="true"></div>
       }
     </div>
   </nav>

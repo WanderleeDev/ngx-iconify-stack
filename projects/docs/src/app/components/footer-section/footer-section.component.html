@@ -1,22 +1,22 @@
-<footer class="footer" role="contentinfo">
-  <div class="footer__inner">
-    <div class="footer__brand">
-      <ngx-icon icon="tabler:package" [size]="22" class="footer__logo-icon" />
-      <span class="footer__brand-name">ngx-icon-stack</span>
+<footer class="border-t-[1.5px] border-border py-12 px-6 mt-8" role="contentinfo">
+  <div class="max-w-[900px] mx-auto flex flex-col items-center gap-4 text-center">
+    <div class="flex items-center gap-2 font-bold text-base">
+      <ngx-icon icon="tabler:package" [size]="22" class="text-accent" />
+      <span class="bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]">ngx-icon-stack</span>
     </div>
 
-    <p class="footer__tagline">
-      Built with <ngx-icon icon="mdi:heart" [size]="14" class="footer__heart" aria-label="love" /> for the Angular community.
-      Powered by <a href="https://iconify.design" target="_blank" rel="noopener noreferrer" class="footer__link">Iconify</a>.
+    <p class="text-muted text-[0.875rem] m-0 flex items-center justify-center gap-1 flex-wrap">
+      Built with <ngx-icon icon="mdi:heart" [size]="14" class="text-[oklch(60%_0.22_25)]" aria-label="love" /> for the Angular community.
+      Powered by <a href="https://iconify.design" target="_blank" rel="noopener noreferrer" class="text-accent no-underline font-semibold hover:underline">Iconify</a>.
     </p>
 
-    <div class="footer__links" role="list">
+    <div class="flex gap-3 mt-1" role="list">
       <a
         id="footer-npm"
         href="https://www.npmjs.com/package/ngx-icon-stack"
         target="_blank"
         rel="noopener noreferrer"
-        class="footer__icon-link"
+        class="flex items-center justify-center w-9 h-9 rounded-lg border-[1.5px] border-border bg-surface-2 text-muted transition-all duration-200 no-underline hover:text-accent hover:border-accent hover:bg-[color-mix(in_oklch,var(--color-accent)_8%,var(--color-surface-2))] hover:-translate-y-0.5"
         aria-label="NPM package"
         role="listitem"
       >
@@ -27,7 +27,7 @@
         href="https://github.com"
         target="_blank"
         rel="noopener noreferrer"
-        class="footer__icon-link"
+        class="flex items-center justify-center w-9 h-9 rounded-lg border-[1.5px] border-border bg-surface-2 text-muted transition-all duration-200 no-underline hover:text-accent hover:border-accent hover:bg-[color-mix(in_oklch,var(--color-accent)_8%,var(--color-surface-2))] hover:-translate-y-0.5"
         aria-label="GitHub repository"
         role="listitem"
       >
@@ -38,7 +38,7 @@
         href="https://iconify.design"
         target="_blank"
         rel="noopener noreferrer"
-        class="footer__icon-link"
+        class="flex items-center justify-center w-9 h-9 rounded-lg border-[1.5px] border-border bg-surface-2 text-muted transition-all duration-200 no-underline hover:text-accent hover:border-accent hover:bg-[color-mix(in_oklch,var(--color-accent)_8%,var(--color-surface-2))] hover:-translate-y-0.5"
         aria-label="Iconify website"
         role="listitem"
       >
@@ -46,7 +46,7 @@
       </a>
     </div>
 
-    <p class="footer__copy">
+    <p class="text-muted text-[0.78rem] m-0 opacity-70">
       MIT License · ngx-icon-stack v0.0.1
     </p>
   </div>
