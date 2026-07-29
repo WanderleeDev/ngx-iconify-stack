@@ -1,28 +1,28 @@
-<section class="max-w-6xl mx-auto px-6 py-16" aria-labelledby="demo-title">
+<section class="max-w-[900px] mx-auto px-6 py-16" aria-labelledby="demo-title">
   <!-- Section Header -->
-  <div class="text-center mb-12">
+  <div class="text-center mb-10">
     <h2
       id="demo-title"
-      class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-red-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent sm:text-5xl"
+      class="text-[clamp(1.8rem,4vw,2.6rem)] font-extrabold tracking-[-0.03em] m-0 mb-3 bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]"
     >
       Interactive Sandbox
     </h2>
-    <p class="mt-4 text-lg text-neutral-400 max-w-2xl mx-auto">
+    <p class="text-muted text-base m-0 max-w-2xl mx-auto">
       Test any Iconify icon dynamically. Customize size, rotation, rendering modes, and get
       copy-paste ready Angular code.
     </p>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-    <!-- Control Panel (lg:col-span-7) -->
+    <!-- Control Panel -->
     <div
-      class="lg:col-span-7 space-y-6 bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl"
+      class="lg:col-span-7 space-y-6 bg-surface-2 border border-border rounded-2xl p-6"
     >
-      <div class="flex justify-between items-center border-b border-neutral-800 pb-3">
-        <h3 class="text-lg font-semibold text-white">Configuration</h3>
+      <div class="flex justify-between items-center border-b border-border pb-3">
+        <h3 class="text-lg font-semibold text-body m-0">Configuration</h3>
         <button
           (click)="resetAll()"
-          class="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-neutral-400 hover:text-white bg-neutral-800/40 hover:bg-neutral-800 border border-neutral-800 rounded-lg transition-all cursor-pointer"
+          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-muted hover:text-body bg-surface hover:bg-[color-mix(in_oklch,var(--color-accent)_8%,var(--color-surface))] border border-border rounded-lg transition-all cursor-pointer"
         >
           <ngx-icon icon="mdi:refresh" [size]="14" />
           <span>Reset</span>
@@ -31,24 +31,24 @@
 
       <!-- Icon Identifier Input -->
       <div class="space-y-2">
-        <label for="icon-input" class="block text-sm font-medium text-neutral-300"
+        <label for="icon-input" class="block text-sm font-medium text-body"
           >Iconify Identifier</label
         >
         <div class="relative">
           <span
-            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500"
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted"
           >
             <ngx-icon icon="mdi:tag-outline" [size]="18" />
           </span>
           <input
             id="icon-input"
             type="text"
-            class="block w-full pl-10 pr-4 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+            class="block w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-body placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all font-sans"
             placeholder="e.g. lucide:zap, mdi:heart, line-md:loading-loop"
             [formField]="sandboxForm.iconId"
           />
         </div>
-        <p class="text-xs text-neutral-500">
+        <p class="text-xs text-muted">
           Supports any icon from Iconify's database (200k+ icons).
         </p>
       </div>
@@ -56,22 +56,22 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Size Control -->
         <div class="space-y-2">
-          <label for="size-range" class="flex justify-between text-sm font-medium text-neutral-300">
+          <label for="size-range" class="flex justify-between text-sm font-medium text-body">
             <span>Size</span>
-            <span class="text-red-500 font-mono font-semibold">{{ model().size }}px</span>
+            <span class="text-accent font-mono font-semibold">{{ model().size }}px</span>
           </label>
           <input
             id="size-range"
             type="range"
             step="4"
             [formField]="sandboxForm.size"
-            class="w-full h-2 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-red-500"
+            class="w-full h-2 bg-surface rounded-lg appearance-none cursor-pointer accent-accent"
           />
         </div>
 
         <!-- Color Control -->
         <div class="space-y-2">
-          <label for="color-input" class="block text-sm font-medium text-neutral-300"
+          <label for="color-input" class="block text-sm font-medium text-body"
             >Custom Color</label
           >
           <div class="flex gap-2">
@@ -79,12 +79,12 @@
               id="color-input"
               type="color"
               [formField]="sandboxForm.color"
-              class="h-10 w-12 bg-neutral-950 border border-neutral-800 rounded cursor-pointer"
+              class="h-10 w-12 bg-surface border border-border rounded cursor-pointer"
             />
             <input
               type="text"
               [formField]="sandboxForm.color"
-              class="flex-1 px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white font-mono"
+              class="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-sm text-body font-mono"
               placeholder="#ffffff"
             />
           </div>
@@ -96,27 +96,27 @@
         <div class="space-y-2">
           <label
             for="rotate-range"
-            class="flex justify-between text-sm font-medium text-neutral-300"
+            class="flex justify-between text-sm font-medium text-body"
           >
             <span>Rotation</span>
-            <span class="text-red-500 font-mono font-semibold">{{ model().rotate }}°</span>
+            <span class="text-accent font-mono font-semibold">{{ model().rotate }}°</span>
           </label>
           <input
             id="rotate-range"
             type="range"
             step="1"
             [formField]="sandboxForm.rotate"
-            class="w-full h-2 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-red-500"
+            class="w-full h-2 bg-surface rounded-lg appearance-none cursor-pointer accent-accent"
           />
         </div>
 
         <!-- Flip Control -->
         <div class="space-y-2">
-          <label for="flip-select" class="block text-sm font-medium text-neutral-300">Flip</label>
+          <label for="flip-select" class="block text-sm font-medium text-body">Flip</label>
           <select
             id="flip-select"
             [formField]="sandboxForm.flip"
-            class="block w-full px-3 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+            class="block w-full px-3 py-2.5 bg-surface border border-border rounded-xl text-sm text-body focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <option value="">None</option>
             <option value="horizontal">Horizontal</option>
@@ -129,13 +129,13 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Mode Control -->
         <div class="space-y-2">
-          <label for="mode-select" class="block text-sm font-medium text-neutral-300"
+          <label for="mode-select" class="block text-sm font-medium text-body"
             >Render Mode</label
           >
           <select
             id="mode-select"
             [formField]="sandboxForm.mode"
-            class="block w-full px-3 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+            class="block w-full px-3 py-2.5 bg-surface border border-border rounded-xl text-sm text-body focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <option value="">Default (Auto)</option>
             <option value="svg">SVG (native rendering)</option>
@@ -144,25 +144,25 @@
           </select>
         </div>
 
-        <!-- Toggles (Inline & lazy observer) -->
+        <!-- Toggles -->
         <div class="flex flex-col gap-3 justify-center pt-2">
           <label
-            class="flex items-center gap-3 cursor-pointer text-sm text-neutral-300 select-none"
+            class="flex items-center gap-3 cursor-pointer text-sm text-body select-none"
           >
             <input
               type="checkbox"
               [formField]="sandboxForm.inline"
-              class="w-4 h-4 rounded border-neutral-800 bg-neutral-950 text-red-500 focus:ring-red-500"
+              class="w-4 h-4 rounded border-border bg-surface text-accent focus:ring-accent"
             />
             <span>Render Inline (aligns with text)</span>
           </label>
           <label
-            class="flex items-center gap-3 cursor-pointer text-sm text-neutral-300 select-none"
+            class="flex items-center gap-3 cursor-pointer text-sm text-body select-none"
           >
             <input
               type="checkbox"
               [formField]="sandboxForm.noObserver"
-              class="w-4 h-4 rounded border-neutral-800 bg-neutral-950 text-red-500 focus:ring-red-500"
+              class="w-4 h-4 rounded border-border bg-surface text-accent focus:ring-accent"
             />
             <span>Disable Lazy Loading</span>
           </label>
@@ -170,19 +170,19 @@
       </div>
     </div>
 
-    <!-- Preview & Code Generation (lg:col-span-5) -->
+    <!-- Preview & Code Generation -->
     <div class="lg:col-span-5 space-y-6">
-      <!-- Real-time Live Preview -->
+      <!-- Live Preview -->
       <div
-        class="bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex flex-col items-center justify-center min-h-[250px] relative overflow-hidden group"
+        class="bg-surface-2 border border-border rounded-2xl p-6 flex flex-col items-center justify-center min-h-[250px] relative overflow-hidden"
       >
         <span
-          class="absolute top-3 left-3 text-xs font-semibold uppercase tracking-wider text-neutral-500"
+          class="absolute top-3 left-3 text-xs font-semibold uppercase tracking-wider text-muted"
           >Live Preview</span
         >
 
         <div
-          class="flex items-center justify-center p-8 rounded-2xl bg-neutral-950/60 border border-neutral-850/50 shadow-inner transition-all duration-300 hover:scale-105"
+          class="flex items-center justify-center p-8 rounded-2xl bg-surface border border-border shadow-inner transition-all duration-300 hover:scale-105"
           [style.color]="model().color"
         >
           <ngx-icon
@@ -197,25 +197,25 @@
           />
         </div>
 
-        <span class="mt-4 font-mono text-sm text-neutral-400">{{
+        <span class="mt-4 font-mono text-sm text-muted">{{
           model().iconId || 'mdi:help-circle-outline'
         }}</span>
       </div>
 
       <!-- Code Snippet -->
       <div
-        class="bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl space-y-3"
+        class="bg-surface-2 border border-border rounded-2xl p-6 space-y-3"
       >
         <div class="flex justify-between items-center">
-          <span class="text-xs font-semibold uppercase tracking-wider text-neutral-500"
+          <span class="text-xs font-semibold uppercase tracking-wider text-muted"
             >Angular Usage</span
           >
           <button
             (click)="copyCode()"
-            class="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-all cursor-pointer"
+            class="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-muted hover:text-accent bg-surface border border-border rounded-lg transition-all cursor-pointer hover:border-accent"
           >
             @if (codeCopied()) {
-              <ngx-icon icon="mdi:check" [size]="14" class="text-green-400" />
+              <ngx-icon icon="mdi:check" [size]="14" class="text-green-500" />
               <span>Copied!</span>
             } @else {
               <ngx-icon icon="mdi:content-copy" [size]="14" />
@@ -225,7 +225,7 @@
         </div>
 
         <pre
-          class="bg-neutral-950 p-4 rounded-xl text-xs font-mono text-neutral-300 overflow-x-auto border border-neutral-800"
+          class="bg-surface p-4 rounded-xl text-xs font-mono text-muted overflow-x-auto border border-border"
         ><code>{{ generatedCode() }}</code></pre>
       </div>
     </div>
