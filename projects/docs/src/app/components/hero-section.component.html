@@ -1,0 +1,47 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__badge">
+    <ngx-icon icon="logos:angular-icon" [size]="18" />
+    <span>Angular 22 · Standalone · Signal-based</span>
+  </div>
+
+  <h1 id="hero-title" class="hero__title">
+    <span class="hero__title-gradient">ngx-icon-stack</span>
+  </h1>
+
+  <p class="hero__subtitle">
+    A lightweight, SSR-safe Angular wrapper for
+    <strong>Iconify</strong> — 200,000+ icons from 150+ icon sets,
+    driven by signals and zero runtime overhead.
+  </p>
+
+  <div class="hero__cta">
+    <a
+      id="hero-npm-link"
+      href="https://www.npmjs.com/package/ngx-icon-stack"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="btn btn--primary"
+    >
+      <ngx-icon icon="mdi:npm" [size]="20" />
+      npm install ngx-icon-stack
+    </a>
+    <a
+      id="hero-github-link"
+      href="https://github.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="btn btn--ghost"
+    >
+      <ngx-icon icon="mdi:github" [size]="20" />
+      View on GitHub
+    </a>
+  </div>
+
+  <div class="hero__icons" aria-hidden="true">
+    @for (item of iconShowcase; track item.icon) {
+      <div class="hero__icon-chip" [title]="item.label">
+        <ngx-icon [icon]="item.icon" [size]="28" />
+      </div>
+    }
+  </div>
+</section>

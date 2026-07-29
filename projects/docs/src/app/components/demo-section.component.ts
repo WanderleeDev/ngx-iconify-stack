@@ -2,256 +2,71 @@ import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgxIconComponent, IconFlip, IconMode } from 'ngx-icon-stack';
 
+export interface SandboxConfig {
+  iconId: string;
+  size: number;
+  color: string;
+  rotate: number;
+  flip: IconFlip | '';
+  mode: IconMode | '';
+  inline: boolean;
+  noObserver: boolean;
+}
+
 @Component({
   selector: 'docs-demo',
   imports: [NgxIconComponent, FormsModule],
-  template: `
-    <section class="max-w-6xl mx-auto px-6 py-16" aria-labelledby="demo-title">
-      <!-- Section Header -->
-      <div class="text-center mb-12">
-        <h2 id="demo-title" class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-red-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent sm:text-5xl">
-          Interactive Sandbox
-        </h2>
-        <p class="mt-4 text-lg text-neutral-400 max-w-2xl mx-auto">
-          Test any Iconify icon dynamically. Customize size, rotation, rendering modes, and get copy-paste ready Angular code.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <!-- Control Panel (lg:col-span-7) -->
-        <div class="lg:col-span-7 space-y-6 bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl">
-          <div class="flex justify-between items-center border-b border-neutral-800 pb-3">
-            <h3 class="text-lg font-semibold text-white">Configuration</h3>
-            <button
-              (click)="resetAll()"
-              class="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-neutral-400 hover:text-white bg-neutral-800/40 hover:bg-neutral-800 border border-neutral-800 rounded-lg transition-all cursor-pointer"
-            >
-              <ngx-icon icon="mdi:refresh" [size]="14" />
-              <span>Reset</span>
-            </button>
-          </div>
-          
-          <!-- Icon Identifier Input -->
-          <div class="space-y-2">
-            <label for="icon-input" class="block text-sm font-medium text-neutral-300">Iconify Identifier</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500">
-                <ngx-icon icon="mdi:tag-outline" [size]="18" />
-              </span>
-              <input
-                id="icon-input"
-                type="text"
-                class="block w-full pl-10 pr-4 py-3 bg-neutral-950 border border-neutral-855 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                placeholder="e.g. lucide:zap, mdi:heart, line-md:loading-loop"
-                [(ngModel)]="iconId"
-              />
-            </div>
-            <p class="text-xs text-neutral-500">
-              Supports any icon from Iconify's database (200k+ icons).
-            </p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Size Control -->
-            <div class="space-y-2">
-              <label for="size-range" class="flex justify-between text-sm font-medium text-neutral-300">
-                <span>Size</span>
-                <span class="text-red-500 font-mono font-semibold">{{ size() }}px</span>
-              </label>
-              <input
-                id="size-range"
-                type="range"
-                min="16"
-                max="96"
-                step="4"
-                [(ngModel)]="size"
-                class="w-full h-2 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-red-500"
-              />
-            </div>
-
-            <!-- Color Control -->
-            <div class="space-y-2">
-              <label for="color-input" class="block text-sm font-medium text-neutral-300">Custom Color</label>
-              <div class="flex gap-2">
-                <input
-                  id="color-input"
-                  type="color"
-                  [(ngModel)]="color"
-                  class="h-10 w-12 bg-neutral-950 border border-neutral-800 rounded cursor-pointer"
-                />
-                <input
-                  type="text"
-                  [(ngModel)]="color"
-                  class="flex-1 px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white font-mono"
-                  placeholder="#ffffff"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Rotation Control -->
-            <div class="space-y-2">
-              <label for="rotate-range" class="flex justify-between text-sm font-medium text-neutral-300">
-                <span>Rotation</span>
-                <span class="text-red-500 font-mono font-semibold">{{ rotate() }}°</span>
-              </label>
-              <input
-                id="rotate-range"
-                type="range"
-                min="0"
-                max="360"
-                step="1"
-                [(ngModel)]="rotate"
-                class="w-full h-2 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-red-500"
-              />
-            </div>
-
-            <!-- Flip Control -->
-            <div class="space-y-2">
-              <label for="flip-select" class="block text-sm font-medium text-neutral-300">Flip</label>
-              <select
-                id="flip-select"
-                [(ngModel)]="flip"
-                class="block w-full px-3 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                <option value="">None</option>
-                <option value="horizontal">Horizontal</option>
-                <option value="vertical">Vertical</option>
-                <option value="both">Both</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Mode Control -->
-            <div class="space-y-2">
-              <label for="mode-select" class="block text-sm font-medium text-neutral-300">Render Mode</label>
-              <select
-                id="mode-select"
-                [(ngModel)]="mode"
-                class="block w-full px-3 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                <option value="">Default (Auto)</option>
-                <option value="svg">SVG (native rendering)</option>
-                <option value="bg">CSS Background</option>
-                <option value="mask">CSS Mask</option>
-              </select>
-            </div>
-
-            <!-- Toggles (Inline & lazy observer) -->
-            <div class="flex flex-col gap-3 justify-center pt-2">
-              <label class="flex items-center gap-3 cursor-pointer text-sm text-neutral-300 select-none">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="inline"
-                  class="w-4 h-4 rounded border-neutral-800 bg-neutral-950 text-red-500 focus:ring-red-500"
-                />
-                <span>Render Inline (aligns with text)</span>
-              </label>
-              <label class="flex items-center gap-3 cursor-pointer text-sm text-neutral-300 select-none">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="noObserver"
-                  class="w-4 h-4 rounded border-neutral-800 bg-neutral-950 text-red-500 focus:ring-red-500"
-                />
-                <span>Disable Lazy Loading</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Preview & Code Generation (lg:col-span-5) -->
-        <div class="lg:col-span-5 space-y-6">
-          <!-- Real-time Live Preview -->
-          <div class="bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex flex-col items-center justify-center min-h-[250px] relative overflow-hidden group">
-            <span class="absolute top-3 left-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">Live Preview</span>
-            
-            <div 
-              class="flex items-center justify-center p-8 rounded-2xl bg-neutral-950/60 border border-neutral-850/50 shadow-inner transition-all duration-300 hover:scale-105"
-              [style.color]="color()"
-            >
-              <ngx-icon
-                [icon]="iconId() || 'mdi:help-circle-outline'"
-                [size]="size()"
-                [flip]="flip() || undefined"
-                [rotate]="rotate() || undefined"
-                [mode]="mode() || undefined"
-                [inline]="inline()"
-                [noObserver]="noObserver()"
-              />
-            </div>
-            
-            <span class="mt-4 font-mono text-sm text-neutral-400">{{ iconId() || 'mdi:help-circle-outline' }}</span>
-          </div>
-
-          <!-- Code Snippet -->
-          <div class="bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl space-y-3">
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Angular Usage</span>
-              <button
-                (click)="copyCode()"
-                class="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-all cursor-pointer"
-              >
-                @if (codeCopied()) {
-                  <ngx-icon icon="mdi:check" [size]="14" class="text-green-400" />
-                  <span>Copied!</span>
-                } @else {
-                  <ngx-icon icon="mdi:content-copy" [size]="14" />
-                  <span>Copy</span>
-                }
-              </button>
-            </div>
-
-            <pre class="bg-neutral-950 p-4 rounded-xl text-xs font-mono text-neutral-300 overflow-x-auto border border-neutral-855"><code>{{ generatedCode() }}</code></pre>
-          </div>
-        </div>
-      </div>
-    </section>
-  `,
-  styles: ``
+  templateUrl: './demo-section.component.html',
+  styles: ``,
 })
 export class DemoSectionComponent {
-  readonly iconId = signal('lucide:zap');
-  readonly size = signal(48);
-  readonly color = signal('#e11d48');
-  readonly rotate = signal(0);
-  readonly flip = signal<IconFlip | ''>('');
-  readonly mode = signal<IconMode | ''>('');
-  readonly inline = signal(false);
-  readonly noObserver = signal(false);
+  readonly config = signal<SandboxConfig>({
+    iconId: 'lucide:zap',
+    size: 48,
+    color: '#e11d48',
+    rotate: 0,
+    flip: '',
+    mode: '',
+    inline: false,
+    noObserver: false,
+  });
 
   readonly codeCopied = signal(false);
 
   readonly generatedCode = computed(() => {
-    const id = this.iconId() || 'mdi:help-circle-outline';
+    const cfg = this.config();
+    const id = cfg.iconId || 'mdi:help-circle-outline';
     let code = `<ngx-icon icon="${id}"`;
 
-    if (this.size() !== 24) {
-      code += ` [size]="${this.size()}"`;
+    if (cfg.size !== 24) {
+      code += ` [size]="${cfg.size}"`;
     }
-    if (this.color() && this.color() !== '#ffffff') {
-      code += ` color="${this.color()}"`;
+    if (cfg.color && cfg.color !== '#ffffff') {
+      code += ` color="${cfg.color}"`;
     }
-    if (this.rotate() !== 0) {
-      code += ` [rotate]="${this.rotate()}"`;
+    if (cfg.rotate !== 0) {
+      code += ` [rotate]="${cfg.rotate}"`;
     }
-    if (this.flip()) {
-      code += ` flip="${this.flip()}"`;
+    if (cfg.flip) {
+      code += ` flip="${cfg.flip}"`;
     }
-    if (this.mode()) {
-      code += ` mode="${this.mode()}"`;
+    if (cfg.mode) {
+      code += ` mode="${cfg.mode}"`;
     }
-    if (this.inline()) {
+    if (cfg.inline) {
       code += ` [inline]="true"`;
     }
-    if (this.noObserver()) {
+    if (cfg.noObserver) {
       code += ` [noObserver]="true"`;
     }
 
     code += ' />';
     return code;
   });
+
+  updateConfig<K extends keyof SandboxConfig>(key: K, value: SandboxConfig[K]): void {
+    this.config.update(c => ({ ...c, [key]: value }));
+  }
 
   copyCode(): void {
     navigator.clipboard?.writeText(this.generatedCode()).catch(() => {});
@@ -260,13 +75,15 @@ export class DemoSectionComponent {
   }
 
   resetAll(): void {
-    this.iconId.set('lucide:zap');
-    this.size.set(48);
-    this.color.set('#e11d48');
-    this.rotate.set(0);
-    this.flip.set('');
-    this.mode.set('');
-    this.inline.set(false);
-    this.noObserver.set(false);
+    this.config.set({
+      iconId: 'lucide:zap',
+      size: 48,
+      color: '#e11d48',
+      rotate: 0,
+      flip: '',
+      mode: '',
+      inline: false,
+      noObserver: false,
+    });
   }
 }
