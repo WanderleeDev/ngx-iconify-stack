@@ -1,319 +1,272 @@
 import { Component, signal, computed } from '@angular/core';
-import { FormsModule, NgModel } from '@angular/forms';
-import { NgxIconComponent } from 'ngx-icon-stack';
-
-interface DemoIcon {
-  icon: string;
-  label: string;
-  set: string;
-}
+import { FormsModule } from '@angular/forms';
+import { NgxIconComponent, IconFlip, IconMode } from 'ngx-icon-stack';
 
 @Component({
   selector: 'docs-demo',
   imports: [NgxIconComponent, FormsModule],
   template: `
-    <section class="demo" aria-labelledby="demo-title">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="demo__search-wrap">
-          <ngx-icon icon="mdi:magnify" [size]="18" class="demo__search-icon" aria-hidden="true" />
-          <input
-            id="demo-search-input"
-            type="text"
-            class="demo__search"
-            placeholder="Search icons... (e.g. home, heart, arrow)"
-            [(ngModel)]="query"
-            aria-label="Search icons"
-          />
-        </div>
-
-        @if (!query()) {
-          <p>Type something to search for icons</p>
-        } @else {
-          <div>
-            <h3 class="text-xl font-bold">Preview: {{ query() }}</h3>
-            <div class="hero__icon-chip" [title]="query()">
-              <ngx-icon [icon]="query()" class="scale-150" [size]="40" aria-hidden="true" />
-            </div>
-          </div>
-        }
-      </div>
-      <!-- <div class="section-header">
-        <h2 id="demo-title" class="section-title">Live Demo</h2>
-        <p class="section-desc">
-          Search and preview icons from any Iconify set. Click an icon to copy its identifier.
+    <section class="max-w-6xl mx-auto px-6 py-16" aria-labelledby="demo-title">
+      <!-- Section Header -->
+      <div class="text-center mb-12">
+        <h2 id="demo-title" class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-red-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent sm:text-5xl">
+          Interactive Sandbox
+        </h2>
+        <p class="mt-4 text-lg text-neutral-400 max-w-2xl mx-auto">
+          Test any Iconify icon dynamically. Customize size, rotation, rendering modes, and get copy-paste ready Angular code.
         </p>
       </div>
 
-      <div class="demo__controls">
-        <div class="demo__search-wrap">
-          <ngx-icon icon="mdi:magnify" [size]="18" class="demo__search-icon" aria-hidden="true" />
-          <input
-            id="demo-search-input"
-            type="text"
-            class="demo__search"
-            placeholder="Search icons... (e.g. home, heart, arrow)"
-            [value]="query()"
-            (input)="onSearch($event)"
-            aria-label="Search icons"
-          />
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Control Panel (lg:col-span-7) -->
+        <div class="lg:col-span-7 space-y-6 bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl">
+          <div class="flex justify-between items-center border-b border-neutral-800 pb-3">
+            <h3 class="text-lg font-semibold text-white">Configuration</h3>
+            <button
+              (click)="resetAll()"
+              class="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-neutral-400 hover:text-white bg-neutral-800/40 hover:bg-neutral-800 border border-neutral-800 rounded-lg transition-all cursor-pointer"
+            >
+              <ngx-icon icon="mdi:refresh" [size]="14" />
+              <span>Reset</span>
+            </button>
+          </div>
+          
+          <!-- Icon Identifier Input -->
+          <div class="space-y-2">
+            <label for="icon-input" class="block text-sm font-medium text-neutral-300">Iconify Identifier</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500">
+                <ngx-icon icon="mdi:tag-outline" [size]="18" />
+              </span>
+              <input
+                id="icon-input"
+                type="text"
+                class="block w-full pl-10 pr-4 py-3 bg-neutral-950 border border-neutral-855 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                placeholder="e.g. lucide:zap, mdi:heart, line-md:loading-loop"
+                [(ngModel)]="iconId"
+              />
+            </div>
+            <p class="text-xs text-neutral-500">
+              Supports any icon from Iconify's database (200k+ icons).
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Size Control -->
+            <div class="space-y-2">
+              <label for="size-range" class="flex justify-between text-sm font-medium text-neutral-300">
+                <span>Size</span>
+                <span class="text-red-500 font-mono font-semibold">{{ size() }}px</span>
+              </label>
+              <input
+                id="size-range"
+                type="range"
+                min="16"
+                max="96"
+                step="4"
+                [(ngModel)]="size"
+                class="w-full h-2 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-red-500"
+              />
+            </div>
+
+            <!-- Color Control -->
+            <div class="space-y-2">
+              <label for="color-input" class="block text-sm font-medium text-neutral-300">Custom Color</label>
+              <div class="flex gap-2">
+                <input
+                  id="color-input"
+                  type="color"
+                  [(ngModel)]="color"
+                  class="h-10 w-12 bg-neutral-950 border border-neutral-800 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  [(ngModel)]="color"
+                  class="flex-1 px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white font-mono"
+                  placeholder="#ffffff"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Rotation Control -->
+            <div class="space-y-2">
+              <label for="rotate-range" class="flex justify-between text-sm font-medium text-neutral-300">
+                <span>Rotation</span>
+                <span class="text-red-500 font-mono font-semibold">{{ rotate() }}°</span>
+              </label>
+              <input
+                id="rotate-range"
+                type="range"
+                min="0"
+                max="360"
+                step="1"
+                [(ngModel)]="rotate"
+                class="w-full h-2 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-red-500"
+              />
+            </div>
+
+            <!-- Flip Control -->
+            <div class="space-y-2">
+              <label for="flip-select" class="block text-sm font-medium text-neutral-300">Flip</label>
+              <select
+                id="flip-select"
+                [(ngModel)]="flip"
+                class="block w-full px-3 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="">None</option>
+                <option value="horizontal">Horizontal</option>
+                <option value="vertical">Vertical</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Mode Control -->
+            <div class="space-y-2">
+              <label for="mode-select" class="block text-sm font-medium text-neutral-300">Render Mode</label>
+              <select
+                id="mode-select"
+                [(ngModel)]="mode"
+                class="block w-full px-3 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="">Default (Auto)</option>
+                <option value="svg">SVG (native rendering)</option>
+                <option value="bg">CSS Background</option>
+                <option value="mask">CSS Mask</option>
+              </select>
+            </div>
+
+            <!-- Toggles (Inline & lazy observer) -->
+            <div class="flex flex-col gap-3 justify-center pt-2">
+              <label class="flex items-center gap-3 cursor-pointer text-sm text-neutral-300 select-none">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="inline"
+                  class="w-4 h-4 rounded border-neutral-800 bg-neutral-950 text-red-500 focus:ring-red-500"
+                />
+                <span>Render Inline (aligns with text)</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer text-sm text-neutral-300 select-none">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="noObserver"
+                  class="w-4 h-4 rounded border-neutral-800 bg-neutral-950 text-red-500 focus:ring-red-500"
+                />
+                <span>Disable Lazy Loading</span>
+              </label>
+            </div>
+          </div>
         </div>
 
-        <div class="demo__size-control" role="group" aria-label="Icon size">
-          <span class="demo__size-label">Size: {{ selectedSize() }}px</span>
-          <input
-            id="demo-size-slider"
-            type="range"
-            min="16"
-            max="64"
-            step="4"
-            [value]="selectedSize()"
-            (input)="onSize($event)"
-            class="demo__slider"
-            aria-label="Icon size slider"
-          />
+        <!-- Preview & Code Generation (lg:col-span-5) -->
+        <div class="lg:col-span-5 space-y-6">
+          <!-- Real-time Live Preview -->
+          <div class="bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex flex-col items-center justify-center min-h-[250px] relative overflow-hidden group">
+            <span class="absolute top-3 left-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">Live Preview</span>
+            
+            <div 
+              class="flex items-center justify-center p-8 rounded-2xl bg-neutral-950/60 border border-neutral-850/50 shadow-inner transition-all duration-300 hover:scale-105"
+              [style.color]="color()"
+            >
+              <ngx-icon
+                [icon]="iconId() || 'mdi:help-circle-outline'"
+                [size]="size()"
+                [flip]="flip() || undefined"
+                [rotate]="rotate() || undefined"
+                [mode]="mode() || undefined"
+                [inline]="inline()"
+                [noObserver]="noObserver()"
+              />
+            </div>
+            
+            <span class="mt-4 font-mono text-sm text-neutral-400">{{ iconId() || 'mdi:help-circle-outline' }}</span>
+          </div>
+
+          <!-- Code Snippet -->
+          <div class="bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Angular Usage</span>
+              <button
+                (click)="copyCode()"
+                class="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-all cursor-pointer"
+              >
+                @if (codeCopied()) {
+                  <ngx-icon icon="mdi:check" [size]="14" class="text-green-400" />
+                  <span>Copied!</span>
+                } @else {
+                  <ngx-icon icon="mdi:content-copy" [size]="14" />
+                  <span>Copy</span>
+                }
+              </button>
+            </div>
+
+            <pre class="bg-neutral-950 p-4 rounded-xl text-xs font-mono text-neutral-300 overflow-x-auto border border-neutral-855"><code>{{ generatedCode() }}</code></pre>
+          </div>
         </div>
       </div>
-
-      <div class="demo__grid" role="list" aria-label="Icon grid">
-        @for (item of filteredIcons(); track item.icon) {
-          <button
-            class="demo__card"
-            [id]="'icon-' + item.icon.replace(':', '-')"
-            (click)="copyIcon(item.icon)"
-            [title]="'Copy: ' + item.icon"
-            role="listitem"
-            [attr.aria-label]="'Copy icon identifier ' + item.icon"
-          >
-            <ngx-icon [icon]="item.icon" [size]="selectedSize()" />
-            <span class="demo__card-label">{{ item.label }}</span>
-            <span class="demo__card-set">{{ item.set }}</span>
-            @if (copiedIcon() === item.icon) {
-              <span class="demo__copied" aria-live="polite">Copied!</span>
-            }
-          </button>
-        } @empty {
-          <div class="demo__empty" role="status">
-            <ngx-icon icon="mdi:magnify-remove-outline" [size]="40" />
-            <p>No icons found for "{{ query() }}"</p>
-          </div>
-        }
-      </div> -->
     </section>
   `,
-  styles: `
-    .demo {
-      padding: 4rem 1.5rem;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-
-    .section-title {
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin: 0 0 0.75rem;
-      background: var(--gradient-brand);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .section-desc {
-      color: var(--color-text-muted);
-      font-size: 1rem;
-      margin: 0;
-    }
-
-    .demo__controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.75rem;
-      align-items: center;
-    }
-
-    .demo__search-wrap {
-      position: relative;
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .demo__search-icon {
-      position: absolute;
-      left: 0.9rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--color-text-muted);
-      pointer-events: none;
-    }
-
-    .demo__search {
-      width: 100%;
-      padding: 0.65rem 0.9rem 0.65rem 2.6rem;
-      border-radius: 0.6rem;
-      border: 1.5px solid var(--color-border);
-      background: var(--color-surface-2);
-      color: var(--color-text);
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-      box-sizing: border-box;
-    }
-
-    .demo__search:focus {
-      border-color: var(--color-accent);
-    }
-
-    .demo__size-control {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      white-space: nowrap;
-    }
-
-    .demo__size-label {
-      font-size: 0.85rem;
-      color: var(--color-text-muted);
-      min-width: 6rem;
-    }
-
-    .demo__slider {
-      accent-color: var(--color-accent);
-      width: 100px;
-      cursor: pointer;
-    }
-
-    .demo__grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 0.75rem;
-    }
-
-    .demo__card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-      padding: 1rem 0.5rem 0.75rem;
-      border-radius: 0.75rem;
-      border: 1.5px solid var(--color-border);
-      background: var(--color-surface-2);
-      color: var(--color-text);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-      font: inherit;
-    }
-
-    .demo__card:hover {
-      border-color: var(--color-accent);
-      background: color-mix(in oklch, var(--color-accent) 8%, var(--color-surface-2));
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px color-mix(in oklch, var(--color-accent) 20%, transparent);
-    }
-
-    .demo__card-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-align: center;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .demo__card-set {
-      font-size: 0.65rem;
-      color: var(--color-accent);
-      font-weight: 500;
-    }
-
-    .demo__copied {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: color-mix(in oklch, var(--color-accent) 85%, transparent);
-      color: #fff;
-      font-size: 0.8rem;
-      font-weight: 700;
-      border-radius: inherit;
-      animation: fadeInOut 1.2s ease forwards;
-    }
-
-    @keyframes fadeInOut {
-      0% {
-        opacity: 0;
-      }
-      20% {
-        opacity: 1;
-      }
-      80% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-      }
-    }
-
-    .demo__empty {
-      grid-column: 1 / -1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      padding: 3rem;
-      color: var(--color-text-muted);
-      font-size: 0.9rem;
-    }
-
-    .hero__icon-chip {
-      margin: auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: fit-content;
-      height: fit-content;
-      padding: 1rem;
-      border-radius: 0.75rem;
-      background: var(--color-surface-2);
-      border: 1px solid var(--color-border);
-      color: var(--color-text);
-      transition: all 0.2s ease;
-    }
-
-    .hero__icon-chip:hover {
-      background: color-mix(in oklch, var(--color-accent) 12%, transparent);
-      border-color: var(--color-accent);
-      transform: translateY(-3px) scale(1.08);
-      color: var(--color-accent);
-    }
-  `,
+  styles: ``
 })
 export class DemoSectionComponent {
-  readonly query = signal('');
-  readonly selectedSize = signal(32);
-  readonly copiedIcon = signal<string | null>(null);
+  readonly iconId = signal('lucide:zap');
+  readonly size = signal(48);
+  readonly color = signal('#e11d48');
+  readonly rotate = signal(0);
+  readonly flip = signal<IconFlip | ''>('');
+  readonly mode = signal<IconMode | ''>('');
+  readonly inline = signal(false);
+  readonly noObserver = signal(false);
 
-  onSearch(event: Event): void {
-    this.query.set((event.target as HTMLInputElement).value);
+  readonly codeCopied = signal(false);
+
+  readonly generatedCode = computed(() => {
+    const id = this.iconId() || 'mdi:help-circle-outline';
+    let code = `<ngx-icon icon="${id}"`;
+
+    if (this.size() !== 24) {
+      code += ` [size]="${this.size()}"`;
+    }
+    if (this.color() && this.color() !== '#ffffff') {
+      code += ` color="${this.color()}"`;
+    }
+    if (this.rotate() !== 0) {
+      code += ` [rotate]="${this.rotate()}"`;
+    }
+    if (this.flip()) {
+      code += ` flip="${this.flip()}"`;
+    }
+    if (this.mode()) {
+      code += ` mode="${this.mode()}"`;
+    }
+    if (this.inline()) {
+      code += ` [inline]="true"`;
+    }
+    if (this.noObserver()) {
+      code += ` [noObserver]="true"`;
+    }
+
+    code += ' />';
+    return code;
+  });
+
+  copyCode(): void {
+    navigator.clipboard?.writeText(this.generatedCode()).catch(() => {});
+    this.codeCopied.set(true);
+    setTimeout(() => this.codeCopied.set(false), 1500);
   }
 
-  onSize(event: Event): void {
-    this.selectedSize.set(Number((event.target as HTMLInputElement).value));
-  }
-
-  copyIcon(iconId: string): void {
-    navigator.clipboard?.writeText(iconId).catch(() => {});
-    this.copiedIcon.set(iconId);
-    setTimeout(() => this.copiedIcon.set(null), 1300);
+  resetAll(): void {
+    this.iconId.set('lucide:zap');
+    this.size.set(48);
+    this.color.set('#e11d48');
+    this.rotate.set(0);
+    this.flip.set('');
+    this.mode.set('');
+    this.inline.set(false);
+    this.noObserver.set(false);
   }
 }
