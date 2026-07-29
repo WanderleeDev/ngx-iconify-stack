@@ -1,10 +1,10 @@
 <section class="relative flex flex-col items-center text-center pt-28 px-6 pb-20 gap-6 min-h-[85vh] justify-center overflow-clip" aria-labelledby="hero-title">
 
   <!-- ── Scattered Floating Icons Backdrop ── -->
-  <div class="hero__floating-container" aria-hidden="true">
+  <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
     @for (item of floatingIcons; track item.icon) {
       <div
-        class="hero__icon-chip"
+        class="absolute flex items-center justify-center p-[0.65rem] rounded-[0.85rem] border border-border bg-surface-2 text-body pointer-events-none backdrop-blur-[4px] animate-float-idle"
         [style.top]="item.top"
         [style.left]="item.left"
         [style.opacity]="item.opacity"

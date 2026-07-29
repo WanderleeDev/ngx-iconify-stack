@@ -15,7 +15,6 @@ interface FloatingIcon {
   selector: 'docs-hero',
   imports: [NgxIconComponent],
   templateUrl: './hero-section.component.html',
-  styleUrl: './hero-section.component.css',
 })
 export class HeroSectionComponent {
   readonly floatingIcons: FloatingIcon[] = [
