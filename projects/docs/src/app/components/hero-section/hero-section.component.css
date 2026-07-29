@@ -1,6 +1,6 @@
 /* ──────────────────────────────────────────────
    Hero — Full-Canvas Distributed Floating Icons
-   with Varying Opacities + Idle Floating + Parallax
+   with Varying Opacities & Idle Floating
    ────────────────────────────────────────────── */
 
 :host {
@@ -13,27 +13,9 @@
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  will-change: transform;
 }
 
-@supports (animation-timeline: view()) {
-  .hero__floating-container {
-    animation: parallax-scroll 1s linear both;
-    animation-timeline: view();
-    animation-range: entry 0% exit 100%;
-  }
-}
-
-@keyframes parallax-scroll {
-  from {
-    transform: translateY(30px);
-  }
-  to {
-    transform: translateY(-40px);
-  }
-}
-
-/* ── Individual Icon Chip (Pure background element, no hover) ── */
+/* ── Individual Icon Chip (Background element) ── */
 .hero__icon-chip {
   position: absolute;
   display: flex;
