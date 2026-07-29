@@ -1,0 +1,48 @@
+<header class="navbar" role="banner">
+  <nav class="navbar__inner" aria-label="Main navigation">
+    <a href="/" class="navbar__logo" aria-label="ngx-icon-stack home">
+      <ngx-icon icon="tabler:package" [size]="20" class="navbar__logo-icon" />
+      <span class="navbar__logo-text">ngx-icon-stack</span>
+    </a>
+
+    <div class="navbar__actions">
+      <a
+        id="nav-npm-link"
+        href="https://www.npmjs.com/package/ngx-icon-stack"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="navbar__link"
+        aria-label="NPM"
+      >
+        <ngx-icon icon="mdi:npm" [size]="18" />
+      </a>
+      <a
+        id="nav-github-link"
+        href="https://github.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="navbar__link"
+        aria-label="GitHub"
+      >
+        <ngx-icon icon="mdi:github" [size]="18" />
+      </a>
+
+      @if (theme.isHydrated()) {
+        <button
+          id="nav-theme-toggle"
+          class="navbar__link navbar__link--btn"
+          (click)="theme.toggle()"
+          [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+          [title]="theme.isDark() ? 'Light mode' : 'Dark mode'"
+        >
+          <ngx-icon
+            [icon]="theme.isDark() ? 'mdi:weather-sunny' : 'mdi:weather-night'"
+            [size]="18"
+          />
+        </button>
+      } @else {
+        <div class="navbar__toggle-skeleton" aria-hidden="true"></div>
+      }
+    </div>
+  </nav>
+</header>
