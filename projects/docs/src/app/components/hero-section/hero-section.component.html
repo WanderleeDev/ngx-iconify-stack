@@ -1,7 +1,11 @@
-<section class="relative flex flex-col items-center text-center pt-28 px-6 pb-20 gap-6 min-h-[85vh] justify-center overflow-clip" aria-labelledby="hero-title">
-
-  <!-- ── Scattered Floating Icons Backdrop ── -->
-  <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+<section
+  class="relative flex flex-col items-center text-center pt-28 px-6 pb-20 gap-6 min-h-[85vh] justify-center overflow-clip"
+  aria-labelledby="hero-title"
+>
+  <div
+    class="absolute inset-0 pointer-events-none overflow-hidden hidden lg:block"
+    aria-hidden="true"
+  >
     @for (item of floatingIcons; track item.icon) {
       <div
         class="absolute flex items-center justify-center p-[0.65rem] rounded-[0.85rem] border border-border bg-surface-2 text-body pointer-events-none backdrop-blur-[4px] animate-float-idle"
@@ -16,25 +20,29 @@
     }
   </div>
 
-  <!-- ── Badge ── -->
-  <div class="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-[color-mix(in_oklch,var(--color-accent)_12%,transparent)] border border-[color-mix(in_oklch,var(--color-accent)_30%,transparent)] text-accent text-[0.78rem] font-semibold tracking-[0.03em] relative z-10">
+  <div
+    class="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-[color-mix(in_oklch,var(--color-accent)_12%,transparent)] border border-[color-mix(in_oklch,var(--color-accent)_30%,transparent)] text-accent text-[0.78rem] font-semibold tracking-[0.03em] relative z-10"
+  >
     <ngx-icon icon="logos:angular-icon" [size]="18" />
     <span>Angular 22 · Standalone · Signal-based</span>
   </div>
 
-  <!-- ── Title ── -->
-  <h1 id="hero-title" class="m-0 text-[clamp(2.8rem,8vw,5.5rem)] font-extrabold leading-none tracking-[-0.04em] relative z-10">
-    <span class="bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]">ngx-icon-stack</span>
+  <h1
+    id="hero-title"
+    class="m-0 text-[clamp(2.8rem,8vw,5.5rem)] font-extrabold leading-none tracking-[-0.04em] relative z-10"
+  >
+    <span
+      class="bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]"
+      >ngx-icon-stack</span
+    >
   </h1>
 
-  <!-- ── Subtitle ── -->
   <p class="max-w-[54ch] text-lg leading-relaxed text-muted m-0 relative z-10">
     A lightweight, SSR-safe Angular wrapper for
-    <strong class="text-body">Iconify</strong> — 200,000+ icons from 150+ icon sets,
-    driven by signals and zero runtime overhead.
+    <strong class="text-body">Iconify</strong> — 200,000+ icons from 150+ icon sets, driven by
+    signals and zero runtime overhead.
   </p>
 
-  <!-- ── CTAs ── -->
   <div class="flex flex-wrap gap-3.5 justify-center mt-3 relative z-10">
     <a
       id="hero-npm-link"
