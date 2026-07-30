@@ -10,7 +10,9 @@ const OUT_FILE = resolve(SRC, 'generated', 'icon-subset.ts');
 
 // ── scan: extract all "prefix:name" references from source files ──
 function scanIcons(dir) {
-  const pattern = /(?:icon|icons)\s*=\s*["']([\w-]+:[\w-]+)["']/g;
+  // Matches HTML: icon="mdi:home", icons="mdi:home"
+  // Matches TS:   icon: 'mdi:home', icon: "mdi:home", icon = 'mdi:home'
+  const pattern = /(?:icon|icons)\s*[:=]\s*["']([\w-]+:[\w-]+)["']/g;
   const found = new Map(); // prefix → Set<name>
 
   function walk(path) {
