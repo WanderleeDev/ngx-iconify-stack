@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "ng-add": {
+      "description": "Configura ngx-iconify en el proyecto",
+      "factory": "./ng-add/index#ngAdd",
+      "schema": "./ng-add/schema.json"
+    },
+    "add-icon-set": {
+      "description": "Agrega un icon set offline al bundle",
+      "factory": "./add-icon-set/index#addIconSet",
+      "schema": "./add-icon-set/schema.json"
+    }
+  }
+}

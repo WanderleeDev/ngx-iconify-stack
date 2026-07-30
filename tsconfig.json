@@ -8,7 +8,9 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "ngx-icon-stack": ["./dist/ngx-icon-stack"]
+      "ngx-icon-stack": [
+        "./dist/ngx-icon-stack"
+      ]
     },
     "skipLibCheck": true,
     "isolatedModules": true,
