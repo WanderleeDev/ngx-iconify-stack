@@ -2,7 +2,7 @@
   "$schema": "../../../node_modules/@angular-devkit/schematics/collection-schema.json",
   "schematics": {
     "ng-add": {
-      "description": "Configura ngx-iconify en el proyecto",
+      "description": "Configura ngx-iconify-stack en el proyecto",
       "factory": "./ng-add/index#ngAdd",
       "schema": "./ng-add/schema.json"
     },

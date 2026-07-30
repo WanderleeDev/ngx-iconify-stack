@@ -1,5 +1,5 @@
 {
-  "name": "ngx-icon-stack",
+  "name": "ngx-iconify-stack",
   "version": "0.0.1",
   "peerDependencies": {
     "@angular/common": "^22.0.0",

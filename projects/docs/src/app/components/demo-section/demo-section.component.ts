@@ -1,6 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
-import { NgxIconComponent, IconFlip, IconMode } from 'ngx-icon-stack';
+import { NgxIconComponent, IconFlip, IconMode } from 'ngx-iconify-stack';
 
 export interface SandboxConfig {
   iconId: string;

@@ -8,8 +8,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "ngx-icon-stack": [
-        "./dist/ngx-icon-stack"
+      "ngx-iconify-stack": [
+        "./dist/ngx-iconify-stack"
       ]
     },
     "skipLibCheck": true,
@@ -27,10 +27,10 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/ngx-icon-stack/tsconfig.lib.json"
+      "path": "./projects/ngx-iconify-stack/tsconfig.lib.json"
     },
     {
-      "path": "./projects/ngx-icon-stack/tsconfig.spec.json"
+      "path": "./projects/ngx-iconify-stack/tsconfig.spec.json"
     },
     {
       "path": "./projects/docs/tsconfig.app.json"

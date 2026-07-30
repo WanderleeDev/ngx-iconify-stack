@@ -42,7 +42,7 @@ function addProvider(options: { project?: string }): Rule {
       sourceRoot,
       'provideIconify()',
       'provideIconify',
-      'ngx-iconify',
+      'ngx-iconify-stack',
       projectName,
     );
   };

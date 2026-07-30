@@ -37,6 +37,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ngx-icon-stack-docs
+          projectName: ngx-iconify-stack-docs
           directory: dist/docs/browser
           gitToCommitMetadata: true

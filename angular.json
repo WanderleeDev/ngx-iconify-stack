@@ -6,20 +6,20 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "ngx-icon-stack": {
+    "ngx-iconify-stack": {
       "projectType": "library",
-      "root": "projects/ngx-icon-stack",
-      "sourceRoot": "projects/ngx-icon-stack/src",
+      "root": "projects/ngx-iconify-stack",
+      "sourceRoot": "projects/ngx-iconify-stack/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
-              "tsConfig": "projects/ngx-icon-stack/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ngx-iconify-stack/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/ngx-icon-stack/tsconfig.lib.json"
+              "tsConfig": "projects/ngx-iconify-stack/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -27,7 +27,7 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/ngx-icon-stack/tsconfig.spec.json"
+            "tsConfig": "projects/ngx-iconify-stack/tsconfig.spec.json"
           }
         }
       }

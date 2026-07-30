@@ -1,4 +1,4 @@
-// projects/ngx-iconify/schematics/utils/patch-app-config.ts
+// utils/patch-app-config.ts
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { addRootProvider } from '@schematics/angular/utility';
 import * as ts from 'typescript';
@@ -9,7 +9,7 @@ export async function patchAppConfig(
   projectSourceRoot: string,
   provideCall: string, // ej: "provideIconify({ offlineCollections: [] })"
   providerName: string, // ej: "provideIconify"
-  moduleName: string, // ej: "ngx-iconify"
+  moduleName: string, // ej: "ngx-iconify-stack"
   projectName?: string,
 ): Promise<void> {
   const mainPath = `${projectSourceRoot}/main.ts`.replace(/^\//, '');

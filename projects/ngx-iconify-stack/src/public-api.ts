@@ -1,5 +1,5 @@
 /*
- * Public API Surface of ngx-icon-stack
+ * Public API Surface of ngx-iconify-stack
  */
 
 export * from './lib/ngx-iconify';

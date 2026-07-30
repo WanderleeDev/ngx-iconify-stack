@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NgxIconComponent } from 'ngx-icon-stack';
+import { NgxIconComponent } from 'ngx-iconify-stack';
 
 @Component({
   selector: 'docs-footer',
