@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "title": "Generate Icon Subset",
+  "description": "Scans your project for icon usage, builds an offline subset, and wires it into the provider",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Target project name",
+      "$default": {
+        "$source": "project"
+      }
+    }
+  },
+  "required": []
+}

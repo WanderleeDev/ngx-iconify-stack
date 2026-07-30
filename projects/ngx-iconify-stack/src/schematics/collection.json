@@ -6,10 +6,10 @@
       "factory": "./ng-add/index#ngAdd",
       "schema": "./ng-add/schema.json"
     },
-    "add-icon-set": {
-      "description": "Agrega un icon set offline al bundle",
-      "factory": "./add-icon-set/index#addIconSet",
-      "schema": "./add-icon-set/schema.json"
+    "generate-icon-subset": {
+      "description": "Scans templates for icon usage, builds an offline subset, and wires it into the provider",
+      "factory": "./generate-icon-subset/index#generateIconSubset",
+      "schema": "./generate-icon-subset/schema.json"
     }
   }
 }
