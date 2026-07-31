@@ -11,6 +11,7 @@
     "release": "release-it",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:schematic": "npm run build:schematic && vitest run --config vitest.schematics.config.ts",
     "serve:ssr:docs": "node dist/docs/server/server.mjs",
     "ngx-theme-stack:sync": "ng generate ngx-theme-stack:sync --project docs",
     "ngx-theme-stack:skill": "ng generate ngx-theme-stack:skill --project docs",
