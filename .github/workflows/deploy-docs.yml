@@ -46,7 +46,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/docs/browser --project-name=ngx-iconify-stack-docs
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           preCommands: |
             # Create the Pages project on first deploy (no-op if it already exists)
             wrangler pages project create ngx-iconify-stack-docs --production-branch=main || true

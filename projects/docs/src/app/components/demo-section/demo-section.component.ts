@@ -28,7 +28,11 @@ const DEFAULTS: SandboxConfig = {
   selector: 'docs-demo',
   imports: [NgxIconify, FormField],
   templateUrl: './demo-section.component.html',
-  styles: ``,
+  styles: `
+    :host {
+      --color-accent: #6200f5;
+    }
+  `,
 })
 export class DemoSectionComponent {
   readonly model = signal<SandboxConfig>({ ...DEFAULTS });
