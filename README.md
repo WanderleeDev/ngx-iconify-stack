@@ -1,112 +1,56 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/graph.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+for+Angular&logo=angular&logoColor=fff&mode=dark&theme=zinc&height=180&width=700" />
-    <img alt="ngx-iconify-stack" src="https://shieldcn.dev/header/graph.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+for+Angular&logo=angular&logoColor=dd0031&mode=light&theme=zinc&height=180&width=700" />
-  </picture>
-</p>
+# NgxIconifyStack Workspace 🏗️
 
-<p align="center">
-  <a href="https://github.com/user/ngx-iconify-workspace"><img src="https://shieldcn.dev/github/stars/user/ngx-iconify-workspace?variant=secondary" alt="GitHub stars" /></a>
-  <a href="https://angular.dev"><img src="https://shieldcn.dev/badge/Angular-22.0.0-dd0031?variant=secondary&logo=angular&logoColor=dd0031" alt="Angular" /></a>
-  <a href="https://tailwindcss.com"><img src="https://shieldcn.dev/badge/Tailwind-v4-38bdf8?variant=secondary&logo=tailwindcss&logoColor=38bdf8" alt="Tailwind CSS" /></a>
-  <a href="https://www.typescriptlang.org"><img src="https://shieldcn.dev/badge/TypeScript-6.0-3178c6?variant=secondary&logo=typescript&logoColor=3178c6" alt="TypeScript" /></a>
-  <img src="https://shieldcn.dev/badge/license-MIT-3b82f6?variant=secondary" alt="MIT" />
-</p>
+Welcome to the monorepo workspace for **ngx-iconify-stack**. This repository contains the core library, its schematics, and the official documentation site.
 
-## Overview
+---
 
-**ngx-iconify-stack** is an Angular monorepo containing two projects:
+## 📁 Project Structure
 
-| Project | Description |
-|---------|-------------|
-| [`ngx-iconify-stack`](projects/ngx-iconify-stack) | Angular library — hybrid SSR-safe Iconify component |
-| [`docs`](projects/docs) | Docs site — Angular 22 SSR app with the library in action |
+- **[`projects/ngx-iconify-stack/`](./projects/ngx-iconify-stack/)** - The core Angular library source code.
+- **[`projects/ngx-iconify-stack/src/schematics/`](./projects/ngx-iconify-stack/src/schematics/)** - Angular CLI schematics to automate library setup (`ng add`, `generate-icon-subset`, `skill`).
+- **[`projects/docs/`](./projects/docs/)** - Official documentation site — Angular 22 SSR app with the library in action.
 
-## The library
+---
 
-A lightweight, signal-based Angular component for [Iconify](https://iconify.design) — 200,000+ icons from 150+ icon sets.
+## 🚀 Quick Start for Contributors
 
-**Hybrid SSR approach:**
+To set up the workspace locally, follow these steps:
 
-- Icons in the offline subset render as **inline SVG** — works in SSR, no flicker, no hydration gap
-- Icons not in the subset fall through to the native `<iconify-icon>` web component, which resolves them from the Iconify CDN
-- Dynamic input changes recalculate reactively — no forced lifecycle transitions
+### 1. Install Dependencies
 
-→ [Full library docs](projects/ngx-iconify-stack/README.md)
-
-## Quick start
+This project uses **npm** as its package manager:
 
 ```bash
-# Install dependencies
 npm install
-
-# Build the library
-npm run build:lib
-
-# Start the docs site
-npm start
 ```
 
-## Project structure
+### 2. Quick Development Commands
 
-```
-ngx-iconify-workspace/
-├── projects/
-│   ├── ngx-iconify-stack/        # 📦 The library
-│   │   ├── (schematics pipeline: tsc + copyfiles + node -e in package.json)
-│   │   └── src/lib/
-│   │       ├── ngx-iconify.ts     # The component
-│   │       ├── icon-helpers.ts    # SVG lookup from offline subset
-│   │       ├── icon.config.ts     # Config injection token
-│   │       ├── provide-iconify.ts # Provider & lazy iconify-icon loader
-│   │       └── types.ts
-│   └── docs/                      # 📖 Docs site (Angular SSR)
-│       └── src/app/components/
-│           ├── hero-section/
-│           ├── demo-section/
-│           ├── api-table-section/
-│           ├── navbar/
-│           └── footer-section/
-└── dist/                          # Build output
-```
+Run these commands from the root directory:
 
-## Available scripts
+| Task              | Command                     | Description                                                         |
+| ----------------- | --------------------------- | ------------------------------------------------------------------- |
+| **Start Docs**    | `ng serve docs`             | Launches the local dev server for the documentation site.           |
+| **Build Library** | `npm run build:lib`         | Compiles the library and its schematics into the `dist/` directory. |
+| **Run Tests**     | `ng test ngx-iconify-stack` | Runs the library unit tests (Vitest).                               |
+| **Icon Subset**   | `npm run icons`             | Scans templates and rebuilds the offline icon subset.               |
 
-| Command | Description |
-|---------|-------------|
-| `npm run build:lib` | Build the library |
-| `npm run build:docs` | Build the docs site (production) |
-| `npm start` | Start dev server (runs the prestart hook — theme sync only) |
-| `npm run prebuild` | Generate theme files + icon subset |
-| `npm run icons` | Scan templates & build offline icon subset (via the schematic) |
-| `npm test` | Run unit tests |
-| `npm run serve:ssr:docs` | Serve the prebuilt SSR docs site |
-| `npm run release` | Publish a new version |
+---
 
-## How the icon subset works
+## 🤝 Contribution Guidelines
 
-```
-npm run prebuild
-    ├── ngx-theme-stack:sync   → generates theme configuration
-    └── icons                  → runs ngx-iconify-stack:generate-icon-subset
-                                → scans .html/.ts files for icon="set:name"
-                                → builds minimal IconifyJSON subset
-                                → writes to projects/docs/src/generated/icon-subset.ts
-```
+We use conventional commits and structured branching to keep the history clean.
 
-The subset is injected into the app via `provideIconify({ offlineCollections: [...] })`. Icons found at build time render as inline SVG; the rest load from the Iconify CDN automatically.
+### Commit Messages
 
-## Tech stack
+Please follow the **Conventional Commits** specification (e.g., `feat(lib): add color input` or `fix(schematics): resolve config paths`).
 
-| Technology | Version |
-|------------|---------|
-| Angular | 22 |
-| TypeScript | 6.0 |
-| Tailwind CSS | 4 |
-| Iconify | 3 |
-| Express | 5 |
-| Vitest | 4 |
+### Development Workflow
 
-## License
+1. Fork the repository and create your feature branch (`git checkout -b feature/my-new-feature`).
+2. Implement your changes. Make sure to run `ng test ngx-iconify-stack` and `npm run build:lib` to verify that everything builds and passes.
+3. Commit your changes using conventional commits, push to your fork, and open a Pull Request.
 
-MIT
+---
+
+For technical details on how to use the library in your own project, please refer to the **[Library README](./projects/ngx-iconify-stack/README.md)**.
