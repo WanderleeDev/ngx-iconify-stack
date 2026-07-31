@@ -18,7 +18,10 @@
     }
   },
   "hooks": {
-    "before:init": ["npm run build:lib"],
-    "after:bump": "npm run build:lib"
+    "before:init": ["ng test ngx-iconify-stack --watch=false", "npm run build:lib"],
+    "after:bump": [
+      "node -e \"const fs=require('fs'); [ './package.json', './projects/ngx-iconify-stack/package.json' ].forEach(f => { const p=JSON.parse(fs.readFileSync(f, 'utf8')); p.version='${version}'; fs.writeFileSync(f, JSON.stringify(p, null, 2) + '\\n'); })\"",
+      "npm run build:lib"
+    ]
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "ngx-iconify-workspace",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,6 +8,7 @@
     "build:lib": "ng build ngx-iconify-stack && cd projects/ngx-iconify-stack && npm run build",
     "build:docs": "ng build docs",
     "release": "release-it",
+    "release:next": "release-it --preRelease=next",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:docs": "node dist/docs/server/server.mjs",
