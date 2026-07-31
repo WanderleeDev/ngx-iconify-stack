@@ -82,6 +82,7 @@ export const appConfig: ApplicationConfig = {
 | \`width\` | \`number \\| string\` | — | Explicit width (overrides \`size\`) |
 | \`height\` | \`number \\| string\` | — | Explicit height (overrides \`size\`) |
 | \`color\` | \`string\` | — | CSS color for the icon |
+| \`class\` | \`string\` | — | CSS class added to the rendered icon element |
 | \`flip\` | \`"horizontal" \\| "vertical" \\| "both"\` | — | Flip transformation |
 | \`rotate\` | \`number \\| string\` | — | Rotation, e.g. \`90\` or \`"90deg"\` |
 | \`inline\` | \`boolean\` | \`false\` | Align to text baseline |

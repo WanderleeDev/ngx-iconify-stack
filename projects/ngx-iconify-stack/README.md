@@ -73,6 +73,7 @@ export class ExampleComponent {}
 | `size`             | `number`                               | Shorthand that sets both width and height           |
 | `width` / `height` | `number \| string`                     | Explicit dimensions (override `size`)               |
 | `color`            | `string`                               | CSS color for the icon                              |
+| `class`            | `string`                               | CSS class added to the rendered icon element        |
 | `flip`             | `"horizontal" \| "vertical" \| "both"` | Flip the icon                                       |
 | `rotate`           | `number \| string`                     | Rotate the icon, e.g. `90` or `"90deg"`             |
 | `inline`           | `boolean`                              | Align icon to the text baseline                     |
