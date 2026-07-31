@@ -13,6 +13,11 @@ export const MAX_ALIAS_DEPTH = 10;
 /** Default icon box size when the set does not declare width/height. */
 export const DEFAULT_ICON_SIZE = 24;
 
+/** IconifyJSON path for a set prefix under node_modules. */
+export function iconSetJsonPath(prefix: string): string {
+  return `node_modules/@iconify-json/${prefix}/icons.json`;
+}
+
 /** Minimal logger surface required for subset warnings. */
 export interface SubsetLogger {
   warn(message: string): void;
@@ -95,8 +100,7 @@ export function buildSubset(
   const collections: IconifyJSON[] = [];
 
   for (const [prefix, names] of found) {
-    const iconsJsonPath = `node_modules/@iconify-json/${prefix}/icons.json`;
-    const fullSet = readJsonFile(tree, iconsJsonPath) as IconifyJSON | null;
+    const fullSet = readJsonFile(tree, iconSetJsonPath(prefix)) as IconifyJSON | null;
     if (fullSet === null) {
       logger.warn(`Set "${prefix}" not found — install @iconify-json/${prefix}`);
       continue;

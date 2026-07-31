@@ -11,6 +11,7 @@ export async function patchAppConfig(
   providerName: string, // ej: "provideIconify"
   moduleName: string, // ej: "ngx-iconify-stack"
   projectName?: string,
+  extraImports?: { symbol: string; module: string }[],
 ): Promise<void> {
   const mainPath = `${projectSourceRoot}/main.ts`.replace(/^\//, '');
   const appConfigPath = `${projectSourceRoot}/app/app.config.ts`.replace(/^\//, '');
@@ -42,14 +43,27 @@ export async function patchAppConfig(
       await Promise.resolve((rule as (t: Tree, ctx: SchematicContext) => unknown)(tree, context));
 
       const updatedContent = tree.read(startFile)?.toString() || '';
-      if (updatedContent.includes(providerName)) return;
+      if (updatedContent.includes(providerName)) {
+        ensureImports(tree, startFile, providerName, moduleName, extraImports);
+        return;
+      }
     } catch (e) {
       context.logger.debug(`addRootProvider falló: ${String(e)}`);
     }
   }
 
   // ── Estrategia 2: AST walker de fallback ──
-  if (await applySmartPatch(tree, context, startFile, provideCall, providerName, moduleName)) {
+  if (
+    await applySmartPatch(
+      tree,
+      context,
+      startFile,
+      provideCall,
+      providerName,
+      moduleName,
+      extraImports,
+    )
+  ) {
     return;
   }
 
@@ -63,6 +77,7 @@ async function applySmartPatch(
   provideCall: string,
   providerName: string,
   moduleName: string,
+  extraImports?: { symbol: string; module: string }[],
   targetIdentifier?: string,
   visitedFiles = new Set<string>(),
 ): Promise<boolean> {
@@ -82,7 +97,7 @@ async function applySmartPatch(
       provideCall +
       content.slice(existingCall.getEnd());
     tree.overwrite(filePath, updated);
-    ensureImport(tree, filePath, providerName, moduleName);
+    ensureImports(tree, filePath, providerName, moduleName, extraImports);
     return true;
   }
 
@@ -93,7 +108,7 @@ async function applySmartPatch(
       ts.isArrayLiteralExpression(variableDeclaration.initializer)
     ) {
       insertIntoArray(tree, filePath, variableDeclaration.initializer, provideCall);
-      ensureImport(tree, filePath, providerName, moduleName);
+      ensureImports(tree, filePath, providerName, moduleName, extraImports);
       return true;
     }
   }
@@ -101,7 +116,7 @@ async function applySmartPatch(
   const arrayLiteral = findProvidersArrayLiteral(sourceFile);
   if (arrayLiteral) {
     insertIntoArray(tree, filePath, arrayLiteral, provideCall);
-    ensureImport(tree, filePath, providerName, moduleName);
+    ensureImports(tree, filePath, providerName, moduleName, extraImports);
     return true;
   }
 
@@ -124,6 +139,7 @@ async function applySmartPatch(
           provideCall,
           providerName,
           moduleName,
+          extraImports,
           delegatedIdentifier,
           visitedFiles,
         );
@@ -135,7 +151,7 @@ async function applySmartPatch(
         ts.isArrayLiteralExpression(variableDeclaration.initializer)
       ) {
         insertIntoArray(tree, filePath, variableDeclaration.initializer, provideCall);
-        ensureImport(tree, filePath, providerName, moduleName);
+        ensureImports(tree, filePath, providerName, moduleName, extraImports);
         return true;
       }
     }
@@ -232,6 +248,20 @@ function insertIntoArray(
     filePath,
     content.slice(0, insertionPos) + prefix + text + content.slice(insertionPos),
   );
+}
+
+/** Ensure the provider import plus any extra imports (e.g. the generated subset). */
+function ensureImports(
+  tree: Tree,
+  filePath: string,
+  providerName: string,
+  moduleName: string,
+  extraImports?: { symbol: string; module: string }[],
+) {
+  ensureImport(tree, filePath, providerName, moduleName);
+  for (const { symbol, module } of extraImports ?? []) {
+    ensureImport(tree, filePath, symbol, module);
+  }
 }
 
 function ensureImport(tree: Tree, filePath: string, symbol: string, module: string) {
