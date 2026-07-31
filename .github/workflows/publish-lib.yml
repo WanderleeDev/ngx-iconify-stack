@@ -36,9 +36,9 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ github.ref_name }}" =~ - ]]; then
-            npm publish dist/ngx-iconify-stack --provenance --access public --tag next
+            npm publish ./dist/ngx-iconify-stack --provenance --access public --tag next
           else
-            npm publish dist/ngx-iconify-stack --provenance --access public
+            npm publish ./dist/ngx-iconify-stack --provenance --access public
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
