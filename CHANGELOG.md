@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.1](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v0.1.0...v0.1.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **ci:** use gitHubToken input for cloudflare pages action ([91f1579](https://github.com/WanderleeDev/ngx-iconify-stack/commit/91f157911d127200f8cba251dc762377edb86aa4))
+* **pkg:** use compact >=20 <23 peer dep range ([1da1710](https://github.com/WanderleeDev/ngx-iconify-stack/commit/1da171033a64813338d493b7c7a5393a0b3441c7))
+* **pkg:** widen Angular peer deps to ^20 || ^21 || ^22 range ([fd14ad5](https://github.com/WanderleeDev/ngx-iconify-stack/commit/fd14ad5d96599620eace56599eaf01bf35a35663))
+
+
+### Features
+
+* **schematics:** ng-add wires ngx-iconify-stack:generate-icons script and prebuild ([0dc3271](https://github.com/WanderleeDev/ngx-iconify-stack/commit/0dc3271e1ee0d795c7a465b21753685d63f49bc4))
+
 # 0.1.0 (2026-07-31)
 
 
