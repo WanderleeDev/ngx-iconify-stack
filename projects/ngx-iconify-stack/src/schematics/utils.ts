@@ -3,6 +3,91 @@ import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { addRootProvider } from '@schematics/angular/utility';
 import * as ts from 'typescript';
 
+/** Package.json script that (re)generates the offline icon subset. */
+export const ICONS_SCRIPT = 'ngx-iconify-stack:generate-icons';
+/** Legacy script name removed in favor of ICONS_SCRIPT. */
+export const LEGACY_ICONS_SCRIPT = 'icons';
+
+/** Split a `a && b && c` script chain into trimmed segments. */
+function splitChain(script: string): string[] {
+  return script
+    .split('&&')
+    .map((seg) => seg.trim())
+    .filter(Boolean);
+}
+
+/** True for legacy `collect-icons` segments, the legacy `icons` chain, or the new marker. */
+function isIconSegment(seg: string): boolean {
+  return (
+    seg.includes('collect-icons') ||
+    seg === `npm run ${ICONS_SCRIPT}` ||
+    seg === `npm run ${LEGACY_ICONS_SCRIPT}`
+  );
+}
+
+/**
+ * Idempotent script wiring (marker-based, so reruns never double-append):
+ * adds the `ngx-iconify-stack:generate-icons` script (removing the legacy
+ * `icons` entry), creates `prebuild` when missing or chains into it, strips
+ * icon segments from `prestart`, and removes the dead legacy `collect-icons`.
+ * Returns true when the package.json must be rewritten.
+ */
+export function wireIconifyScripts(
+  pkg: { scripts?: Record<string, string> },
+  projectName: string,
+): boolean {
+  pkg.scripts ??= {};
+
+  let changed = false;
+
+  if (pkg.scripts[LEGACY_ICONS_SCRIPT] !== undefined) {
+    delete pkg.scripts[LEGACY_ICONS_SCRIPT];
+    changed = true;
+  }
+  if (!(pkg.scripts[ICONS_SCRIPT] ?? '').includes('generate-icon-subset')) {
+    pkg.scripts[ICONS_SCRIPT] = `ng generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
+    changed = true;
+  }
+
+  const prebuildSegs = splitChain(pkg.scripts['prebuild'] ?? '');
+  if (prebuildSegs.some(isIconSegment)) {
+    const next = prebuildSegs
+      .map((seg) => (isIconSegment(seg) ? `npm run ${ICONS_SCRIPT}` : seg))
+      .join(' && ');
+    if (pkg.scripts['prebuild'] !== next) {
+      pkg.scripts['prebuild'] = next;
+      changed = true;
+    }
+  } else if (prebuildSegs.length > 0) {
+    pkg.scripts['prebuild'] = `${prebuildSegs.join(' && ')} && npm run ${ICONS_SCRIPT}`;
+    changed = true;
+  } else if ((pkg.scripts['prebuild'] ?? '') !== `npm run ${ICONS_SCRIPT}`) {
+    pkg.scripts['prebuild'] = `npm run ${ICONS_SCRIPT}`;
+    changed = true;
+  }
+
+  const keptPrestart = splitChain(pkg.scripts['prestart'] ?? '').filter(
+    (seg) => !isIconSegment(seg),
+  );
+  if (keptPrestart.length > 0) {
+    const next = keptPrestart.join(' && ');
+    if (pkg.scripts['prestart'] !== next) {
+      pkg.scripts['prestart'] = next;
+      changed = true;
+    }
+  } else if (pkg.scripts['prestart'] !== undefined) {
+    delete pkg.scripts['prestart'];
+    changed = true;
+  }
+
+  if (pkg.scripts['collect-icons'] !== undefined) {
+    delete pkg.scripts['collect-icons'];
+    changed = true;
+  }
+
+  return changed;
+}
+
 export async function patchAppConfig(
   tree: Tree,
   context: SchematicContext,

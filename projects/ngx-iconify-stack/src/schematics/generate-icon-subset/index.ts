@@ -3,7 +3,7 @@ import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import type { IconifyJSON } from '@iconify/types';
 import { GenerateIconSubsetOptions } from './schema';
 import { buildSubset, iconSetJsonPath, readJsonFile, scanIcons } from './icons';
-import { patchAppConfig } from '../utils';
+import { patchAppConfig, wireIconifyScripts } from '../utils';
 
 /** Stable file header so reruns stay byte-identical. */
 const OUTPUT_HEADER =
@@ -16,57 +16,6 @@ function renderSubsetFile(collections: IconifyJSON[]): string {
     `${OUTPUT_HEADER}\n${TYPE_IMPORT}\n\n` +
     `export const iconSubset: IconifyJSON[] = ${JSON.stringify(collections, null, 2)};\n`
   );
-}
-
-/** Split a `a && b && c` script chain into trimmed segments. */
-function splitChain(script: string): string[] {
-  return script
-    .split('&&')
-    .map((seg) => seg.trim())
-    .filter(Boolean);
-}
-
-/** True for legacy `collect-icons` segments or the new `npm run icons` marker. */
-function isIconSegment(seg: string): boolean {
-  return seg.includes('collect-icons') || seg === 'npm run icons';
-}
-
-/**
- * Idempotent script wiring (marker-based, so reruns never double-append):
- * adds the `icons` script, chains it into prebuild, strips it from prestart,
- * and removes the dead legacy `collect-icons` entry.
- */
-function wirePackageScripts(
-  pkg: { scripts: Record<string, string> },
-  projectName: string,
-): void {
-  pkg.scripts ??= {};
-
-  if (!(pkg.scripts['icons'] ?? '').includes('generate-icon-subset')) {
-    pkg.scripts['icons'] = `ng generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
-  }
-
-  const prebuildSegs = splitChain(pkg.scripts['prebuild'] ?? '');
-  if (prebuildSegs.some(isIconSegment)) {
-    pkg.scripts['prebuild'] = prebuildSegs
-      .map((seg) => (isIconSegment(seg) ? 'npm run icons' : seg))
-      .join(' && ');
-  } else if (prebuildSegs.length > 0) {
-    pkg.scripts['prebuild'] = `${prebuildSegs.join(' && ')} && npm run icons`;
-  } else {
-    pkg.scripts['prebuild'] = 'npm run icons';
-  }
-
-  const keptPrestart = splitChain(pkg.scripts['prestart'] ?? '').filter(
-    (seg) => !isIconSegment(seg),
-  );
-  if (keptPrestart.length > 0) {
-    pkg.scripts['prestart'] = keptPrestart.join(' && ');
-  } else {
-    delete pkg.scripts['prestart'];
-  }
-
-  delete pkg.scripts['collect-icons'];
 }
 
 export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
@@ -121,9 +70,8 @@ export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
         );
       }
 
-      wirePackageScripts(pkg, projectName);
-      tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-    }
+      wireIconifyScripts(pkg, projectName);
+      tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');    }
 
     // ── 3. Wire the subset into app.config via the shared patcher ──
     await patchAppConfig(

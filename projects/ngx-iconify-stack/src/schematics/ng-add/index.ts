@@ -1,5 +1,5 @@
 import { getWorkspace } from '@schematics/angular/utility/workspace';
-import { patchAppConfig } from '../utils';
+import { patchAppConfig, wireIconifyScripts } from '../utils';
 import { Rule, chain, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import {
@@ -13,6 +13,7 @@ export function ngAdd(options: NgAddOptions): Rule {
   return chain([
     addIconifyDependency(),
     addProvider(options),
+    wireIconifyScriptsRule(options),
     installSkill(options),
     (_tree: Tree, ctx: SchematicContext) => {
       ctx.addTask(new NodePackageInstallTask());
@@ -53,6 +54,31 @@ function addProvider(options: NgAddOptions): Rule {
       'ngx-iconify-stack',
       projectName,
     );
+  };
+}
+
+function wireIconifyScriptsRule(options: NgAddOptions): Rule {
+  return async (tree: Tree, context: SchematicContext) => {
+    const pkgPath = '/package.json';
+    if (!tree.exists(pkgPath)) return tree;
+
+    const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
+      scripts?: Record<string, string>;
+    };
+
+    const projectName = await resolveProjectName(tree, options);
+    const changed = wireIconifyScripts(pkg, projectName);
+    if (!changed) {
+      context.logger.info(
+        ` \u001b[90mℹ\u001b[0m package.json (${'ngx-iconify-stack:generate-icons'} script + prebuild already correct — skipped)`,
+      );
+      return tree;
+    }
+    tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+    context.logger.info(
+      ` \u001b[33mM\u001b[0m package.json (${'ngx-iconify-stack:generate-icons'} script + prebuild wiring)`,
+    );
+    return tree;
   };
 }
 

@@ -14,9 +14,9 @@
     "serve:ssr:docs": "node dist/docs/server/server.mjs",
     "ngx-theme-stack:sync": "ng generate ngx-theme-stack:sync --project docs",
     "ngx-theme-stack:skill": "ng generate ngx-theme-stack:skill --project docs",
-    "prebuild": "npm run ngx-theme-stack:sync && npm run icons",
+    "prebuild": "npm run ngx-theme-stack:sync && npm run ngx-iconify-stack:generate-icons",
     "prestart": "npm run ngx-theme-stack:sync",
-    "icons": "ng generate ngx-iconify-stack:generate-icon-subset --project docs"
+    "ngx-iconify-stack:generate-icons": "ng generate ngx-iconify-stack:generate-icon-subset --project docs"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
