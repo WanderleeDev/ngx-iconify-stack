@@ -53,6 +53,7 @@ npm start
 ngx-iconify-workspace/
 ├── projects/
 │   ├── ngx-iconify-stack/        # 📦 The library
+│   │   ├── (schematics pipeline: tsc + copyfiles + node -e in package.json)
 │   │   └── src/lib/
 │   │       ├── ngx-iconify.ts     # The component
 │   │       ├── icon-helpers.ts    # SVG lookup from offline subset
@@ -66,9 +67,6 @@ ngx-iconify-workspace/
 │           ├── api-table-section/
 │           ├── navbar/
 │           └── footer-section/
-├── scripts/
-│   ├── build-schematics.mjs      # 📦 Schematics packaging pipeline (build:schematic)
-│   └── clean-schematics.mjs      # 🧹 Cleans the compiled schematics outDir
 └── dist/                          # Build output
 ```
 

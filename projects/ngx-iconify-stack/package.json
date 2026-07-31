@@ -15,5 +15,10 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.schematics.json",
+    "postbuild": "copyfiles -u 2 \"src/schematics/*/schema.json\" src/schematics/collection.json ../../dist/ngx-iconify-stack/schematics/ && node -e \"const f='../../dist/ngx-iconify-stack/package.json',p=JSON.parse(require('fs').readFileSync(f,'utf8'));delete p.type;require('fs').writeFileSync(f,JSON.stringify(p,null,2)+'\\n');\""
+  },
+  "schematics": "./schematics/collection.json"
 }
