@@ -10,6 +10,7 @@ Last updated: 2026-07-31
 - /home/max/.agents/skills
 - /home/max/.config/opencode/skills
 - /home/max/.gemini/skills
+- /home/max/.gemini/antigravity-cli/skills
 - /home/max/.copilot/skills
 - /home/max/.codex/skills
 - /home/max/.qwen/skills
