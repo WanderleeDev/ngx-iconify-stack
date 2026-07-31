@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "build:lib": "ng build ngx-iconify-stack && npm run build:schematic",
-    "build:schematic": "tsc -p projects/ngx-iconify-stack/tsconfig.schematics.json && node scripts/build-schematics.mjs",
+    "build:schematic": "node scripts/clean-schematics.mjs && tsc -p projects/ngx-iconify-stack/tsconfig.schematics.json && node scripts/build-schematics.mjs",
     "build:docs": "ng build docs",
     "release": "release-it",
     "watch": "ng build --watch --configuration development",
@@ -15,9 +15,9 @@
     "serve:ssr:docs": "node dist/docs/server/server.mjs",
     "ngx-theme-stack:sync": "ng generate ngx-theme-stack:sync --project docs",
     "ngx-theme-stack:skill": "ng generate ngx-theme-stack:skill --project docs",
-    "collect-icons": "node scripts/collect-icons.mjs",
-    "prebuild": "npm run ngx-theme-stack:sync && npm run collect-icons",
-    "prestart": "npm run ngx-theme-stack:sync && npm run collect-icons"
+    "prebuild": "npm run ngx-theme-stack:sync && npm run icons",
+    "prestart": "npm run ngx-theme-stack:sync",
+    "icons": "ng generate ngx-iconify-stack:generate-icon-subset --project docs"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
