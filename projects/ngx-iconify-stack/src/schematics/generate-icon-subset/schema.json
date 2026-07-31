@@ -1,5 +1,6 @@
 {
-  "$schema": "../../../../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNgxIconifyStackGenerateIconSubset",
   "title": "Generate Icon Subset",
   "description": "Scans your project for icon usage, builds an offline subset, and wires it into the provider",
   "properties": {

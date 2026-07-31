@@ -1,0 +1,22 @@
+/* Schematics compilation config.
+ * Compiles src/schematics to CommonJS JavaScript so @angular-devkit/schematics
+ * can load factories via require() from the published dist. See SDD design D1/D2.
+ * NOTE: `moduleResolution: "node10"` matches the CJS require() behavior of the
+ * schematics engine; under TypeScript 6.0 it is deprecated, hence
+ * `ignoreDeprecations: "6.0"` (still fully functional until TS 7.0). */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "target": "ES2022",
+    "rootDir": "src/schematics",
+    "outDir": "../../dist/ngx-iconify-stack/schematics",
+    "declaration": false,
+    "sourceMap": false,
+    "types": ["node"],
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["src/schematics/**/*.ts"],
+  "exclude": ["**/*.spec.ts"]
+}

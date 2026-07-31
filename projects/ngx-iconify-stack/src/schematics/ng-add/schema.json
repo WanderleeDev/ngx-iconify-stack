@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNgxIconifyStackNgAdd",
+  "title": "Add ngx-iconify-stack",
+  "description": "Configura ngx-iconify-stack en el proyecto",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Target project name",
+      "$default": {
+        "$source": "project"
+      }
+    }
+  },
+  "required": []
+}
