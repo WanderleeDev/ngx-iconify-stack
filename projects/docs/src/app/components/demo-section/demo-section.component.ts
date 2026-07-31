@@ -1,6 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
-import { NgxIconComponent, IconFlip, IconMode } from 'ngx-iconify-stack';
+import { NgxIconify, IconFlip, IconMode } from 'ngx-iconify-stack';
 
 export interface SandboxConfig {
   iconId: string;
@@ -26,7 +26,7 @@ const DEFAULTS: SandboxConfig = {
 
 @Component({
   selector: 'docs-demo',
-  imports: [NgxIconComponent, FormField],
+  imports: [NgxIconify, FormField],
   templateUrl: './demo-section.component.html',
   styles: ``,
 })
@@ -39,7 +39,7 @@ export class DemoSectionComponent {
   readonly generatedCode = computed(() => {
     const cfg = this.model();
     const id = cfg.iconId || 'mdi:help-circle-outline';
-    let code = `<ngx-icon icon="${id}"`;
+    let code = `<ngx-iconify icon="${id}"`;
 
     if (cfg.size !== 24) code += ` [size]="${cfg.size}"`;
     if (cfg.color && cfg.color !== '#fff') code += ` color="${cfg.color}"`;

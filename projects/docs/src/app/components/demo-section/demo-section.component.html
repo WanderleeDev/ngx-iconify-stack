@@ -24,7 +24,7 @@
           (click)="resetAll()"
           class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-muted hover:text-body bg-surface hover:bg-[color-mix(in_oklch,var(--color-accent)_8%,var(--color-surface))] border border-border rounded-lg transition-all cursor-pointer"
         >
-          <ngx-icon icon="mdi:refresh" [size]="14" />
+          <ngx-iconify icon="mdi:refresh" [size]="14" />
           <span>Reset</span>
         </button>
       </div>
@@ -38,7 +38,7 @@
           <span
             class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted"
           >
-            <ngx-icon icon="mdi:tag-outline" [size]="18" />
+            <ngx-iconify icon="mdi:tag-outline" [size]="18" />
           </span>
           <input
             id="icon-input"
@@ -185,7 +185,7 @@
           class="flex items-center justify-center p-8 rounded-2xl bg-surface border border-border shadow-inner transition-all duration-300 hover:scale-105"
           [style.color]="model().color"
         >
-          <ngx-icon
+          <ngx-iconify
             class="transition-all"
             [icon]="model().iconId || 'mdi:help-circle-outline'"
             [size]="model().size"
@@ -215,10 +215,10 @@
             class="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-muted hover:text-accent bg-surface border border-border rounded-lg transition-all cursor-pointer hover:border-accent"
           >
             @if (codeCopied()) {
-              <ngx-icon icon="mdi:check" [size]="14" class="text-green-500" />
+              <ngx-iconify icon="mdi:check" [size]="14" class="text-green-500" />
               <span>Copied!</span>
             } @else {
-              <ngx-icon icon="mdi:content-copy" [size]="14" />
+              <ngx-iconify icon="mdi:content-copy" [size]="14" />
               <span>Copy</span>
             }
           </button>

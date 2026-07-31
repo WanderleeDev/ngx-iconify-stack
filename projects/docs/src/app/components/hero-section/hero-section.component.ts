@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NgxIconComponent } from 'ngx-iconify-stack';
+import { NgxIconify } from 'ngx-iconify-stack';
 
 interface FloatingIcon {
   icon: string;
@@ -13,7 +13,7 @@ interface FloatingIcon {
 
 @Component({
   selector: 'docs-hero',
-  imports: [NgxIconComponent],
+  imports: [NgxIconify],
   templateUrl: './hero-section.component.html',
 })
 export class HeroSectionComponent {

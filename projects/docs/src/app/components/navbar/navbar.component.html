@@ -11,7 +11,9 @@
       class="flex items-center gap-2 no-underline font-bold text-[0.95rem]"
       aria-label="ngx-iconify-stack home"
     >
-      <ngx-icon icon="tabler:package" [size]="20" class="text-accent" />
+      @defer (hydrate never) {
+        <ngx-iconify icon="tabler:package" [size]="20" class="text-accent" />
+      }
       <span
         class="bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]"
         >ngx-iconify-stack</span
@@ -27,7 +29,7 @@
         class="flex items-center justify-center w-8 h-8 rounded-[0.45rem] text-muted no-underline transition-all duration-150 hover:text-accent hover:bg-surface-2"
         aria-label="NPM"
       >
-        <ngx-icon icon="mdi:npm" [size]="18" />
+        <ngx-iconify icon="mdi:npm" [size]="18" />
       </a>
       <a
         id="nav-github-link"
@@ -37,7 +39,7 @@
         class="flex items-center justify-center w-8 h-8 rounded-[0.45rem] text-muted no-underline transition-all duration-150 hover:text-accent hover:bg-surface-2"
         aria-label="GitHub"
       >
-        <ngx-icon icon="mdi:github" [size]="18" />
+        <ngx-iconify icon="mdi:github" [size]="18" />
       </a>
 
       @if (theme.isHydrated()) {
@@ -48,7 +50,7 @@
           [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
           [title]="theme.isDark() ? 'Light mode' : 'Dark mode'"
         >
-          <ngx-icon
+          <ngx-iconify
             [icon]="theme.isDark() ? 'mdi:weather-sunny' : 'mdi:weather-night'"
             [size]="18"
           />

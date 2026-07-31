@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { NgxIconComponent } from 'ngx-iconify-stack';
+import { NgxIconify } from 'ngx-iconify-stack';
 import { ThemeToggleService } from 'ngx-theme-stack';
 
 @Component({
   selector: 'docs-navbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgxIconComponent],
+  imports: [NgxIconify],
   templateUrl: './navbar.component.html',
   styles: ``,
 })

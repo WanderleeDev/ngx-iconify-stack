@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NgxIconComponent } from 'ngx-iconify-stack';
+import { NgxIconify } from 'ngx-iconify-stack';
 
 interface ApiProp {
   name: string;
@@ -17,7 +17,7 @@ interface CodeExample {
 
 @Component({
   selector: 'docs-api-table',
-  imports: [NgxIconComponent],
+  imports: [NgxIconify],
   templateUrl: './api-table-section.component.html',
   styles: ``,
 })
@@ -103,25 +103,25 @@ export class ApiTableSectionComponent {
       id: 'basic',
       label: 'Basic',
       code: `<!-- Basic usage -->
-<ngx-icon icon="mdi:home" />
+<ngx-iconify icon="mdi:home" />
 
 <!-- With size -->
-<ngx-icon icon="mdi:heart" [size]="32" />
+<ngx-iconify icon="mdi:heart" [size]="32" />
 
 <!-- With color -->
-<ngx-icon icon="mdi:star" [size]="24" color="#f59e0b" />`,
+<ngx-iconify icon="mdi:star" [size]="24" color="#f59e0b" />`,
     },
     {
       id: 'transform',
       label: 'Transforms',
       code: `<!-- Flip horizontal -->
-<ngx-icon icon="mdi:arrow-right" flip="horizontal" />
+<ngx-iconify icon="mdi:arrow-right" flip="horizontal" />
 
 <!-- Rotate 90° -->
-<ngx-icon icon="mdi:arrow-up" rotate="90" />
+<ngx-iconify icon="mdi:arrow-up" rotate="90" />
 
 <!-- Flip + rotate -->
-<ngx-icon icon="mdi:chevron-right" flip="vertical" rotate="180" />`,
+<ngx-iconify icon="mdi:chevron-right" flip="vertical" rotate="180" />`,
     },
     {
       id: 'inline',
@@ -129,7 +129,7 @@ export class ApiTableSectionComponent {
       code: `<!-- Inline with text — aligns to baseline -->
 <p>
   Click the
-  <ngx-icon icon="mdi:cog" [size]="18" [inline]="true" />
+  <ngx-iconify icon="mdi:cog" [size]="18" [inline]="true" />
   settings icon to configure.
 </p>`,
     },
@@ -139,7 +139,7 @@ export class ApiTableSectionComponent {
       code: `<!-- Dynamic icon driven by a signal -->
 @Component({
   template: \`
-    <ngx-icon [icon]="currentIcon()" [size]="iconSize()" />
+    <ngx-iconify [icon]="currentIcon()" [size]="iconSize()" />
     <button (click)="toggle()">Toggle</button>
   \`
 })

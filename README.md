@@ -1,59 +1,112 @@
-# NgxIconWorkspace
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/graph.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+for+Angular&logo=angular&logoColor=fff&mode=dark&theme=zinc&height=180&width=700" />
+    <img alt="ngx-iconify-stack" src="https://shieldcn.dev/header/graph.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+for+Angular&logo=angular&logoColor=dd0031&mode=light&theme=zinc&height=180&width=700" />
+  </picture>
+</p>
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.3.
+<p align="center">
+  <a href="https://github.com/user/ngx-iconify-workspace"><img src="https://shieldcn.dev/github/stars/user/ngx-iconify-workspace?variant=secondary" alt="GitHub stars" /></a>
+  <a href="https://angular.dev"><img src="https://shieldcn.dev/badge/Angular-22.0.0-dd0031?variant=secondary&logo=angular&logoColor=dd0031" alt="Angular" /></a>
+  <a href="https://tailwindcss.com"><img src="https://shieldcn.dev/badge/Tailwind-v4-38bdf8?variant=secondary&logo=tailwindcss&logoColor=38bdf8" alt="Tailwind CSS" /></a>
+  <a href="https://www.typescriptlang.org"><img src="https://shieldcn.dev/badge/TypeScript-6.0-3178c6?variant=secondary&logo=typescript&logoColor=3178c6" alt="TypeScript" /></a>
+  <img src="https://shieldcn.dev/badge/license-MIT-3b82f6?variant=secondary" alt="MIT" />
+</p>
 
-## Development server
+## Overview
 
-To start a local development server, run:
+**ngx-iconify-stack** is an Angular monorepo containing two projects:
 
-```bash
-ng serve
-```
+| Project | Description |
+|---------|-------------|
+| [`ngx-iconify-stack`](projects/ngx-iconify-stack) | Angular library — hybrid SSR-safe Iconify component |
+| [`docs`](projects/docs) | Docs site — Angular 22 SSR app with the library in action |
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## The library
 
-## Code scaffolding
+A lightweight, signal-based Angular component for [Iconify](https://iconify.design) — 200,000+ icons from 150+ icon sets.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+**Hybrid SSR approach:**
 
-```bash
-ng generate component component-name
-```
+- Icons in the offline subset render as **inline SVG** — works in SSR, no flicker, no hydration gap
+- Icons not in the subset fall through to the native `<iconify-icon>` web component, which resolves them from the Iconify CDN
+- Dynamic input changes recalculate reactively — no forced lifecycle transitions
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+→ [Full library docs](projects/ngx-iconify-stack/README.md)
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Quick start
 
 ```bash
-ng test
+# Install dependencies
+npm install
+
+# Build the library
+npm run build:lib
+
+# Start the docs site (with icon subset generation)
+npm start
 ```
 
-## Running end-to-end tests
+## Project structure
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
+```
+ngx-iconify-workspace/
+├── projects/
+│   ├── ngx-iconify-stack/        # 📦 The library
+│   │   └── src/lib/
+│   │       ├── ngx-iconify.ts     # The component
+│   │       ├── icon-helpers.ts    # SVG lookup from offline subset
+│   │       ├── icon.config.ts     # Config injection token
+│   │       ├── provide-iconify.ts # Provider & lazy iconify-icon loader
+│   │       └── types.ts
+│   └── docs/                      # 📖 Docs site (Angular SSR)
+│       └── src/app/components/
+│           ├── hero-section/
+│           ├── demo-section/
+│           ├── api-table-section/
+│           ├── navbar/
+│           └── footer-section/
+├── scripts/
+│   └── collect-icons.mjs          # 🔍 Build-time icon scanner & subset generator
+└── dist/                          # Build output
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Available scripts
 
-## Additional Resources
+| Command | Description |
+|---------|-------------|
+| `npm run build:lib` | Build the library |
+| `npm run build:docs` | Build the docs site (production) |
+| `npm start` | Start dev server (runs prebuild hooks) |
+| `npm run prebuild` | Generate theme files + icon subset |
+| `npm run collect-icons` | Scan templates & build offline icon subset |
+| `npm test` | Run unit tests |
+| `npm run serve:ssr:docs` | Serve the prebuilt SSR docs site |
+| `npm run release` | Publish a new version |
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## How the icon subset works
+
+```
+npm run prebuild
+    ├── ngx-theme-stack:sync   → generates theme configuration
+    └── collect-icons.mjs      → scans .html/.ts files for icon="set:name"
+                                → builds minimal IconifyJSON subset
+                                → writes to projects/docs/src/generated/icon-subset.ts
+```
+
+The subset is injected into the app via `provideIconify({ offlineCollections: [...] })`. Icons found at build time render as inline SVG; the rest load from the Iconify CDN automatically.
+
+## Tech stack
+
+| Technology | Version |
+|------------|---------|
+| Angular | 22 |
+| TypeScript | 6.0 |
+| Tailwind CSS | 4 |
+| Iconify | 3 |
+| Express | 5 |
+| Vitest | 4 |
+
+## License
+
+MIT

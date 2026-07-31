@@ -4,42 +4,38 @@ import { NGX_ICONIFY_CONFIG } from './icon.config';
 import {
   Component,
   input,
-  signal,
   computed,
   inject,
-  PLATFORM_ID,
   ChangeDetectionStrategy,
   CUSTOM_ELEMENTS_SCHEMA,
-  afterNextRender,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 /**
- * Angular component wrapping Iconify with SSR-safe inline SVG fallback.
+ * Angular component wrapping Iconify with SSR-safe inline SVG rendering.
  *
- * **SSR / initial render**: if the icon is found in `offlineCollections`,
- * renders an inline `<svg>` directly in the HTML — no flicker, no wait for
- * the web component.
+ * **SSR + client**: if the icon is found in `offlineCollections`, renders
+ * an inline `<svg>` directly in the HTML — no flicker, no hydration gap,
+ * no unnecessary DOM replacement.
  *
- * **After hydration**: once `<iconify-icon>` is registered in the browser,
- * switches to the web component for dynamic updates (flip, rotate, CDN
- * fallback for icons not in the subset).
+ * **CDN fallback**: icons not in the subset fall through to the native
+ * `<iconify-icon>` web component, which resolves them from the Iconify CDN.
  *
  * @example
  * ```html
- * <ngx-icon icon="mdi:home" [size]="24" />
- * <ngx-icon icon="lucide:arrow-right" color="#ff0000" />
+ * <ngx-iconify icon="mdi:home" [size]="24" />
+ * <ngx-iconify icon="lucide:arrow-right" color="#ff0000" />
  * ```
  */
 @Component({
-  selector: 'ngx-icon',
+  selector: 'ngx-iconify',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     @if (svgContent(); as safe) {
       <span
         [innerHTML]="safe"
+        [attr.class]="class() || null"
         [style.width.px]="displayWidth()"
         [style.height.px]="displayHeight()"
         [style.verticalAlign]="inline() ? '-0.125em' : null"
@@ -47,6 +43,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       ></span>
     } @else {
       <iconify-icon
+        [attr.class]="class() || null"
         [attr.icon]="icon()"
         [attr.width]="width()"
         [attr.height]="height()"
@@ -75,18 +72,16 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
 })
-export class NgxIconComponent {
+export class NgxIconify {
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly platformId = inject(PLATFORM_ID);
   private readonly config = inject(NGX_ICONIFY_CONFIG, { optional: true });
-
-  /** Tracks whether to render inline SVG (SSR fallback) or the web component */
-  private readonly useSvgFallback = signal<boolean>(true);
 
   // ── Inputs ──
 
   /** Iconify icon identifier, e.g. "mdi:home" or "lucide:arrow-right" */
   readonly icon = input.required<string>();
+
+  readonly class = input<string>();
 
   /** Explicit width in pixels (overrides size) */
   readonly width = input<number | string>();
@@ -132,8 +127,6 @@ export class NgxIconComponent {
   // ── SVG fallback content (SSR-safe) ──
 
   readonly svgContent = computed<SafeHtml | null>(() => {
-    if (!this.useSvgFallback()) return null;
-
     const iconLookup = lookupIcon(this.icon(), this.config?.offlineCollections);
     if (!iconLookup) return null;
 
@@ -156,25 +149,4 @@ export class NgxIconComponent {
 
     return this.sanitizer.bypassSecurityTrustHtml(svg);
   });
-
-  // ── Lifecycle ──
-
-  constructor() {
-    if (isPlatformBrowser(this.platformId)) {
-      // On the client, start with SVG fallback (matches SSR HTML for hydration).
-      // After the first render, wait for the web component to register, then
-      // switch seamlessly — the user never sees an empty state.
-      afterNextRender({
-        write: () => {
-          customElements
-            .whenDefined('iconify-icon')
-            .then(() => this.useSvgFallback.set(false))
-            .catch(() => {
-              // If for some reason iconify-icon never loads, the SVG fallback
-              // stays visible — graceful degradation.
-            });
-        },
-      });
-    }
-  }
 }

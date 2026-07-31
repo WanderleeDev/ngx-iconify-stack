@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { NgxIconComponent } from 'ngx-iconify-stack';
+import { NgxIconify } from 'ngx-iconify-stack';
 
 @Component({
   selector: 'docs-footer',
-  imports: [NgxIconComponent],
+  imports: [NgxIconify],
   templateUrl: './footer-section.component.html',
   styles: ``,
 })
