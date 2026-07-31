@@ -1,0 +1,26 @@
+# Changelog
+
+# 0.1.0 (2026-07-31)
+
+
+### Bug Fixes
+
+* add @iconify/types as optional peer dep of ngx-iconify-stack ([a117906](https://github.com/WanderleeDev/ngx-iconify-stack/commit/a1179069adb869072ec4ee5561798260a05bffbd))
+
+
+### Features
+
+* **docs:** change rotation to slider and add reset button to sandbox ([86ab87c](https://github.com/WanderleeDev/ngx-iconify-stack/commit/86ab87cc00035b7a385608adab2d0f804c1a2ca1))
+* **docs:** initialize documentation application ([168af62](https://github.com/WanderleeDev/ngx-iconify-stack/commit/168af62a0eaf7a69034324e7fa439fef0d685fcd))
+* hide floating icons on small screens and refactor hero section layout formatting ([1b6f9a2](https://github.com/WanderleeDev/ngx-iconify-stack/commit/1b6f9a22e7703aba8de6c3ee3eb1cff71588ade9))
+* hybrid SSR rendering — inline SVG on server, web component on client ([9ab0e90](https://github.com/WanderleeDev/ngx-iconify-stack/commit/9ab0e9009aabe52bf613153cdb2266958ac12d0f))
+* implement generate-icon-subset schematic with build-time icon subsetting ([c8a205b](https://github.com/WanderleeDev/ngx-iconify-stack/commit/c8a205bae56818db37bf06f809706fbd055b828b))
+* **lib:** initialize library and workspace configuration ([7f367ed](https://github.com/WanderleeDev/ngx-iconify-stack/commit/7f367ed6aa147e270c1e34392e7f6fb0f83b230f))
+* migrate ngx-icon-stack to provideIconify pattern with SSR-safe lazy loading ([f5d369a](https://github.com/WanderleeDev/ngx-iconify-stack/commit/f5d369a09935825e79a72ba380c56ac7d388575d))
+* **ngx-iconify:** support Angular 20+ with OnPush change detection ([1fe4491](https://github.com/WanderleeDev/ngx-iconify-stack/commit/1fe44915a56378cab5e76a406fe33135b5871936))
+* rename ngx-icon-stack to ngx-iconify-stack ([54c5471](https://github.com/WanderleeDev/ngx-iconify-stack/commit/54c547186f14f2ec71bda1c27016652556f6383e))
+* **schematics:** add skill schematic and ng-add prompt to install it ([a37e57e](https://github.com/WanderleeDev/ngx-iconify-stack/commit/a37e57e3f6480534f931a3f1d277e420a44c9fa6))
+* **schematics:** build icon subset with alias resolution and specs ([02f8ce2](https://github.com/WanderleeDev/ngx-iconify-stack/commit/02f8ce20a2a924414ee58ccf1dfcba3293e06190))
+* **schematics:** execute scan/subset inline in the factory with integration specs ([8a7be28](https://github.com/WanderleeDev/ngx-iconify-stack/commit/8a7be28071af2a351806b7f570989848ea9cdd5a))
+* **schematics:** inline icon scan with pinned regex and unit specs ([d14d705](https://github.com/WanderleeDev/ngx-iconify-stack/commit/d14d70579ed4ba077c98a0473a65d4b055cc6b9a))
+* **schematics:** migrate legacy script, auto-install sets, wire icons script ([dbbe7ac](https://github.com/WanderleeDev/ngx-iconify-stack/commit/dbbe7acefb84dd61991619893d58fe04cc0dbd26))
