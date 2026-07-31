@@ -21,7 +21,7 @@ A lightweight, signal-based Angular wrapper for [Iconify](https://iconify.design
 
 - **SSR-safe inline SVG** — icons in your offline subset render as `<svg>` in the server HTML. No flicker, no hydration gap.
 - **CDN fallback** — icons not in the subset automatically use the `<iconify-icon>` web component. No manual fetch logic.
-- **Build-time subsetting** — `collect-icons.mjs` scans your templates and generates a minimal icon subset. No full JSON bundles shipped to the browser.
+- **Build-time subsetting** — the `ngx-iconify-stack:generate-icon-subset` schematic scans your templates and generates a minimal icon subset. No full JSON bundles shipped to the browser.
 - **Signal-based reactivity** — inputs as signals, computed SVG — zero `zone.js` overhead.
 - **Standalone** — import `NgxIconify` directly, no `NgModule` required.
 - **Tree-shakeable** — `sideEffects: false`.
@@ -76,13 +76,15 @@ Install only the icon sets you use:
 npm install -D @iconify-json/mdi @iconify-json/lucide @iconify-json/tabler
 ```
 
-Use `collect-icons.mjs` to scan your templates and generate a minimal subset:
+Generate the subset by running the `generate-icon-subset` schematic against your project (the `icons` npm script is added to your `package.json` automatically):
 
 ```bash
-node scripts/collect-icons.mjs
+npm run icons
+# or, if you use the CLI directly:
+npx ng generate ngx-iconify-stack:generate-icon-subset --project <project-name>
 ```
 
-This produces a `generated/icon-subset.ts` file with only the icons your templates reference — nothing more.
+This produces a `generated/icon-subset.ts` file with only the icons your templates reference — nothing more. Missing `@iconify-json/*` sets are added to your dependencies automatically; the next `npm install` resolves them. The schematic also wires the `icons` script into `prebuild`, so the subset stays in sync with actual icon usage.
 
 ## Usage
 
@@ -169,7 +171,7 @@ This produces a `generated/icon-subset.ts` file with only the icons your templat
 
 | Script | Description |
 |--------|-------------|
-| `collect-icons.mjs` | Scan templates and build offline icon subset |
+| `ng generate ngx-iconify-stack:generate-icon-subset` | Scan templates and build offline icon subset (usually run via the `icons` npm script) |
 
 ## Peer dependencies
 

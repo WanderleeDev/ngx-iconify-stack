@@ -43,7 +43,7 @@ npm install
 # Build the library
 npm run build:lib
 
-# Start the docs site (with icon subset generation)
+# Start the docs site
 npm start
 ```
 
@@ -67,7 +67,8 @@ ngx-iconify-workspace/
 │           ├── navbar/
 │           └── footer-section/
 ├── scripts/
-│   └── collect-icons.mjs          # 🔍 Build-time icon scanner & subset generator
+│   ├── build-schematics.mjs      # 📦 Schematics packaging pipeline (build:schematic)
+│   └── clean-schematics.mjs      # 🧹 Cleans the compiled schematics outDir
 └── dist/                          # Build output
 ```
 
@@ -77,9 +78,9 @@ ngx-iconify-workspace/
 |---------|-------------|
 | `npm run build:lib` | Build the library |
 | `npm run build:docs` | Build the docs site (production) |
-| `npm start` | Start dev server (runs prebuild hooks) |
+| `npm start` | Start dev server (runs the prestart hook — theme sync only) |
 | `npm run prebuild` | Generate theme files + icon subset |
-| `npm run collect-icons` | Scan templates & build offline icon subset |
+| `npm run icons` | Scan templates & build offline icon subset (via the schematic) |
 | `npm test` | Run unit tests |
 | `npm run serve:ssr:docs` | Serve the prebuilt SSR docs site |
 | `npm run release` | Publish a new version |
@@ -89,7 +90,8 @@ ngx-iconify-workspace/
 ```
 npm run prebuild
     ├── ngx-theme-stack:sync   → generates theme configuration
-    └── collect-icons.mjs      → scans .html/.ts files for icon="set:name"
+    └── icons                  → runs ngx-iconify-stack:generate-icon-subset
+                                → scans .html/.ts files for icon="set:name"
                                 → builds minimal IconifyJSON subset
                                 → writes to projects/docs/src/generated/icon-subset.ts
 ```
