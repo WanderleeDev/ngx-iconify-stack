@@ -2,6 +2,7 @@
 // Ported from scripts/collect-icons.mjs (behavior pinned by the spec): the factory now
 // executes scanning/subsetting directly instead of emitting a script file.
 import { Tree } from '@angular-devkit/schematics';
+import type { IconifyJSON } from '@iconify/types';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -53,4 +54,83 @@ export function scanIcons(tree: Tree, sourceRoot: string): Map<string, Set<strin
   });
 
   return found;
+}
+
+/**
+ * Read a JSON file from the schematic tree first, falling back to the real
+ * filesystem (relative to the workspace root, i.e. process.cwd() during `ng g`).
+ * The tree-first read lets the schematic test harness mock
+ * `node_modules/@iconify-json/<prefix>/icons.json` as virtual files.
+ */
+export function readJsonFile(tree: Tree, path: string): unknown | null {
+  const treePath = path.startsWith('/') ? path : `/${path}`;
+  const treeBuffer = tree.read(treePath);
+  if (treeBuffer !== null) {
+    try {
+      return JSON.parse(treeBuffer.toString('utf8'));
+    } catch {
+      return null;
+    }
+  }
+
+  const fsPath = resolve(process.cwd(), path);
+  if (!existsSync(fsPath)) return null;
+  try {
+    return JSON.parse(readFileSync(fsPath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Build an `IconifyJSON[]` subset from the scanned `prefix -> names` map. Reads each
+ * set's `icons.json`, resolves alias chains (parent traversal, depth cap 10, body
+ * copied under the alias name), and warns + skips what cannot be resolved.
+ */
+export function buildSubset(
+  tree: Tree,
+  found: Map<string, Set<string>>,
+  logger: SubsetLogger = { warn: () => undefined },
+): IconifyJSON[] {
+  const collections: IconifyJSON[] = [];
+
+  for (const [prefix, names] of found) {
+    const iconsJsonPath = `node_modules/@iconify-json/${prefix}/icons.json`;
+    const fullSet = readJsonFile(tree, iconsJsonPath) as IconifyJSON | null;
+    if (fullSet === null) {
+      logger.warn(`Set "${prefix}" not found — install @iconify-json/${prefix}`);
+      continue;
+    }
+
+    const subset: IconifyJSON = {
+      prefix,
+      icons: {},
+      width: fullSet.width ?? DEFAULT_ICON_SIZE,
+      height: fullSet.height ?? DEFAULT_ICON_SIZE,
+    };
+
+    for (const name of names) {
+      if (fullSet.icons[name]) {
+        subset.icons[name] = fullSet.icons[name];
+        continue;
+      }
+
+      // Try the alias chain: walk parents until a concrete icon is found.
+      let resolved = name;
+      let depth = 0;
+      while (fullSet.aliases?.[resolved]?.parent && depth < MAX_ALIAS_DEPTH) {
+        resolved = fullSet.aliases[resolved].parent;
+        depth++;
+      }
+      if (fullSet.icons[resolved]) {
+        subset.icons[name] = fullSet.icons[resolved];
+      } else {
+        logger.warn(`Icon "${prefix}:${name}" not found in set`);
+      }
+    }
+
+    collections.push(subset);
+  }
+
+  return collections;
 }
