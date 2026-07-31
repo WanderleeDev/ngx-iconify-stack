@@ -8,7 +8,7 @@ const MD = ['.', 'm', 'd'].join('');
 const SKILL_CONTENT = `---
 name: ngx-iconify-stack
 description: "Trigger: ngx-iconify-stack, ngx-iconify, add iconify icons, icon subset, generate-icon-subset, SSR-safe icons. Signal-based Angular wrapper for Iconify — configure provideIconify, use the <ngx-iconify> component, generate offline icon subsets, handle SSR-safe rendering."
-compatibility: Angular 22+ with TypeScript. Optional iconify-icon web component.
+compatibility: Angular 20+ with TypeScript. Optional iconify-icon web component.
 metadata:
   author: WanderleeDev
   version: '1.0.0'

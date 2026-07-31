@@ -70,7 +70,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       line-height: 0;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxIconify {
   private readonly sanitizer = inject(DomSanitizer);

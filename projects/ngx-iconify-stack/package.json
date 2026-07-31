@@ -2,8 +2,8 @@
   "name": "ngx-iconify-stack",
   "version": "0.0.1",
   "peerDependencies": {
-    "@angular/common": "^22.0.0",
-    "@angular/core": "^22.0.0",
+    "@angular/common": "^20.0.0",
+    "@angular/core": "^20.0.0",
     "iconify-icon": ">=3.0.2",
     "@iconify/types": "^2.0.0"
   },

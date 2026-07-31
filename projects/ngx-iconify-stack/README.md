@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/ngx-iconify-stack"><img src="https://shieldcn.dev/npm/v/ngx-iconify-stack?variant=secondary" alt="npm version" /></a>
   <a href="https://www.npmjs.com/package/ngx-iconify-stack"><img src="https://shieldcn.dev/npm/dm/ngx-iconify-stack?variant=secondary" alt="npm downloads" /></a>
-  <a href="https://angular.dev"><img src="https://shieldcn.dev/badge/Angular-%5E22.0-dd0031?variant=secondary&logo=angular&logoColor=dd0031" alt="Angular" /></a>
+  <a href="https://angular.dev"><img src="https://shieldcn.dev/badge/Angular-%5E20.0-dd0031?variant=secondary&logo=angular&logoColor=dd0031" alt="Angular" /></a>
   <img src="https://shieldcn.dev/badge/license-MIT-3b82f6?variant=secondary" alt="MIT" />
 </p>
 
