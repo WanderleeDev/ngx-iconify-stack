@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNgxIconifyStackSkill",
+  "title": "Generate the ngx-iconify-stack AI agent skill",
+  "description": "Regenerates the AI agent skill (.agents/skills/ngx-iconify-stack) in the target project",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Target project name",
+      "$default": {
+        "$source": "project"
+      }
+    }
+  },
+  "required": []
+}
