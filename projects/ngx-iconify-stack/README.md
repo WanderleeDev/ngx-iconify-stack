@@ -67,17 +67,17 @@ import { NgxIconify } from 'ngx-iconify-stack';
 export class ExampleComponent {}
 ```
 
-| Input | Type | Description |
-|-------|------|-------------|
-| `icon` | `string` | Iconify icon name, e.g. `"mdi:home"` (**required**) |
-| `size` | `number` | Shorthand that sets both width and height |
-| `width` / `height` | `number \| string` | Explicit dimensions (override `size`) |
-| `color` | `string` | CSS color for the icon |
-| `flip` | `"horizontal" \| "vertical" \| "both"` | Flip the icon |
-| `rotate` | `number \| string` | Rotate the icon, e.g. `90` or `"90deg"` |
-| `inline` | `boolean` | Align icon to the text baseline |
-| `mode` | `"svg" \| "bg" \| "mask" \| "style"` | Rendering mode for the web component |
-| `noObserver` | `boolean` | Disable lazy rendering on scroll |
+| Input              | Type                                   | Description                                         |
+| ------------------ | -------------------------------------- | --------------------------------------------------- |
+| `icon`             | `string`                               | Iconify icon name, e.g. `"mdi:home"` (**required**) |
+| `size`             | `number`                               | Shorthand that sets both width and height           |
+| `width` / `height` | `number \| string`                     | Explicit dimensions (override `size`)               |
+| `color`            | `string`                               | CSS color for the icon                              |
+| `flip`             | `"horizontal" \| "vertical" \| "both"` | Flip the icon                                       |
+| `rotate`           | `number \| string`                     | Rotate the icon, e.g. `90` or `"90deg"`             |
+| `inline`           | `boolean`                              | Align icon to the text baseline                     |
+| `mode`             | `"svg" \| "bg" \| "mask" \| "style"`   | Rendering mode for the web component                |
+| `noObserver`       | `boolean`                              | Disable lazy rendering on scroll                    |
 
 These map to the [`<iconify-icon>` attributes](https://iconify.design/docs/iconify-icon/#attributes) — see the [Iconify docs](https://iconify.design/docs/) for icon names and behavior details.
 
