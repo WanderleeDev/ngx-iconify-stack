@@ -12,8 +12,8 @@
   },
   "homepage": "https://github.com/WanderleeDev/ngx-iconify-stack",
   "peerDependencies": {
-    "@angular/common": "^20.0.0 || ^21.0.0 || ^22.0.0",
-    "@angular/core": "^20.0.0 || ^21.0.0 || ^22.0.0",
+    "@angular/common": ">=20.0.0 <23.0.0",
+    "@angular/core": ">=20.0.0 <23.0.0",
     "iconify-icon": ">=3.0.2",
     "@iconify/types": "^2.0.0"
   },
