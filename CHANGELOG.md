@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v0.1.1...v0.1.2) (2026-07-31)
+
+
+### Bug Fixes
+
+* **ci:** create Cloudflare Pages project on first deploy ([e11c5d2](https://github.com/WanderleeDev/ngx-iconify-stack/commit/e11c5d2d9584796db00cd1e1d662e86a40791d52))
+* **ci:** drop unnecessary gitHubToken from Pages deploy ([c9dfcbe](https://github.com/WanderleeDev/ngx-iconify-stack/commit/c9dfcbe0a910048b258f6286415b522c854db29d)), closes [#6200f5](https://github.com/WanderleeDev/ngx-iconify-stack/issues/6200f5)
+
 ## [0.1.1](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v0.1.0...v0.1.1) (2026-07-31)
 
 
