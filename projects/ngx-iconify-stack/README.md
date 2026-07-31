@@ -21,10 +21,18 @@ A signal-based Angular wrapper for [Iconify](https://iconify.design). Icons in y
 ## Install
 
 ```bash
-npm install ngx-iconify-stack iconify-icon
+ng add ngx-iconify-stack
 ```
 
-`iconify-icon` is the web component used for the CDN fallback.
+The schematic installs `iconify-icon`, adds the provider to `app.config.ts`, and asks whether to generate the AI agent skill.
+
+> [!TIP]
+> **Using Bun?** Since `ng add` is not supported in Bun environments, use the manual two-step process:
+>
+> ```bash
+> bun add ngx-iconify-stack
+> ng generate ngx-iconify-stack:ng-add
+> ```
 
 ## Setup
 
@@ -99,7 +107,7 @@ icon="mdi:home"
 
 - **In subset** → inline `<svg>` rendered on the server, no flicker or hydration gap.
 - **Not in subset** → `<iconify-icon>` web component resolves it from the Iconify CDN.
-- Inputs are signals, so switching icons recalculates reactively with zero `zone.js` overhead.
+- Inputs are signals, so switching icons recalculates reactively — works in zoneless apps.
 
 ## License
 

@@ -95,7 +95,7 @@ All inputs mirror \`<iconify-icon>\` attributes — see [Iconify docs](https://i
 
 - **In subset** → inline \`<svg>\` rendered on the server, no flicker or hydration gap.
 - **Not in subset** → \`<iconify-icon>\` web component resolving from the Iconify CDN.
-- Inputs are signals, so dynamic changes recalculate reactively with zero \`zone.js\` overhead.
+- Inputs are signals, so dynamic changes recalculate reactively — works in zoneless apps.
 `;
 
 // ── assets/ component example (Tier 3 — pure TypeScript, read on demand) ───
