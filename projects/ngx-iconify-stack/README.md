@@ -1,42 +1,60 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/surface.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+component+for+Angular&logo=angular&logoColor=fff&mode=dark&theme=zinc&height=160&width=680" />
-    <img alt="ngx-iconify-stack" src="https://shieldcn.dev/header/surface.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+component+for+Angular&logo=angular&logoColor=dd0031&mode=light&theme=zinc&height=160&width=680" />
-  </picture>
-</p>
+<div align="center">
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/ngx-iconify-stack"><img src="https://shieldcn.dev/npm/v/ngx-iconify-stack?variant=secondary" alt="npm version" /></a>
-  <a href="https://www.npmjs.com/package/ngx-iconify-stack"><img src="https://shieldcn.dev/npm/dm/ngx-iconify-stack?variant=secondary" alt="npm downloads" /></a>
-  <a href="https://angular.dev"><img src="https://shieldcn.dev/badge/Angular-%5E20.0-dd0031?variant=secondary&logo=angular&logoColor=dd0031" alt="Angular" /></a>
-  <img src="https://shieldcn.dev/badge/license-MIT-3b82f6?variant=secondary" alt="MIT" />
-</p>
+# 🎨 ngx-iconify-stack
 
-# ngx-iconify-stack
+**A lightweight, SSR-safe Angular wrapper for Iconify.**  
+Driven by signals, with offline icon subsetting and zero runtime overhead.
 
-A signal-based Angular wrapper for [Iconify](https://iconify.design). Icons in your offline subset render as SSR-safe inline SVG; everything else falls through to the native [`<iconify-icon>`](https://iconify.design/docs/iconify-icon/) web component.
+[![npm version](https://shieldcn.dev/npm/v/ngx-iconify-stack?variant=secondary)](https://www.npmjs.com/package/ngx-iconify-stack)
+[![npm downloads](https://shieldcn.dev/npm/dm/ngx-iconify-stack?variant=secondary)](https://www.npmjs.com/package/ngx-iconify-stack)
+[![license](https://img.shields.io/npm/l/ngx-iconify-stack.svg?style=flat-square&color=3b82f6)](https://github.com/WanderleeDev/ngx-iconify-stack/blob/main/LICENSE)
+[![angular](https://img.shields.io/badge/angular-v20+-dd0031.svg?style=flat-square&logo=angular)](https://angular.dev/)
+[![signals](https://img.shields.io/badge/signals-powered-a78bfa.svg?style=flat-square)](https://angular.dev/guide/signals)
+[![SSR](https://img.shields.io/badge/SSR-ready-4ade80.svg?style=flat-square)](https://angular.dev/guide/ssr)
+[![AI Skill](https://img.shields.io/badge/AI%20Skill-ready-6366f1.svg?style=flat-square)](#-ai-code-assistants-integration)
 
-**This is a wrapper, not a reimplementation.** For anything beyond the basics — icon names, transformations, rendering modes — read the [Iconify documentation](https://iconify.design/docs/).
+[📦 npm](https://www.npmjs.com/package/ngx-iconify-stack) · [⭐ Star on GitHub](https://github.com/WanderleeDev/ngx-iconify-stack) · [🔤 Iconify](https://iconify.design)
 
-## Install
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/surface.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+component+for+Angular&logo=angular&logoColor=fff&mode=dark&theme=zinc&height=160&width=680" />
+  <img alt="ngx-iconify-stack" src="https://shieldcn.dev/header/surface.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+component+for+Angular&logo=angular&logoColor=dd0031&mode=light&theme=zinc&height=160&width=680" />
+</picture>
+
+</div>
+
+---
+
+## 🚀 Features
+
+- **⚡ Single Command Setup:** Fully configured via standard `ng add ngx-iconify-stack`.
+- **📦 Offline Icon Subsetting:** Only the icons you actually use ship with your app — no CDN dependency at runtime.
+- **🧱 Angular Signals:** Built natively with reactive signals for maximum performance.
+- **🌍 SSR & Hydration Ready:** Icons in your subset render as inline SVG on the server — zero flicker or hydration gap.
+- **🔀 Smart Fallback:** Icons outside the subset resolve through the native `<iconify-icon>` web component from the Iconify CDN.
+- **🤖 AI Code Assistants Integration:** Work with AI coding assistants using the generated `SKILL.md` standard.
+
+---
+
+## 📦 Installation
 
 ```bash
 ng add ngx-iconify-stack
 ```
 
-Package: [`ngx-iconify-stack` on npm](https://www.npmjs.com/package/ngx-iconify-stack)
-
 The schematic installs `iconify-icon`, adds the provider to `app.config.ts`, wires the `ngx-iconify-stack:generate-icons` script into `prebuild`, and asks whether to generate the AI agent skill.
 
 > [!TIP]
-> **Using Bun?** Since `ng add` is not supported in Bun environments, use the manual two-step process:
+> **Using Bun?**
+> Since `ng add` is not supported in Bun environments, use the manual two-step process:
 >
 > ```bash
 > bun add ngx-iconify-stack
 > ng generate ngx-iconify-stack:ng-add
 > ```
 
-## Setup
+---
+
+## 🛠️ Setup
 
 Provide the offline icon subset in your `app.config.ts`:
 
@@ -60,7 +78,9 @@ npm run ngx-iconify-stack:generate-icons
 
 Skip `offlineCollections` entirely if you only want CDN icons. The component works without the provider.
 
-## Usage
+---
+
+## 🧩 Usage
 
 ```typescript
 import { NgxIconify } from 'ngx-iconify-stack';
@@ -92,7 +112,9 @@ export class ExampleComponent {}
 
 These map to the [`<iconify-icon>` attributes](https://iconify.design/docs/iconify-icon/#attributes) — see the [Iconify docs](https://iconify.design/docs/) for icon names and behavior details.
 
-## How it works
+---
+
+## ⚙️ How it works
 
 ```
 icon="mdi:home"
@@ -111,6 +133,24 @@ icon="mdi:home"
 - **Not in subset** → `<iconify-icon>` web component resolves it from the Iconify CDN.
 - Inputs are signals, so switching icons recalculates reactively — works in zoneless apps.
 
-## License
+**This is a wrapper, not a reimplementation.** For anything beyond the basics — icon names, transformations, rendering modes — read the [Iconify documentation](https://iconify.design/docs/).
 
-MIT
+---
+
+## 🤖 AI Code Assistants Integration
+
+`ng add` can generate a `SKILL.md` standard file for AI coding assistants (Claude, Cursor, Copilot, and others). It encodes the library's usage patterns — setup, `ngx-iconify` component inputs, icon subsetting, and SSR-safe rendering — so your AI agent works with the library correctly without guessing.
+
+---
+
+## 🤝 Contributing & Issues
+
+Contributions are welcome! If you find a bug or have a suggestion, feel free to open an issue or submit a pull request:
+- Report bugs or request features on [GitHub Issues](https://github.com/WanderleeDev/ngx-iconify-stack/issues).
+- For local development guidelines (how to build, test, and run the demo), please refer to the workspace [README](../../README.md).
+
+---
+
+## 📄 License
+
+[MIT](https://github.com/WanderleeDev/ngx-iconify-stack/blob/main/LICENSE)
