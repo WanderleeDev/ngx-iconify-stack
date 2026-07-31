@@ -24,7 +24,9 @@ A signal-based Angular wrapper for [Iconify](https://iconify.design). Icons in y
 ng add ngx-iconify-stack
 ```
 
-The schematic installs `iconify-icon`, adds the provider to `app.config.ts`, and asks whether to generate the AI agent skill.
+Package: [`ngx-iconify-stack` on npm](https://www.npmjs.com/package/ngx-iconify-stack)
+
+The schematic installs `iconify-icon`, adds the provider to `app.config.ts`, wires the `ngx-iconify-stack:generate-icons` script into `prebuild`, and asks whether to generate the AI agent skill.
 
 > [!TIP]
 > **Using Bun?** Since `ng add` is not supported in Bun environments, use the manual two-step process:
@@ -53,7 +55,7 @@ The subset is generated at build time by the included schematic — it scans you
 ```bash
 npx ng generate ngx-iconify-stack:generate-icon-subset --project <project-name>
 # or, if the schematic wired it up for you:
-npm run icons
+npm run ngx-iconify-stack:generate-icons
 ```
 
 Skip `offlineCollections` entirely if you only want CDN icons. The component works without the provider.

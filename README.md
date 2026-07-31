@@ -33,7 +33,7 @@ Run these commands from the root directory:
 | **Start Docs**    | `ng serve docs`             | Launches the local dev server for the documentation site.           |
 | **Build Library** | `npm run build:lib`         | Compiles the library and its schematics into the `dist/` directory. |
 | **Run Tests**     | `ng test ngx-iconify-stack` | Runs the library unit tests (Vitest).                               |
-| **Icon Subset**   | `npm run icons`             | Scans templates and rebuilds the offline icon subset.               |
+| **Icon Subset**   | `npm run ngx-iconify-stack:generate-icons` | Scans templates and rebuilds the offline icon subset. |
 
 ---
 

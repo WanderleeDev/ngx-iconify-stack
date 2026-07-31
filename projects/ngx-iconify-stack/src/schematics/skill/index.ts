@@ -29,7 +29,7 @@ Signal-based Angular wrapper for [Iconify](https://iconify.design) with SSR-safe
 ## Constraints & Rules
 
 - Provide config **once** in root \`app.config.ts\` via \`provideIconify({ offlineCollections: iconSubset })\`.
-- Regenerate the subset after adding/removing icons in templates: run \`npm run icons\` (wired into \`prebuild\`), or \`npx ng generate ngx-iconify-stack:generate-icon-subset --project <name>\`.
+- Regenerate the subset after adding/removing icons in templates: run \`npm run ngx-iconify-stack:generate-icons\` (wired into \`prebuild\`), or \`npx ng generate ngx-iconify-stack:generate-icon-subset --project <name>\`.
 - Icons in the subset render inline \`<svg>\` (no \`@defer\` needed — no hydration gap). Icons outside it render \`<iconify-icon>\` from the CDN.
 - Inputs map to \`<iconify-icon>\` attributes — see the [attribute docs](https://iconify.design/docs/iconify-icon/#attributes).
 - Install the peer dependency \`iconify-icon\` when the CDN fallback is used.
