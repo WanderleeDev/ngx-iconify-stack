@@ -46,3 +46,6 @@ Thumbs.db
 # Agent state
 .agents/
 
+# Local AI runtime state
+.atl/
+
