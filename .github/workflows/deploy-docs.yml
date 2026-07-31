@@ -29,6 +29,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fresh CI has no dist; the docs prebuild runs `ng g` from the built library,
+      # so the library (FESM + compiled schematics) must exist before build:docs.
+      - name: Build Library
+        run: npm run build:lib
+
       - name: Build Docs
         run: npm run build:docs
 
