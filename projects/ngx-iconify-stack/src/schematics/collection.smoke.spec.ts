@@ -64,8 +64,9 @@ describe('compiled schematics collection (dist)', () => {
     expect(output).toContain("import type { IconifyJSON } from '@iconify/types';");
     expect(output).toContain('export const iconSubset: IconifyJSON[] = [];');
 
-    // prebuild hook kept as-is until PR3 rewires it to `npm run icons`.
+    // prebuild is wired to the new `icons` script (no legacy collect-icons).
     const pkg = JSON.parse(tree.readContent('/package.json'));
-    expect(pkg.scripts.prebuild).toContain('collect-icons');
+    expect(pkg.scripts.prebuild).toContain('npm run icons');
+    expect(pkg.scripts['collect-icons']).toBeUndefined();
   });
 });
