@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.0.0](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v0.1.3...v1.0.0) (2026-08-01)
+
+
+### Bug Fixes
+
+* **icon:** handle iconify-icon load failure gracefully ([cf90a52](https://github.com/WanderleeDev/ngx-iconify-stack/commit/cf90a525b0c064d93433171d62bbd01b068f0c62))
+
+
+### Features
+
+* **api:** restrict flip/rotate out of the public API ([e547430](https://github.com/WanderleeDev/ngx-iconify-stack/commit/e547430fecab0c54e4c28c42db9bee42796130b3))
+
 ## ⚠️ Deprecation Notice
 
 **All versions < 1.0.0 are deprecated.** Users are encouraged to upgrade to v1.0.0 or later. No breaking changes in the public API; migration is straightforward.
