@@ -1,6 +1,6 @@
 {
   "name": "ngx-iconify-stack",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Iconify integration for Angular with hybrid SSR rendering, lazy loading and schematic tooling.",
   "author": "WanderleeDev",
   "repository": {
@@ -11,6 +11,19 @@
     "url": "https://github.com/WanderleeDev/ngx-iconify-stack/issues"
   },
   "homepage": "https://github.com/WanderleeDev/ngx-iconify-stack",
+  "keywords": [
+    "angular",
+    "iconify",
+    "icons",
+    "svg",
+    "signals",
+    "ssr",
+    "offline-first",
+    "icon-subsetting",
+    "web-components",
+    "performance",
+    "a11y"
+  ],
   "license": "MIT",
   "publishConfig": {
     "access": "public",

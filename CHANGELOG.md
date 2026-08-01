@@ -1,5 +1,14 @@
 # Changelog
 
+# [1.1.1](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.1.0...v1.1.1) (2026-08-01)
+
+### Docs
+
+* add ngx-iconify-stack banner to README and npm
+* add Open Graph and Twitter Card meta tags for link previews
+* remove deprecation notice for versions < 1.0.0
+* add npm keywords for better discoverability
+
 # [1.1.0](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.0.0...v1.1.0) (2026-08-01)
 
 
