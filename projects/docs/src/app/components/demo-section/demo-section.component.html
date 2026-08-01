@@ -8,8 +8,8 @@
       Interactive Sandbox
     </h2>
     <p class="text-muted text-base m-0 max-w-2xl mx-auto">
-      Test any Iconify icon dynamically. Customize size, color, rendering modes, and get
-      copy-paste ready Angular code.
+      Test any Iconify icon dynamically. Customize size, color, rendering modes, and get copy-paste
+      ready Angular code.
     </p>
   </div>
 
@@ -18,13 +18,25 @@
     <div class="lg:col-span-7 space-y-6 bg-surface-2 border border-border rounded-2xl p-6">
       <div class="flex justify-between items-center border-b border-border pb-3">
         <h3 class="text-lg font-semibold text-body m-0">Configuration</h3>
-        <button
-          (click)="resetAll()"
-          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-muted hover:text-body bg-surface hover:bg-[color-mix(in_oklch,var(--color-accent)_8%,var(--color-surface))] border border-border rounded-lg transition-all cursor-pointer"
-        >
-          <ngx-iconify icon="mdi:refresh" [size]="14" />
-          <span>Reset</span>
-        </button>
+        <div class="flex gap-2">
+          <a
+            href="https://icon-sets.iconify.design/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-gradient-brand hover:shadow-[0_2px_12px_color-mix(in_oklch,var(--color-accent)_35%,transparent)] border-none rounded-lg transition-all cursor-pointer"
+            title="Browse all Iconify icon sets"
+          >
+            <ngx-iconify icon="simple-icons:iconify" [size]="14" />
+            <span>View Icon Sets</span>
+          </a>
+          <button
+            (click)="resetAll()"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-muted hover:text-body bg-surface hover:bg-[color-mix(in_oklch,var(--color-accent)_8%,var(--color-surface))] border border-border rounded-lg transition-all cursor-pointer"
+          >
+            <ngx-iconify icon="mdi:refresh" [size]="14" />
+            <span>Reset</span>
+          </button>
+        </div>
       </div>
 
       <!-- Icon Identifier Input -->
@@ -61,13 +73,6 @@
             type="range"
             step="4"
             [formField]="sandboxForm.size"
-            [style.background]="
-              'linear-gradient(to right, var(--color-accent) ' +
-              sizeProgress() +
-              ', var(--color-surface) ' +
-              sizeProgress() +
-              ')'
-            "
             class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-accent border border-border/50"
           />
         </div>
