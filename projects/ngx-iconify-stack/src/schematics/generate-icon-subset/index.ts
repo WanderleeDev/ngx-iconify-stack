@@ -32,7 +32,7 @@ export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
     const found = scanIcons(tree, sourceRoot);
     const collections = buildSubset(tree, found, context.logger);
 
-    const outputPath = `${sourceRoot}/generated/icon-subset.ts`.replace(/^\//, '');
+    const outputPath = `${sourceRoot}/ngx-iconify/icon-subset.ts`.replace(/^\//, '');
     const content = renderSubsetFile(collections);
     if (tree.exists(outputPath)) {
       tree.overwrite(outputPath, content);

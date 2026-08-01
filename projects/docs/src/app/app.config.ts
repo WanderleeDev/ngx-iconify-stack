@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideIconify } from 'ngx-iconify-stack';
-import { iconSubset } from '../generated/icon-subset';
+import { iconSubset } from '../ngx-iconify/icon-subset';
 
 export const appConfig: ApplicationConfig = {
   providers: [
