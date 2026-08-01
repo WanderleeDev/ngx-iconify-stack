@@ -8,6 +8,7 @@ import {
   inject,
   ChangeDetectionStrategy,
   CUSTOM_ELEMENTS_SCHEMA,
+  booleanAttribute,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -104,10 +105,10 @@ export class NgxIconify {
   readonly mode = input<IconMode>();
 
   /** Render icon inline (aligns to text baseline) */
-  readonly inline = input<boolean>(false);
+  readonly inline = input<boolean>(false, { transform: booleanAttribute });
 
   /** Disable intersection observer for lazy loading */
-  readonly noObserver = input<boolean>(false);
+  readonly noObserver = input<boolean>(false, { transform: booleanAttribute });
 
   /** CSS color for the icon (replaces currentColor in monotone icons) */
   readonly color = input<string>();

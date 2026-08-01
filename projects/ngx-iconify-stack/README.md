@@ -14,7 +14,7 @@ Driven by signals, with offline icon subsetting and zero runtime overhead.
 [![SSR](https://img.shields.io/badge/SSR-ready-4ade80.svg?style=flat-square)](https://angular.dev/guide/ssr)
 [![AI Skill](https://img.shields.io/badge/AI%20Skill-ready-6366f1.svg?style=flat-square)](#-ai-code-assistants-integration)
 
-[📦 npm](https://www.npmjs.com/package/ngx-iconify-stack) · [⭐ Star on GitHub](https://github.com/WanderleeDev/ngx-iconify-stack) · [🔤 Iconify](https://iconify.design)
+[📦 npm](https://www.npmjs.com/package/ngx-iconify-stack) · [📖 Docs](https://ngx-iconify-stack-docs.wanderlee.site/) · [⭐ Star on GitHub](https://github.com/WanderleeDev/ngx-iconify-stack) · [🔤 Iconify](https://iconify.design)
 
 </div>
 

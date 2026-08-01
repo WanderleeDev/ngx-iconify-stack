@@ -3,6 +3,7 @@ import { ApiTableSectionComponent } from './components/api-table-section/api-tab
 import { DemoSectionComponent } from './components/demo-section/demo-section.component';
 import { FooterSectionComponent } from './components/footer-section/footer-section.component';
 import { HeroSectionComponent } from './components/hero-section/hero-section.component';
+import { HowItWorksComponent } from './components/how-it-works/how-it-works.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 
 @Component({
@@ -11,6 +12,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
   imports: [
     NavbarComponent,
     HeroSectionComponent,
+    HowItWorksComponent,
     DemoSectionComponent,
     ApiTableSectionComponent,
     FooterSectionComponent,
