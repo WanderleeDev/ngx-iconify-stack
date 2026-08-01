@@ -37,16 +37,21 @@
   </p>
 
   <div class="flex flex-wrap gap-3.5 justify-center mt-3 relative z-10">
-    <a
-      id="hero-npm-link"
-      href="https://www.npmjs.com/package/ngx-iconify-stack"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="inline-flex items-center gap-2 py-3 px-6 rounded-xl text-sm font-semibold no-underline transition-all duration-200 cursor-pointer bg-gradient-brand text-white shadow-[0_4px_24px_color-mix(in_oklch,var(--color-accent)_35%,transparent)] hover:-translate-y-0.5 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-accent)_45%,transparent)]"
+    <button
+      id="hero-copy-command"
+      (click)="copyCommand()"
+      class="inline-flex items-center gap-2 py-3 px-6 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer bg-gradient-brand text-white shadow-[0_4px_24px_color-mix(in_oklch,var(--color-accent)_35%,transparent)] hover:-translate-y-0.5 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-accent)_45%,transparent)] border-none"
+      [title]="copied() ? 'Copied to clipboard!' : 'Copy installation command'"
     >
-      <ngx-iconify icon="mdi:npm" [size]="20" />
-      npm install ngx-iconify-stack
-    </a>
+      @if (copied()) {
+        <ngx-iconify icon="mdi:check" [size]="20" class="text-white" />
+        <span>Copied to clipboard!</span>
+      } @else {
+        <ngx-iconify icon="mdi:console-line" [size]="20" />
+        <span class="font-mono">ng add ngx-iconify-stack</span>
+        <ngx-iconify icon="mdi:content-copy" [size]="16" class="opacity-80 ml-1" />
+      }
+    </button>
     <a
       id="hero-github-link"
       href="https://github.com/WanderleeDev/ngx-iconify-stack"

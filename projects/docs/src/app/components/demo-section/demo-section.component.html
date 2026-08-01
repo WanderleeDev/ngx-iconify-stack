@@ -15,9 +15,7 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
     <!-- Control Panel -->
-    <div
-      class="lg:col-span-7 space-y-6 bg-surface-2 border border-border rounded-2xl p-6"
-    >
+    <div class="lg:col-span-7 space-y-6 bg-surface-2 border border-border rounded-2xl p-6">
       <div class="flex justify-between items-center border-b border-border pb-3">
         <h3 class="text-lg font-semibold text-body m-0">Configuration</h3>
         <button
@@ -48,9 +46,7 @@
             [formField]="sandboxForm.iconId"
           />
         </div>
-        <p class="text-xs text-muted">
-          Supports any icon from Iconify's database (200k+ icons).
-        </p>
+        <p class="text-xs text-muted">Supports any icon from Iconify's database (200k+ icons).</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -65,27 +61,32 @@
             type="range"
             step="4"
             [formField]="sandboxForm.size"
-            class="w-full h-2 bg-surface rounded-lg appearance-none cursor-pointer accent-accent"
+            [style.background]="
+              'linear-gradient(to right, var(--color-accent) ' +
+              sizeProgress() +
+              ', var(--color-surface) ' +
+              sizeProgress() +
+              ')'
+            "
+            class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-accent border border-border/50"
           />
         </div>
 
         <!-- Color Control -->
-        <div class="space-y-2">
-          <label for="color-input" class="block text-sm font-medium text-body"
-            >Custom Color</label
-          >
-          <div class="flex gap-2">
+        <div class="space-y-2 min-w-0">
+          <label for="color-input" class="block text-sm font-medium text-body">Custom Color</label>
+          <div class="flex items-center gap-2 min-w-0">
             <input
               id="color-input"
               type="color"
               [formField]="sandboxForm.color"
-              class="h-10 w-12 bg-surface border border-border rounded cursor-pointer"
+              class="h-10 w-10 shrink-0 p-1 bg-surface border border-border rounded-lg cursor-pointer"
             />
             <input
               type="text"
               [formField]="sandboxForm.color"
-              class="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-sm text-body font-mono"
-              placeholder="#ffffff"
+              class="flex-1 min-w-0 w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-body font-mono"
+              placeholder="#6200f5"
             />
           </div>
         </div>
@@ -94,10 +95,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Rotation Control -->
         <div class="space-y-2">
-          <label
-            for="rotate-range"
-            class="flex justify-between text-sm font-medium text-body"
-          >
+          <label for="rotate-range" class="flex justify-between text-sm font-medium text-body">
             <span>Rotation</span>
             <span class="text-accent font-mono font-semibold">{{ model().rotate }}°</span>
           </label>
@@ -106,7 +104,14 @@
             type="range"
             step="1"
             [formField]="sandboxForm.rotate"
-            class="w-full h-2 bg-surface rounded-lg appearance-none cursor-pointer accent-accent"
+            [style.background]="
+              'linear-gradient(to right, var(--color-accent) ' +
+              rotateProgress() +
+              ', var(--color-surface) ' +
+              rotateProgress() +
+              ')'
+            "
+            class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-accent border border-border/50"
           />
         </div>
 
@@ -129,9 +134,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Mode Control -->
         <div class="space-y-2">
-          <label for="mode-select" class="block text-sm font-medium text-body"
-            >Render Mode</label
-          >
+          <label for="mode-select" class="block text-sm font-medium text-body">Render Mode</label>
           <select
             id="mode-select"
             [formField]="sandboxForm.mode"
@@ -146,9 +149,7 @@
 
         <!-- Toggles -->
         <div class="flex flex-col gap-3 justify-center pt-2">
-          <label
-            class="flex items-center gap-3 cursor-pointer text-sm text-body select-none"
-          >
+          <label class="flex items-center gap-3 cursor-pointer text-sm text-body select-none">
             <input
               type="checkbox"
               [formField]="sandboxForm.inline"
@@ -156,9 +157,7 @@
             />
             <span>Render Inline (aligns with text)</span>
           </label>
-          <label
-            class="flex items-center gap-3 cursor-pointer text-sm text-body select-none"
-          >
+          <label class="flex items-center gap-3 cursor-pointer text-sm text-body select-none">
             <input
               type="checkbox"
               [formField]="sandboxForm.noObserver"
@@ -203,9 +202,7 @@
       </div>
 
       <!-- Code Snippet -->
-      <div
-        class="bg-surface-2 border border-border rounded-2xl p-6 space-y-3"
-      >
+      <div class="bg-surface-2 border border-border rounded-2xl p-6 space-y-3">
         <div class="flex justify-between items-center">
           <span class="text-xs font-semibold uppercase tracking-wider text-muted"
             >Angular Usage</span

@@ -16,7 +16,7 @@ export interface SandboxConfig {
 const DEFAULTS: SandboxConfig = {
   iconId: 'devicon:angular',
   size: 48,
-  color: '#fff',
+  color: '#6200f5',
   rotate: 0,
   flip: '',
   mode: '',
@@ -39,6 +39,19 @@ export class DemoSectionComponent {
   readonly sandboxForm = form(this.model);
 
   readonly codeCopied = signal(false);
+
+  readonly sizeProgress = computed(() => {
+    const min = 12;
+    const max = 128;
+    const val = this.model().size;
+    const pct = Math.min(100, Math.max(0, ((val - min) / (max - min)) * 100));
+    return `${pct}%`;
+  });
+
+  readonly rotateProgress = computed(() => {
+    const pct = Math.min(100, Math.max(0, (this.model().rotate / 360) * 100));
+    return `${pct}%`;
+  });
 
   readonly generatedCode = computed(() => {
     const cfg = this.model();

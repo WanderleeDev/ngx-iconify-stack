@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { NgxIconify } from 'ngx-iconify-stack';
 
 interface FloatingIcon {
@@ -17,6 +17,13 @@ interface FloatingIcon {
   templateUrl: './hero-section.component.html',
 })
 export class HeroSectionComponent {
+  readonly copied = signal(false);
+
+  copyCommand(): void {
+    navigator.clipboard?.writeText('ng add ngx-iconify-stack').catch(() => {});
+    this.copied.set(true);
+    setTimeout(() => this.copied.set(false), 1500);
+  }
   readonly floatingIcons: FloatingIcon[] = [
     // Top row across full width
     { icon: 'mdi:home', label: 'Home', top: '5%', left: '4%', size: 24, delay: '0s', opacity: 0.2 },

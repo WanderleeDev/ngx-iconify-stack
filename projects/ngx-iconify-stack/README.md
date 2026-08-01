@@ -5,20 +5,14 @@
 **A lightweight, SSR-safe Angular wrapper for Iconify.**  
 Driven by signals, with offline icon subsetting and zero runtime overhead.
 
-[![npm version](https://shieldcn.dev/npm/v/ngx-iconify-stack?variant=secondary)](https://www.npmjs.com/package/ngx-iconify-stack)
-[![npm downloads](https://shieldcn.dev/npm/dm/ngx-iconify-stack?variant=secondary)](https://www.npmjs.com/package/ngx-iconify-stack)
-[![license](https://img.shields.io/npm/l/ngx-iconify-stack.svg?style=flat-square&color=3b82f6)](https://github.com/WanderleeDev/ngx-iconify-stack/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/ngx-iconify-stack.svg?style=flat-square&color=3b82f6)](https://www.npmjs.com/package/ngx-iconify-stack)
+[![license](https://img.shields.io/github/license/WanderleeDev/ngx-iconify-stack.svg?style=flat-square&color=3b82f6)](https://github.com/WanderleeDev/ngx-iconify-stack/blob/main/LICENSE)
 [![angular](https://img.shields.io/badge/angular-v20+-dd0031.svg?style=flat-square&logo=angular)](https://angular.dev/)
 [![signals](https://img.shields.io/badge/signals-powered-a78bfa.svg?style=flat-square)](https://angular.dev/guide/signals)
 [![SSR](https://img.shields.io/badge/SSR-ready-4ade80.svg?style=flat-square)](https://angular.dev/guide/ssr)
 [![AI Skill](https://img.shields.io/badge/AI%20Skill-ready-6366f1.svg?style=flat-square)](#-ai-code-assistants-integration)
 
 [📦 npm](https://www.npmjs.com/package/ngx-iconify-stack) · [⭐ Star on GitHub](https://github.com/WanderleeDev/ngx-iconify-stack) · [🔤 Iconify](https://iconify.design)
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/surface.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+component+for+Angular&logo=angular&logoColor=fff&mode=dark&theme=zinc&height=160&width=680" />
-  <img alt="ngx-iconify-stack" src="https://shieldcn.dev/header/surface.svg?title=ngx-iconify-stack&subtitle=SSR-safe+Iconify+component+for+Angular&logo=angular&logoColor=dd0031&mode=light&theme=zinc&height=160&width=680" />
-</picture>
 
 </div>
 

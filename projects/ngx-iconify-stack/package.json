@@ -11,6 +11,11 @@
     "url": "https://github.com/WanderleeDev/ngx-iconify-stack/issues"
   },
   "homepage": "https://github.com/WanderleeDev/ngx-iconify-stack",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "peerDependencies": {
     "@angular/common": ">=20.0.0 <23.0.0",
     "@angular/core": ">=20.0.0 <23.0.0",
