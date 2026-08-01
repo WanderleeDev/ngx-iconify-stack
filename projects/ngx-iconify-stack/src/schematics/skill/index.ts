@@ -59,7 +59,7 @@ Environment providers function. Call once in root \`app.config.ts\`.
 
 \`\`\`typescript
 import { provideIconify } from 'ngx-iconify-stack';
-import { iconSubset } from './generated/icon-subset';
+import { iconSubset } from './ngx-iconify/icon-subset';
 
 export const appConfig: ApplicationConfig = {
   providers: [
