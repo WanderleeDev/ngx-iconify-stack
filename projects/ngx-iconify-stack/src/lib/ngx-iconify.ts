@@ -126,8 +126,6 @@ export class NgxIconify {
     return typeof h === 'number' ? h : undefined;
   });
 
-  // ── SVG fallback content (SSR-safe) ──
-
   readonly svgContent = computed<SafeHtml | null>(() => {
     const iconLookup = lookupIcon(this.icon(), this.config?.offlineCollections);
     if (!iconLookup) return null;
@@ -136,7 +134,6 @@ export class NgxIconify {
     const h = this.displayHeight() ?? iconLookup.height;
     const color = this.color();
 
-    // Replace currentColor in the SVG body if a color is specified
     let body = iconLookup.body;
     if (color) {
       body = body.replace(/currentColor/g, color);
