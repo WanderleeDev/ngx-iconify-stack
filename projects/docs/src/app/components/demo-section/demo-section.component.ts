@@ -1,13 +1,11 @@
 import { Component, computed, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
-import { NgxIconify, IconFlip, IconMode } from 'ngx-iconify-stack';
+import { NgxIconify, IconMode } from 'ngx-iconify-stack';
 
 export interface SandboxConfig {
   iconId: string;
   size: number;
   color: string;
-  rotate: number;
-  flip: IconFlip | '';
   mode: IconMode | '';
   inline: boolean;
   noObserver: boolean;
@@ -17,8 +15,6 @@ const DEFAULTS: SandboxConfig = {
   iconId: 'devicon:angular',
   size: 48,
   color: '#6200f5',
-  rotate: 0,
-  flip: '',
   mode: '',
   inline: false,
   noObserver: false,
@@ -48,11 +44,6 @@ export class DemoSectionComponent {
     return `${pct}%`;
   });
 
-  readonly rotateProgress = computed(() => {
-    const pct = Math.min(100, Math.max(0, (this.model().rotate / 360) * 100));
-    return `${pct}%`;
-  });
-
   readonly generatedCode = computed(() => {
     const cfg = this.model();
     const id = cfg.iconId || 'mdi:help-circle-outline';
@@ -60,8 +51,6 @@ export class DemoSectionComponent {
 
     if (cfg.size !== 24) code += ` [size]="${cfg.size}"`;
     if (cfg.color && cfg.color !== '#fff') code += ` color="${cfg.color}"`;
-    if (cfg.rotate !== 0) code += ` [rotate]="${cfg.rotate}"`;
-    if (cfg.flip) code += ` flip="${cfg.flip}"`;
     if (cfg.mode) code += ` mode="${cfg.mode}"`;
     if (cfg.inline) code += ` [inline]="true"`;
     if (cfg.noObserver) code += ` [noObserver]="true"`;

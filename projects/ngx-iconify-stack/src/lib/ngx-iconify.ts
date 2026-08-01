@@ -1,4 +1,4 @@
-import { IconFlip, IconMode } from './types';
+import { IconMode } from './types';
 import { lookupIcon } from './icon-helpers';
 import { NGX_ICONIFY_CONFIG } from './icon.config';
 import {
@@ -21,10 +21,20 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
  * **CDN fallback**: icons not in the subset fall through to the native
  * `<iconify-icon>` web component, which resolves them from the Iconify CDN.
  *
+ * `mode` and `noObserver` are CDN-fallback-only passthroughs to the
+ * `<iconify-icon>` web component; they are no-ops for inline subset icons.
+ *
+ * `flip`/`rotate` are intentionally NOT part of the public API: use CSS
+ * transforms via the `class` input instead. Note that a CSS `transform` does
+ * not swap the layout box, so rotating non-square icons 90°/270° may overflow
+ * — the web component's `rotate` attribute handles this, but the wrapper does
+ * not expose it.
+ *
  * @example
  * ```html
  * <ngx-iconify icon="mdi:home" [size]="24" />
  * <ngx-iconify icon="lucide:arrow-right" color="#ff0000" />
+ * <ngx-iconify icon="mdi:arrow-right" class="scale-x-[-1]" />
  * ```
  */
 @Component({
@@ -47,8 +57,6 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
         [attr.icon]="icon()"
         [attr.width]="width()"
         [attr.height]="height()"
-        [attr.rotate]="rotate()"
-        [attr.flip]="flip()"
         [attr.inline]="inline() ? '' : null"
         [attr.mode]="mode()"
         [attr.noobserver]="noObserver() ? '' : null"
@@ -91,12 +99,6 @@ export class NgxIconify {
 
   /** Convenience shorthand — sets both width and height */
   readonly size = input<number>();
-
-  /** Flip transformation */
-  readonly flip = input<IconFlip>();
-
-  /** Rotation: "90", "180", "270" or degrees */
-  readonly rotate = input<string | number>();
 
   /** Rendering mode for the web component */
   readonly mode = input<IconMode>();

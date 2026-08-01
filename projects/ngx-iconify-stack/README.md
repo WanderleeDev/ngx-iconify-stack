@@ -85,7 +85,7 @@ import { NgxIconify } from 'ngx-iconify-stack';
   template: `
     <ngx-iconify icon="mdi:home" [size]="24" />
     <ngx-iconify icon="lucide:arrow-right" color="#f59e0b" />
-    <ngx-iconify icon="tabler:brand-github" flip="horizontal" rotate="90" />
+    <ngx-iconify icon="tabler:brand-github" [inline]="true" />
   `,
 })
 export class ExampleComponent {}
@@ -98,8 +98,6 @@ export class ExampleComponent {}
 | `width` / `height` | `number \| string`                     | Explicit dimensions (override `size`)               |
 | `color`            | `string`                               | CSS color for the icon                              |
 | `class`            | `string`                               | CSS class added to the rendered icon element        |
-| `flip`             | `"horizontal" \| "vertical" \| "both"` | Flip the icon                                       |
-| `rotate`           | `number \| string`                     | Rotate the icon, e.g. `90` or `"90deg"`             |
 | `inline`           | `boolean`                              | Align icon to the text baseline                     |
 | `mode`             | `"svg" \| "bg" \| "mask" \| "style"`   | Rendering mode for the web component                |
 | `noObserver`       | `boolean`                              | Disable lazy rendering on scroll                    |

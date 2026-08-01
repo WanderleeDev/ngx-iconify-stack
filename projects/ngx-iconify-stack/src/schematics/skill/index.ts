@@ -83,8 +83,6 @@ export const appConfig: ApplicationConfig = {
 | \`height\` | \`number \\| string\` | — | Explicit height (overrides \`size\`) |
 | \`color\` | \`string\` | — | CSS color for the icon |
 | \`class\` | \`string\` | — | CSS class added to the rendered icon element |
-| \`flip\` | \`"horizontal" \\| "vertical" \\| "both"\` | — | Flip transformation |
-| \`rotate\` | \`number \\| string\` | — | Rotation, e.g. \`90\` or \`"90deg"\` |
 | \`inline\` | \`boolean\` | \`false\` | Align to text baseline |
 | \`mode\` | \`"svg" \\| "bg" \\| "mask" \\| "style"\` | — | Rendering mode for \`<iconify-icon>\` |
 | \`noObserver\` | \`boolean\` | \`false\` | Disable lazy loading observer |
@@ -109,7 +107,7 @@ import { NgxIconify } from 'ngx-iconify-stack';
   template: \`
     <ngx-iconify icon="mdi:home" [size]="24" />
     <ngx-iconify icon="lucide:arrow-right" color="#f59e0b" />
-    <ngx-iconify icon="tabler:brand-github" flip="horizontal" rotate="90" [inline]="true" />
+    <ngx-iconify icon="tabler:brand-github" [inline]="true" />
   \`,
 })
 export class ExampleComponent {}

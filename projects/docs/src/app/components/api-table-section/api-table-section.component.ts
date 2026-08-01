@@ -62,20 +62,6 @@ export class ApiTableSectionComponent {
       description: 'CSS color value for the icon (e.g. "#fff", "var(--color-accent)").',
     },
     {
-      name: 'flip',
-      type: "'horizontal' | 'vertical' | 'both'",
-      required: false,
-      default: '—',
-      description: 'Flip transformation applied to the icon.',
-    },
-    {
-      name: 'rotate',
-      type: 'string | number',
-      required: false,
-      default: '—',
-      description: 'Rotation: "90", "180", "270" or a degree value.',
-    },
-    {
       name: 'mode',
       type: "'svg' | 'bg' | 'mask' | 'style'",
       required: false,
@@ -112,16 +98,12 @@ export class ApiTableSectionComponent {
 <ngx-iconify icon="mdi:star" [size]="24" color="#f59e0b" />`,
     },
     {
-      id: 'transform',
-      label: 'Transforms',
-      code: `<!-- Flip horizontal -->
-<ngx-iconify icon="mdi:arrow-right" flip="horizontal" />
-
-<!-- Rotate 90° -->
-<ngx-iconify icon="mdi:arrow-up" rotate="90" />
-
-<!-- Flip + rotate -->
-<ngx-iconify icon="mdi:chevron-right" flip="vertical" rotate="180" />`,
+      id: 'css-transform',
+      label: 'CSS transforms',
+      code: `<!-- CSS transforms (flip/rotate are not part of the API) -->
+<!-- Note: CSS transform does not swap the layout box -->
+<ngx-iconify icon="mdi:arrow-right" class="scale-x-[-1]" />
+<ngx-iconify icon="mdi:arrow-up" class="rotate-90" />`,
     },
     {
       id: 'inline',

@@ -8,7 +8,7 @@
       Interactive Sandbox
     </h2>
     <p class="text-muted text-base m-0 max-w-2xl mx-auto">
-      Test any Iconify icon dynamically. Customize size, rotation, rendering modes, and get
+      Test any Iconify icon dynamically. Customize size, color, rendering modes, and get
       copy-paste ready Angular code.
     </p>
   </div>
@@ -93,45 +93,6 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Rotation Control -->
-        <div class="space-y-2">
-          <label for="rotate-range" class="flex justify-between text-sm font-medium text-body">
-            <span>Rotation</span>
-            <span class="text-accent font-mono font-semibold">{{ model().rotate }}°</span>
-          </label>
-          <input
-            id="rotate-range"
-            type="range"
-            step="1"
-            [formField]="sandboxForm.rotate"
-            [style.background]="
-              'linear-gradient(to right, var(--color-accent) ' +
-              rotateProgress() +
-              ', var(--color-surface) ' +
-              rotateProgress() +
-              ')'
-            "
-            class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-accent border border-border/50"
-          />
-        </div>
-
-        <!-- Flip Control -->
-        <div class="space-y-2">
-          <label for="flip-select" class="block text-sm font-medium text-body">Flip</label>
-          <select
-            id="flip-select"
-            [formField]="sandboxForm.flip"
-            class="block w-full px-3 py-2.5 bg-surface border border-border rounded-xl text-sm text-body focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="">None</option>
-            <option value="horizontal">Horizontal</option>
-            <option value="vertical">Vertical</option>
-            <option value="both">Both</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Mode Control -->
         <div class="space-y-2">
           <label for="mode-select" class="block text-sm font-medium text-body">Render Mode</label>
@@ -188,8 +149,6 @@
             class="transition-all"
             [icon]="model().iconId || 'mdi:help-circle-outline'"
             [size]="model().size"
-            [flip]="model().flip || undefined"
-            [rotate]="model().rotate || undefined"
             [mode]="model().mode || undefined"
             [inline]="model().inline"
             [noObserver]="model().noObserver"
