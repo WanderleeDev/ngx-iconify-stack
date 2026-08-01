@@ -1,7 +1,7 @@
 <footer class="border-t-[1.5px] border-border py-12 px-6 mt-8" role="contentinfo">
   <div class="max-w-[900px] mx-auto flex flex-col items-center gap-4 text-center">
     <div class="flex items-center gap-2 font-bold text-base">
-      <ngx-iconify icon="tabler:package" [size]="22" class="text-accent" />
+      <img src="/icon.webp" alt="ngx-iconify-stack" width="28" height="28" class="w-7 h-7" />
       <span
         class="bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]"
         >ngx-iconify-stack</span
@@ -9,16 +9,23 @@
     </div>
 
     <p class="text-muted text-[0.875rem] m-0 flex items-center justify-center gap-1 flex-wrap">
-      Built with
+      Built by
+      <a
+        href="https://wanderlee.dev"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-accent no-underline font-semibold hover:underline"
+        >WanderleeDev</a
+      >. Thank you
       <ngx-iconify icon="mdi:heart" [size]="14" class="text-[oklch(60%_0.22_25)]" aria-label="love" />
-      for Angular. Powered by
+      to
       <a
         href="https://iconify.design"
         target="_blank"
         rel="noopener noreferrer"
         class="text-accent no-underline font-semibold hover:underline"
         >Iconify</a
-      > — the leading icon library for the web.
+      >.
     </p>
 
     <div class="flex gap-3 mt-1" role="list">
@@ -67,7 +74,5 @@
         <ngx-iconify icon="mdi:magnify" [size]="20" />
       </a>
     </div>
-
-    <p class="text-muted text-[0.78rem] m-0 opacity-70">MIT License · ngx-iconify-stack v0.0.1</p>
   </div>
 </footer>
