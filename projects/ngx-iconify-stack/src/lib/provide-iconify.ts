@@ -15,14 +15,21 @@ export function provideIconify(config: NgxIconifyConfig = {}): EnvironmentProvid
       const platformId = inject(PLATFORM_ID);
       if (!isPlatformBrowser(platformId)) return;
 
-      import('iconify-icon').then(async ({ addCollection, addAPIProvider }) => {
-        if (config.apiProvider) {
-          addAPIProvider(config.apiProvider.name, {
-            resources: [config.apiProvider.resource],
-          });
-        }
-        config.offlineCollections?.forEach((set) => addCollection(set));
-      });
+      import('iconify-icon')
+        .then(async ({ addCollection, addAPIProvider }) => {
+          if (config.apiProvider) {
+            addAPIProvider(config.apiProvider.name, {
+              resources: [config.apiProvider.resource],
+            });
+          }
+          config.offlineCollections?.forEach((set) => addCollection(set));
+        })
+        .catch((err) => {
+          console.error(
+            '[ngx-iconify] failed to load the iconify-icon web component; CDN fallback is unavailable',
+            err,
+          );
+        });
     }),
   ]);
 }
