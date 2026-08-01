@@ -1,5 +1,11 @@
 # Changelog
 
+## ⚠️ Deprecation Notice
+
+**All versions < 1.0.0 are deprecated.** Users are encouraged to upgrade to v1.0.0 or later. No breaking changes in the public API; migration is straightforward.
+
+---
+
 ## [0.1.3](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v0.1.2...v0.1.3) (2026-08-01)
 
 

@@ -18,6 +18,19 @@ Driven by signals, with offline icon subsetting and zero runtime overhead.
 
 ---
 
+## ⚠️ Deprecation Notice
+
+**Versions < 1.0.0 are deprecated.** Please upgrade to v1.0.0 or later for the latest features and improvements.
+
+### Migration from 0.x to 1.0
+
+No breaking changes to the public API. If you're using 0.x:
+1. Run `npm install ngx-iconify-stack@latest`
+2. Update imports from `src/generated/icon-subset.ts` → `src/ngx-iconify/icon-subset.ts` (or rerun `ng add ngx-iconify-stack`)
+3. Done! Your app will work as before.
+
+---
+
 ## 🚀 Features
 
 - **⚡ Single Command Setup:** Fully configured via standard `ng add ngx-iconify-stack`.
