@@ -15,6 +15,7 @@ interface FloatingIcon {
   selector: 'docs-hero',
   imports: [NgxIconify],
   templateUrl: './hero-section.component.html',
+  styleUrls: ['./hero-section.component.css'],
 })
 export class HeroSectionComponent {
   readonly copied = signal(false);

@@ -1,0 +1,20 @@
+@keyframes float-3d {
+  0% {
+    filter: drop-shadow(30px 40px 60px #0006);
+    transform: perspective(800px) rotateY(-35deg) rotateX(15deg) rotate(-2deg) translateY(0);
+  }
+
+  50% {
+    filter: drop-shadow(50px 70px 90px #00000080);
+    transform: perspective(800px) rotateY(-25deg) rotateX(10deg) rotate(0) translateY(-30px);
+  }
+
+  100% {
+    filter: drop-shadow(30px 40px 60px #0006);
+    transform: perspective(800px) rotateY(-35deg) rotateX(15deg) rotate(-2deg) translateY(0);
+  }
+}
+
+.hero-icon {
+  animation: float-3d 6s ease-in-out infinite;
+}
