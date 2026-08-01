@@ -11,6 +11,9 @@
 npm-debug.log
 yarn-error.log
 
+# CodeGraph
+.codegraph/
+
 # IDEs and editors
 .idea/
 .project
