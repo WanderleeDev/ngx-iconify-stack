@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v0.1.2...v0.1.3) (2026-08-01)
+
+
+### Bug Fixes
+
+* **pkg:** drop out-of-root assets from ng-package.json ([399ce57](https://github.com/WanderleeDev/ngx-iconify-stack/commit/399ce57cd5a5f730a1769ff00b63e70ea0f16aaf))
+
 ## [0.1.2](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v0.1.1...v0.1.2) (2026-07-31)
 
 
