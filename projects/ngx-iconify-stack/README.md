@@ -55,7 +55,7 @@ Provide the offline icon subset in your `app.config.ts`:
 ```typescript
 import { ApplicationConfig } from '@angular/core';
 import { provideIconify } from 'ngx-iconify-stack';
-import { iconSubset } from './generated/icon-subset';
+import { iconSubset } from './ngx-iconify/icon-subset';
 
 export const appConfig: ApplicationConfig = {
   providers: [provideIconify({ offlineCollections: iconSubset })],
@@ -125,7 +125,12 @@ icon="mdi:home"
 - **Not in subset** → `<iconify-icon>` web component resolves it from the Iconify CDN.
 - Inputs are signals, so switching icons recalculates reactively — works in zoneless apps.
 
-**This is a wrapper, not a reimplementation.** For anything beyond the basics — icon names, transformations, rendering modes — read the [Iconify documentation](https://iconify.design/docs/).
+**ngx-iconify-stack is a thin Angular wrapper around [Iconify](https://iconify.design).** It provides:
+- Signal-based reactivity for smooth icon switching
+- SSR-safe offline subsetting (no runtime CDN dependency for subset icons)
+- Zero runtime overhead via Angular's standalone component model
+
+For icon names, transformations, rendering modes, and more — consult the [Iconify documentation](https://iconify.design/docs/).
 
 ---
 
