@@ -2,7 +2,6 @@
   "name": "ngx-iconify-stack",
   "version": "1.0.0",
   "description": "Iconify integration for Angular with hybrid SSR rendering, lazy loading and schematic tooling.",
-  "deprecated": "Versions < 1.0.0 are deprecated. Please upgrade to v1.0.0 or later.",
   "author": "WanderleeDev",
   "repository": {
     "type": "git",
