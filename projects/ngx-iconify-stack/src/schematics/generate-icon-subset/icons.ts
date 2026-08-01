@@ -6,8 +6,8 @@ import type { IconifyJSON } from '@iconify/types';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-/** Pinned reference pattern: `icon`/`icons` followed by `:` or `=` and a quoted `prefix:name`. */
-export const ICON_REFERENCE_PATTERN = /(?:icon|icons)\s*[:=]\s*["']([\w-]+:[\w-]+)["']/;
+/** Pinned reference pattern: `icon`/`icons` followed by `:` or `=` and a quoted `prefix:name` (handles nested quotes). */
+export const ICON_REFERENCE_PATTERN = /(?:icon|icons)\s*[:=]\s*["'](?:["']?([\w-]+:[\w-]+)["']?)["']/;
 /** Maximum alias-chain depth before an icon is treated as unresolved. */
 export const MAX_ALIAS_DEPTH = 10;
 /** Default icon box size when the set does not declare width/height. */
