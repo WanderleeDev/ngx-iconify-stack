@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.1.0](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.0.0...v1.1.0) (2026-08-01)
+
+
+### Bug Fixes
+
+* remove deprecated field from v1.0.0 package.json ([1fcf834](https://github.com/WanderleeDev/ngx-iconify-stack/commit/1fcf8348407ac69008d88709900f0d505501dba0))
+
 # [1.0.0](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v0.1.3...v1.0.0) (2026-08-01)
 
 
