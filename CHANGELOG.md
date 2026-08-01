@@ -1,5 +1,16 @@
 # Changelog
 
+# [1.1.2](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.1.1...v1.1.2) (2026-08-01)
+
+### Docs
+
+* add 3D floating animation to hero icon with perspective effect
+* add "How It Works" section explaining SSR, subsetting, and smart fallback
+* add "View Icon Sets" button to Interactive Sandbox (Iconify search link)
+* enhance footer branding: "Built by WanderleeDev" with direct link
+* add favicon (webp) and use in navbar and across site
+* improve landing page layout and spacing
+
 # [1.1.1](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.1.0...v1.1.1) (2026-08-01)
 
 ### Docs
