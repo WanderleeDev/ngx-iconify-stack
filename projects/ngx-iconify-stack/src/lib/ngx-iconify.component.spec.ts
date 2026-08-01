@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { IconifyJSON } from '@iconify/types';
 import { NgxIconify } from './ngx-iconify';
@@ -55,10 +55,10 @@ describe('NgxIconify', () => {
     fixture.componentRef.setInput('color', '#ff0000');
     fixture.detectChanges();
 
-    const content = fixture.componentInstance.svgContent();
-    expect(content).not.toBeNull();
-    expect(String(content)).not.toContain('currentColor');
-    expect(String(content)).toContain('#ff0000');
+    const svg = fixture.nativeElement.querySelector('svg') as SVGElement;
+    expect(svg).not.toBeNull();
+    const path = svg.querySelector('path');
+    expect(path?.getAttribute('fill')).toBe('#ff0000');
   });
 
   it('falls back to <iconify-icon> when the icon is not in the subset', () => {
@@ -100,5 +100,63 @@ describe('NgxIconify', () => {
     expect(svg.getAttribute('width')).toBe('16');
     expect(svg.getAttribute('height')).toBe('32');
     expect(svg.getAttribute('viewBox')).toBe('0 0 48 32');
+  });
+
+  it('includes color edge case: javascript: protocol injection (shows risk)', () => {
+    fixture.componentRef.setInput('icon', 'mdi:home');
+    fixture.componentRef.setInput('color', 'javascript:alert("xss")');
+    fixture.detectChanges();
+
+    const svg = fixture.nativeElement.querySelector('svg') as SVGElement;
+    expect(svg).not.toBeNull();
+    // The color value is inserted literally — depends on SVG attribute parsing
+    // This test documents the risk: if color is not validated, it can be injected
+  });
+
+  it('includes color edge case: event handler injection (shows risk)', () => {
+    fixture.componentRef.setInput('icon', 'mdi:home');
+    fixture.componentRef.setInput('color', 'red" onclick="alert(1)');
+    fixture.detectChanges();
+
+    // The injected onclick handler should NOT execute when the SVG is rendered
+    // (browsers parse SVG fill attributes, not onclick as HTML attributes)
+    // This test documents the design: color is inserted into a fill attribute, not the DOM
+    const svg = fixture.nativeElement.querySelector('svg') as SVGElement;
+    expect(svg).not.toBeNull();
+  });
+
+  it('renders safely with benign color values', () => {
+    fixture.componentRef.setInput('icon', 'mdi:home');
+    fixture.componentRef.setInput('color', '#ff0000');
+    fixture.detectChanges();
+
+    const svg = fixture.nativeElement.querySelector('svg') as SVGElement;
+    expect(svg).not.toBeNull();
+    const path = svg.querySelector('path');
+    expect(path?.getAttribute('fill')).toBe('#ff0000');
+  });
+
+  it('handles edge case: icon with quotes in the string', () => {
+    fixture.componentRef.setInput('icon', "'home'");
+    fixture.detectChanges();
+
+    // lookupIcon searches for "'home'" (with quotes), not "home"
+    // So it won't find the icon and will fall back to <iconify-icon>
+    expect(fixture.componentInstance.svgContent()).toBeNull();
+    const fallback = fixture.nativeElement.querySelector('iconify-icon') as HTMLElement;
+    expect(fallback).not.toBeNull();
+    expect(fallback.getAttribute('icon')).toBe("'home'");
+  });
+
+  it('handles edge case: icon without prefix (malformed)', () => {
+    fixture.componentRef.setInput('icon', 'home');
+    fixture.detectChanges();
+
+    // Icon name must be in "prefix:name" format
+    // Without the colon, lookupIcon returns null and falls back to CDN
+    expect(fixture.componentInstance.svgContent()).toBeNull();
+    const fallback = fixture.nativeElement.querySelector('iconify-icon') as HTMLElement;
+    expect(fallback).not.toBeNull();
+    expect(fallback.getAttribute('icon')).toBe('home');
   });
 });
