@@ -4,6 +4,7 @@ import {
   provideEnvironmentInitializer,
   makeEnvironmentProviders,
   EnvironmentProviders,
+  ErrorHandler,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { NGX_ICONIFY_CONFIG, NgxIconifyConfig } from './icon.config';
@@ -15,6 +16,8 @@ export function provideIconify(config: NgxIconifyConfig = {}): EnvironmentProvid
       const platformId = inject(PLATFORM_ID);
       if (!isPlatformBrowser(platformId)) return;
 
+      const errorHandler = inject(ErrorHandler);
+
       import('iconify-icon')
         .then(async ({ addCollection, addAPIProvider }) => {
           if (config.apiProvider) {
@@ -24,11 +27,9 @@ export function provideIconify(config: NgxIconifyConfig = {}): EnvironmentProvid
           }
           config.offlineCollections?.forEach((set) => addCollection(set));
         })
-        .catch((err) => {
-          console.error(
-            '[ngx-iconify] failed to load the iconify-icon web component; CDN fallback is unavailable',
-            err,
-          );
+        .catch((err: unknown) => {
+          const error = err instanceof Error ? err : new Error(String(err));
+          errorHandler.handleError(error);
         });
     }),
   ]);
