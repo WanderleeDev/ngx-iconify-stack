@@ -5,8 +5,6 @@ import * as ts from 'typescript';
 
 /** Package.json script that (re)generates the offline icon subset. */
 export const ICONS_SCRIPT = 'ngx-iconify-stack:generate-icons';
-/** Legacy script name removed in favor of ICONS_SCRIPT. */
-export const LEGACY_ICONS_SCRIPT = 'icons';
 
 /** Split a `a && b && c` script chain into trimmed segments. */
 function splitChain(script: string): string[] {
@@ -16,12 +14,11 @@ function splitChain(script: string): string[] {
     .filter(Boolean);
 }
 
-/** True for legacy `collect-icons` segments, the legacy `icons` chain, or the new marker. */
+/** True for legacy `collect-icons` segments or the new marker. */
 function isIconSegment(seg: string): boolean {
   return (
     seg.includes('collect-icons') ||
-    seg === `npm run ${ICONS_SCRIPT}` ||
-    seg === `npm run ${LEGACY_ICONS_SCRIPT}`
+    seg === `npm run ${ICONS_SCRIPT}`
   );
 }
 
@@ -40,10 +37,6 @@ export function wireIconifyScripts(
 
   let changed = false;
 
-  if (pkg.scripts[LEGACY_ICONS_SCRIPT] !== undefined) {
-    delete pkg.scripts[LEGACY_ICONS_SCRIPT];
-    changed = true;
-  }
   if (!(pkg.scripts[ICONS_SCRIPT] ?? '').includes('generate-icon-subset')) {
     pkg.scripts[ICONS_SCRIPT] = `ng generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
     changed = true;
