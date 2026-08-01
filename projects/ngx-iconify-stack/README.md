@@ -2,6 +2,8 @@
 
 # 🎨 ngx-iconify-stack
 
+![ngx-iconify-stack banner](https://raw.githubusercontent.com/WanderleeDev/ngx-iconify-stack/main/projects/docs/public/banner.png)
+
 **A lightweight, SSR-safe Angular wrapper for Iconify.**  
 Driven by signals, with offline icon subsetting and zero runtime overhead.
 
