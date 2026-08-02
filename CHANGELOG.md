@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.4](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.3...v1.2.4) (2026-08-02)
+
+
+### Bug Fixes
+
+* **schematics:** require explicit project in ng-add and generate-icon-subset ([ef5d3c9](https://github.com/WanderleeDev/ngx-iconify-stack/commit/ef5d3c947541e67158102008353dd762afc1a8a2))
+
 ## [1.2.3](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.2...v1.2.3) (2026-08-02)
 
 ### Bug Fixes
