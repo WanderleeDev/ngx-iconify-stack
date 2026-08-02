@@ -25,6 +25,7 @@ Signal-based Angular wrapper for [Iconify](https://iconify.design) with SSR-safe
 ## Interaction Rules
 
 - **When adding icons**: ask the user for the icon name in \`prefix:name\` format (e.g. \`mdi:home\`) and whether it must work offline (SSR) or CDN-only is fine.
+- **Finding icons**: when the user does not know the exact icon name, ASK them which they prefer — offer the [Iconify icon sets catalog](https://icon-sets.iconify.design/) URL so they can browse it themselves, or offer to look it up for them (the agent can fetch that page to find the right set and exact \`prefix:name\`). Never silently decide on their behalf.
 - **SSR/offline**: icons that must render in server HTML need to be in the offline subset — run the subset generation after template changes.
 - **CDN-only**: skip \`offlineCollections\` entirely; the component works without the provider.
 
@@ -39,6 +40,7 @@ Signal-based Angular wrapper for [Iconify](https://iconify.design) with SSR-safe
 ## References and Guides
 
 - **API Reference & Config**: [references/api-reference${MD}](references/api-reference${MD})
+- **Iconify icon sets catalog**: [icon-sets.iconify.design](https://icon-sets.iconify.design/) — browse sets and find exact \`prefix:name\` values
 
 ## Component Example
 
@@ -85,9 +87,11 @@ export const appConfig: ApplicationConfig = {
 | \`height\` | \`number \\| string\` | — | Explicit height (overrides \`size\`) |
 | \`color\` | \`string\` | — | CSS color for the icon |
 | \`class\` | \`string\` | — | CSS class added to the rendered icon element |
-| \`inline\` | \`boolean\` | \`false\` | Align to text baseline |
+| \`inline\` | \`boolean\` | \`false\` | Align to text baseline (boolean attribute) |
 | \`mode\` | \`"svg" \\| "bg" \\| "mask" \\| "style"\` | — | Rendering mode for \`<iconify-icon>\` |
-| \`noObserver\` | \`boolean\` | \`false\` | Disable lazy loading observer |
+| \`noObserver\` | \`boolean\` | \`false\` | Disable lazy loading observer (boolean attribute) |
+
+\`inline\` and \`noObserver\` use a \`booleanAttribute\` transform, so presence syntax works: \`<ngx-iconify icon="mdi:home" inline />\` is equivalent to \`[inline]="true"\`.
 
 All inputs mirror \`<iconify-icon>\` attributes — see [Iconify docs](https://iconify.design/docs/iconify-icon/#attributes).
 
@@ -109,7 +113,7 @@ import { NgxIconify } from 'ngx-iconify-stack';
   template: \`
     <ngx-iconify icon="mdi:home" [size]="24" />
     <ngx-iconify icon="lucide:arrow-right" color="#f59e0b" />
-    <ngx-iconify icon="tabler:brand-github" [inline]="true" />
+    <ngx-iconify icon="tabler:brand-github" inline />
   \`,
 })
 export class ExampleComponent {}
