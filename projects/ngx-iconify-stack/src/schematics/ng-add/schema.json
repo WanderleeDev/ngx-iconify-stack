@@ -6,7 +6,11 @@
   "properties": {
     "project": {
       "type": "string",
-      "description": "Target project name (defaults to the first application project)"
+      "description": "Target project name (required in multiproject workspaces)",
+      "x-prompt": "Which project should receive ngx-iconify-stack?",
+      "$default": {
+        "$source": "projectName"
+      }
     },
     "installSkill": {
       "type": "boolean",
@@ -15,5 +19,5 @@
       "x-prompt": "Generate the AI agent skill (SKILL.md) for ngx-iconify-stack in the project?"
     }
   },
-  "required": []
+  "required": ["project"]
 }
