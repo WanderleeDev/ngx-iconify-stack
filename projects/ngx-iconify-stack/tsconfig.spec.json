@@ -9,6 +9,7 @@
   "include": [
     "src/**/*.d.ts",
     "src/lib/**/*.spec.ts",
-    "src/schematics/project.spec.ts"
+    "src/schematics/project.spec.ts",
+    "src/schematics/utils.spec.ts"
   ]
 }

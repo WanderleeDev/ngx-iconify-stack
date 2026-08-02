@@ -4,6 +4,7 @@ import type { IconifyJSON } from '@iconify/types';
 import { GenerateIconSubsetOptions } from './schema';
 import { buildSubset, iconSetJsonPath, readJsonFile, scanIcons } from './icons';
 import {
+  assertAngularProject,
   patchAppConfig,
   resolveProjectName,
   toRelativeImport,
@@ -38,6 +39,8 @@ export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
     const workspace = await getWorkspace(tree);
     const project = workspace.projects.get(projectName);
     const sourceRoot = project?.sourceRoot ?? 'src';
+
+    assertAngularProject(tree, sourceRoot, projectName);
 
     // ── 1. Inline scan + subset build ──
     const found = scanIcons(tree, sourceRoot);

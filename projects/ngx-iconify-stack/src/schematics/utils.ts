@@ -1,5 +1,5 @@
 // utils/patch-app-config.ts
-import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
 import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { addRootProvider } from '@schematics/angular/utility';
 import * as ts from 'typescript';
@@ -26,15 +26,42 @@ export async function resolveProjectName(
 }
 
 /**
- * Idempotent script wiring for the skill generator: adds the
- * `ngx-iconify-stack:skill` script when missing, leaves a present-but-different
- * entry untouched. Returns 'added' | 'unchanged' | 'differs' so callers can log
- * the right message without duplicating the comparison logic.
+ * True when a `main.ts` content looks like a NestJS bootstrap instead of an
+ * Angular entry point. Used to fail loudly instead of patching a Nest app.
+ */
+export function looksLikeNestMain(mainContent: string | null | undefined): boolean {
+  if (!mainContent) return false;
+  return /@nestjs\/core|NestFactory\.create/.test(mainContent);
+}
+
+/**
+ * Guards a schematic against targeting a non-Angular application. When the
+ * resolved project's `main.ts` is a NestJS bootstrap, stop with an actionable
+ * error instead of wiring the provider/scripts into the wrong app.
+ */
+export function assertAngularProject(
+  tree: Tree,
+  sourceRoot: string,
+  projectName: string,
+): void {
+  const mainPath = `${sourceRoot}/main.ts`.replace(/^\//, '');
+  if (!looksLikeNestMain(tree.read(mainPath)?.toString())) return;
+  throw new SchematicsException(
+    `"${projectName}" looks like a NestJS application, not an Angular app. ` +
+      `Pass --project <angular-app-name> to target the Angular app.`,
+  );
+}
+
+/**
+ * Idempotent script wiring for the skill generator: adds or rewrites the
+ * `ngx-iconify-stack:skill` script so it always targets the current project.
+ * Returns 'added' | 'updated' | 'unchanged' so callers can log the right
+ * message without duplicating the comparison logic.
  */
 export function wireSkillScript(
   pkg: { scripts?: Record<string, string> },
   projectName: string,
-): 'added' | 'unchanged' | 'differs' {
+): 'added' | 'updated' | 'unchanged' {
   pkg.scripts ??= {};
   const command = `ng generate ngx-iconify-stack:skill --project ${projectName}`;
   const existing = pkg.scripts[SKILL_SCRIPT];
@@ -42,7 +69,9 @@ export function wireSkillScript(
     pkg.scripts[SKILL_SCRIPT] = command;
     return 'added';
   }
-  return existing === command ? 'unchanged' : 'differs';
+  if (existing === command) return 'unchanged';
+  pkg.scripts[SKILL_SCRIPT] = command;
+  return 'updated';
 }
 
 /** Split a `a && b && c` script chain into trimmed segments. */
@@ -76,8 +105,9 @@ export function wireIconifyScripts(
 
   let changed = false;
 
-  if (!(pkg.scripts[ICONS_SCRIPT] ?? '').includes('generate-icon-subset')) {
-    pkg.scripts[ICONS_SCRIPT] = `ng generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
+  const expectedIconsScript = `ng generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
+  if (pkg.scripts[ICONS_SCRIPT] !== expectedIconsScript) {
+    pkg.scripts[ICONS_SCRIPT] = expectedIconsScript;
     changed = true;
   }
 

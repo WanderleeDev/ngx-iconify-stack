@@ -1,5 +1,6 @@
 import { getWorkspace } from '@schematics/angular/utility/workspace';
 import {
+  assertAngularProject,
   patchAppConfig,
   resolveProjectName,
   SKILL_SCRIPT,
@@ -45,6 +46,8 @@ function addProvider(options: NgAddOptions): Rule {
     const workspace = await getWorkspace(tree);
     const project = workspace.projects.get(projectName);
     const sourceRoot = project?.sourceRoot ?? 'src';
+
+    assertAngularProject(tree, sourceRoot, projectName);
 
     await patchAppConfig(
       tree,
@@ -102,13 +105,14 @@ function installSkill(options: NgAddOptions): Rule {
       context.logger.info(
         ` \u001b[33mM\u001b[0m package.json (${SKILL_SCRIPT} script added)`,
       );
-    } else if (result === 'unchanged') {
+    } else if (result === 'updated') {
+      tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
       context.logger.info(
-        ` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script already correct — skipped)`,
+        ` \u001b[33mM\u001b[0m package.json (${SKILL_SCRIPT} script updated to --project ${projectName})`,
       );
     } else {
       context.logger.info(
-        ` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script differs — left unchanged)`,
+        ` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script already correct — skipped)`,
       );
     }
 

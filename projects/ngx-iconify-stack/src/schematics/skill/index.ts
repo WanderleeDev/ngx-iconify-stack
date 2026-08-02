@@ -156,10 +156,11 @@ export function skill(options: SkillOptions): Rule {
       if (result === 'added') {
         tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
         context.logger.info(` \u001b[32m✔\u001b[0m package.json (${SKILL_SCRIPT} script added)`);
-      } else if (result === 'unchanged') {
-        context.logger.info(` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script already present)`);
+      } else if (result === 'updated') {
+        tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+        context.logger.info(` \u001b[33mM\u001b[0m package.json (${SKILL_SCRIPT} script updated to --project ${projectName})`);
       } else {
-        context.logger.info(` \u001b[33mM\u001b[0m package.json (${SKILL_SCRIPT} script differs — left as-is)`);
+        context.logger.info(` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script already present)`);
       }
     }
 
