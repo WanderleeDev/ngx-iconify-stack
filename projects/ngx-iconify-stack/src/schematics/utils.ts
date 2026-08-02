@@ -6,6 +6,29 @@ import * as ts from 'typescript';
 /** Package.json script that (re)generates the offline icon subset. */
 export const ICONS_SCRIPT = 'ngx-iconify-stack:generate-icons';
 
+/** Package.json script that (re)generates the AI agent skill. */
+export const SKILL_SCRIPT = 'ngx-iconify-stack:skill';
+
+/**
+ * Idempotent script wiring for the skill generator: adds the
+ * `ngx-iconify-stack:skill` script when missing, leaves a present-but-different
+ * entry untouched. Returns 'added' | 'unchanged' | 'differs' so callers can log
+ * the right message without duplicating the comparison logic.
+ */
+export function wireSkillScript(
+  pkg: { scripts?: Record<string, string> },
+  projectName: string,
+): 'added' | 'unchanged' | 'differs' {
+  pkg.scripts ??= {};
+  const command = `ng generate ngx-iconify-stack:skill --project ${projectName}`;
+  const existing = pkg.scripts[SKILL_SCRIPT];
+  if (!existing) {
+    pkg.scripts[SKILL_SCRIPT] = command;
+    return 'added';
+  }
+  return existing === command ? 'unchanged' : 'differs';
+}
+
 /** Split a `a && b && c` script chain into trimmed segments. */
 function splitChain(script: string): string[] {
   return script

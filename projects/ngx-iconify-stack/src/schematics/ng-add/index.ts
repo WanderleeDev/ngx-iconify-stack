@@ -1,5 +1,5 @@
 import { getWorkspace } from '@schematics/angular/utility/workspace';
-import { patchAppConfig, wireIconifyScripts } from '../utils';
+import { patchAppConfig, SKILL_SCRIPT, wireIconifyScripts, wireSkillScript } from '../utils';
 import { Rule, chain, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import {
@@ -95,23 +95,19 @@ function installSkill(options: NgAddOptions): Rule {
     const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
       scripts?: Record<string, string>;
     };
-    pkg.scripts ??= {};
-
-    const skillCmd = `ng generate ngx-iconify-stack:skill --project ${projectName}`;
-    const existing = pkg.scripts['ngx-iconify-stack:skill'];
-    if (!existing) {
-      pkg.scripts['ngx-iconify-stack:skill'] = skillCmd;
+    const result = wireSkillScript(pkg, projectName);
+    if (result === 'added') {
       tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
       context.logger.info(
-        ' \u001b[33mM\u001b[0m package.json (ngx-iconify-stack:skill script added)',
+        ` \u001b[33mM\u001b[0m package.json (${SKILL_SCRIPT} script added)`,
       );
-    } else if (existing === skillCmd) {
+    } else if (result === 'unchanged') {
       context.logger.info(
-        ' \u001b[90mℹ\u001b[0m package.json (ngx-iconify-stack:skill script already correct — skipped)',
+        ` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script already correct — skipped)`,
       );
     } else {
       context.logger.info(
-        ' \u001b[90mℹ\u001b[0m package.json (ngx-iconify-stack:skill script differs — left unchanged)',
+        ` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script differs — left unchanged)`,
       );
     }
 

@@ -1,5 +1,7 @@
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { SkillOptions } from './schema';
+import { SKILL_SCRIPT, wireSkillScript } from '../utils';
 
 // Extension constructed at runtime to avoid socket.dev "URL strings" false positive
 const MD = ['.', 'm', 'd'].join('');
@@ -133,10 +135,43 @@ export function generateSkill(tree: Tree, context: SchematicContext): void {
   }
 }
 
+/** Resolve the target project (explicit option, defaultProject, or first). */
+async function resolveProjectName(
+  tree: Tree,
+  options: SkillOptions,
+): Promise<string> {
+  const workspace = await getWorkspace(tree);
+  return (
+    options.project ??
+    (workspace.extensions['defaultProject'] as string | undefined) ??
+    [...workspace.projects.keys()][0]
+  );
+}
+
 export function skill(options: SkillOptions): Rule {
-  return (tree: Tree, context: SchematicContext) => {
-    context.logger.info(`Generating AI agent skill for project: ${options.project}`);
+  return async (tree: Tree, context: SchematicContext) => {
+    const projectName = await resolveProjectName(tree, options);
+    context.logger.info(`Generating AI agent skill for project: ${projectName}`);
+
     generateSkill(tree, context);
+
+    // Ensure the regeneration script exists so the skill can be refreshed later.
+    const pkgPath = '/package.json';
+    if (tree.exists(pkgPath)) {
+      const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
+        scripts?: Record<string, string>;
+      };
+      const result = wireSkillScript(pkg, projectName);
+      if (result === 'added') {
+        tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+        context.logger.info(` \u001b[32m✔\u001b[0m package.json (${SKILL_SCRIPT} script added)`);
+      } else if (result === 'unchanged') {
+        context.logger.info(` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script already present)`);
+      } else {
+        context.logger.info(` \u001b[33mM\u001b[0m package.json (${SKILL_SCRIPT} script differs — left as-is)`);
+      }
+    }
+
     return tree;
   };
 }
