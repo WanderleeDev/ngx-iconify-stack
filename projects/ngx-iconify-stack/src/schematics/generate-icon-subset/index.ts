@@ -5,6 +5,7 @@ import { GenerateIconSubsetOptions } from './schema';
 import { buildSubset, iconSetJsonPath, readJsonFile, scanIcons } from './icons';
 import {
   assertAngularProject,
+  detectPackageManager,
   patchAppConfig,
   resolveProjectName,
   toRelativeImport,
@@ -85,7 +86,7 @@ export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
         );
       }
 
-      wireIconifyScripts(pkg, projectName);
+      wireIconifyScripts(pkg, projectName, detectPackageManager(tree));
       tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
     }
 

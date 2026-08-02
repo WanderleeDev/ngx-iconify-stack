@@ -1,6 +1,7 @@
 import { HostTree } from '@angular-devkit/schematics';
 import {
   assertAngularProject,
+  detectPackageManager,
   ICONS_SCRIPT,
   looksLikeNestMain,
   SKILL_SCRIPT,
@@ -97,6 +98,79 @@ describe('looksLikeNestMain', () => {
     expect(looksLikeNestMain('')).toBe(false);
     expect(looksLikeNestMain(null)).toBe(false);
     expect(looksLikeNestMain(undefined)).toBe(false);
+  });
+});
+
+describe('detectPackageManager', () => {
+  it('reads the packageManager field', () => {
+    const tree = new HostTree();
+    tree.create('/package.json', JSON.stringify({ packageManager: 'pnpm@9.0.0' }));
+    expect(detectPackageManager(tree)).toBe('pnpm');
+  });
+
+  it('reads the packageManager field for yarn', () => {
+    const tree = new HostTree();
+    tree.create('/package.json', JSON.stringify({ packageManager: 'yarn@4.1.0' }));
+    expect(detectPackageManager(tree)).toBe('yarn');
+  });
+
+  it('falls back to pnpm-lock.yaml', () => {
+    const tree = new HostTree();
+    tree.create('pnpm-lock.yaml', 'lockfileVersion: 9.0');
+    expect(detectPackageManager(tree)).toBe('pnpm');
+  });
+
+  it('falls back to package-lock.json', () => {
+    const tree = new HostTree();
+    tree.create('package-lock.json', '{}');
+    expect(detectPackageManager(tree)).toBe('npm');
+  });
+
+  it('defaults to npm without any signal', () => {
+    expect(detectPackageManager(new HostTree())).toBe('npm');
+  });
+});
+
+describe('wireIconifyScripts package manager', () => {
+  it('writes prebuild with the detected runner', () => {
+    const pkg = { scripts: {} as Record<string, string> };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'pnpm');
+    expect(changed).toBe(true);
+    expect(pkg.scripts['prebuild']).toBe('pnpm run ngx-iconify-stack:generate-icons');
+  });
+
+  it('rewrites a different runner to the detected one (self-heal)', () => {
+    const pkg = {
+      scripts: {
+        prebuild: 'npm run ngx-iconify-stack:generate-icons',
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'pnpm');
+    expect(changed).toBe(true);
+    expect(pkg.scripts['prebuild']).toBe('pnpm run ngx-iconify-stack:generate-icons');
+  });
+
+  it('leaves prebuild untouched when it already uses the detected runner', () => {
+    const pkg = {
+      scripts: {
+        [ICONS_SCRIPT]:
+          'ng generate ngx-iconify-stack:generate-icon-subset --project frontend',
+        prebuild: 'pnpm run ngx-iconify-stack:generate-icons',
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'pnpm');
+    expect(changed).toBe(false);
+  });
+
+  it('recognizes a yarn runner segment in prestart cleanup', () => {
+    const pkg = {
+      scripts: {
+        prestart: 'yarn run ngx-iconify-stack:generate-icons && tsc -p tsconfig.server.json',
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'yarn');
+    expect(changed).toBe(true);
+    expect(pkg.scripts['prestart']).toBe('tsc -p tsconfig.server.json');
   });
 });
 

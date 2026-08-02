@@ -26,6 +26,34 @@ export async function resolveProjectName(
 }
 
 /**
+ * Detect the workspace package manager (monorepo-aware).
+ * Reads the `packageManager` field first, then falls back to lockfiles.
+ * Unknown or absent managers default to `npm`.
+ */
+export function detectPackageManager(tree: Tree): string {
+  try {
+    const pkgPath = '/package.json';
+    if (tree.exists(pkgPath)) {
+      const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
+        packageManager?: string;
+      };
+      const pmField = pkg.packageManager;
+      if (pmField) {
+        const name = pmField.split('@')[0];
+        if (['npm', 'yarn', 'pnpm', 'bun'].includes(name)) return name;
+      }
+    }
+  } catch {
+    // malformed package.json — fall through to lockfile detection
+  }
+  if (tree.exists('pnpm-lock.yaml')) return 'pnpm';
+  if (tree.exists('yarn.lock')) return 'yarn';
+  if (tree.exists('bun.lockb')) return 'bun';
+  if (tree.exists('package-lock.json')) return 'npm';
+  return 'npm';
+}
+
+/**
  * True when a `main.ts` content looks like a NestJS bootstrap instead of an
  * Angular entry point. Used to fail loudly instead of patching a Nest app.
  */
@@ -82,11 +110,11 @@ function splitChain(script: string): string[] {
     .filter(Boolean);
 }
 
-/** True for legacy `collect-icons` segments or the new marker. */
+/** True for legacy `collect-icons` segments or any package manager's marker. */
 function isIconSegment(seg: string): boolean {
   return (
     seg.includes('collect-icons') ||
-    seg === `npm run ${ICONS_SCRIPT}`
+    ['npm', 'yarn', 'pnpm', 'bun'].some((pm) => seg === `${pm} run ${ICONS_SCRIPT}`)
   );
 }
 
@@ -95,11 +123,14 @@ function isIconSegment(seg: string): boolean {
  * adds the `ngx-iconify-stack:generate-icons` script (removing the legacy
  * `icons` entry), creates `prebuild` when missing or chains into it, strips
  * icon segments from `prestart`, and removes the dead legacy `collect-icons`.
- * Returns true when the package.json must be rewritten.
+ * The `prebuild` wiring uses the detected package manager runner (`${pm} run`)
+ * so pnpm/yarn/bun workspaces are not forced through npm. Returns true when
+ * the package.json must be rewritten.
  */
 export function wireIconifyScripts(
   pkg: { scripts?: Record<string, string> },
   projectName: string,
+  packageManager = 'npm',
 ): boolean {
   pkg.scripts ??= {};
 
@@ -111,20 +142,19 @@ export function wireIconifyScripts(
     changed = true;
   }
 
+  const run = `${packageManager} run ${ICONS_SCRIPT}`;
   const prebuildSegs = splitChain(pkg.scripts['prebuild'] ?? '');
   if (prebuildSegs.some(isIconSegment)) {
-    const next = prebuildSegs
-      .map((seg) => (isIconSegment(seg) ? `npm run ${ICONS_SCRIPT}` : seg))
-      .join(' && ');
+    const next = prebuildSegs.map((seg) => (isIconSegment(seg) ? run : seg)).join(' && ');
     if (pkg.scripts['prebuild'] !== next) {
       pkg.scripts['prebuild'] = next;
       changed = true;
     }
   } else if (prebuildSegs.length > 0) {
-    pkg.scripts['prebuild'] = `${prebuildSegs.join(' && ')} && npm run ${ICONS_SCRIPT}`;
+    pkg.scripts['prebuild'] = `${prebuildSegs.join(' && ')} && ${run}`;
     changed = true;
-  } else if ((pkg.scripts['prebuild'] ?? '') !== `npm run ${ICONS_SCRIPT}`) {
-    pkg.scripts['prebuild'] = `npm run ${ICONS_SCRIPT}`;
+  } else if ((pkg.scripts['prebuild'] ?? '') !== run) {
+    pkg.scripts['prebuild'] = run;
     changed = true;
   }
 
