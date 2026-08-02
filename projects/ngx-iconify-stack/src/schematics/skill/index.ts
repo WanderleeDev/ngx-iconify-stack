@@ -11,7 +11,7 @@ description: "Trigger: ngx-iconify-stack, ngx-iconify, add iconify icons, icon s
 compatibility: Angular 20+ with TypeScript. Optional iconify-icon web component.
 metadata:
   author: WanderleeDev
-  version: '1.0.0'
+  version: '1.1.2'
 ---
 
 # ngx-iconify-stack
@@ -59,7 +59,7 @@ Environment providers function. Call once in root \`app.config.ts\`.
 
 \`\`\`typescript
 import { provideIconify } from 'ngx-iconify-stack';
-import { iconSubset } from './ngx-iconify/icon-subset';
+import { iconSubset } from '../ngx-iconify/icon-subset';
 
 export const appConfig: ApplicationConfig = {
   providers: [
