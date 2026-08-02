@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.1...v1.2.2) (2026-08-02)
+
+### Bug Fixes
+
+* **schematics:** self-heal package.json scripts when rerun with a different `--project` (previously left `differs` untouched)
+* **schematics:** guard `ng-add`, `generate-icon-subset`, and `skill` against non-Angular (NestJS) targets — abort with an actionable `--project <app>` error before writing anything
+
 ## [1.2.1](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.0...v1.2.1) (2026-08-02)
 
 # [1.2.0](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.1.2...v1.2.0) (2026-08-02)

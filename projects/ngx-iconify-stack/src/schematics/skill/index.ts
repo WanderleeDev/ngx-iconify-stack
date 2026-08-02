@@ -18,7 +18,7 @@ description: "Trigger: ngx-iconify-stack, ngx-iconify, add iconify icons, icon s
 compatibility: Angular 20+ with TypeScript. Optional iconify-icon web component.
 metadata:
   author: WanderleeDev
-  version: '1.2.1'
+  version: '1.2.2'
 ---
 
 # ngx-iconify-stack
