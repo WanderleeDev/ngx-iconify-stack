@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.3](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.2...v1.2.3) (2026-08-02)
+
+### Bug Fixes
+
+* **schematics:** respect the workspace package manager (pnpm/yarn/bun) for the install task and `prebuild` wiring instead of hardcoding npm — fixes "Package install failed" in pnpm monorepos (Nx, Turborepo)
+
 ## [1.2.2](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.1...v1.2.2) (2026-08-02)
 
 ### Bug Fixes
