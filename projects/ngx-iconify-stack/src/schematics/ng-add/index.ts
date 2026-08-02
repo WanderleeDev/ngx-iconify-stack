@@ -1,5 +1,11 @@
 import { getWorkspace } from '@schematics/angular/utility/workspace';
-import { patchAppConfig, SKILL_SCRIPT, wireIconifyScripts, wireSkillScript } from '../utils';
+import {
+  patchAppConfig,
+  resolveProjectName,
+  SKILL_SCRIPT,
+  wireIconifyScripts,
+  wireSkillScript,
+} from '../utils';
 import { Rule, chain, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import {
@@ -31,11 +37,6 @@ function addIconifyDependency(): Rule {
     });
     return tree;
   };
-}
-
-async function resolveProjectName(tree: Tree, options: NgAddOptions): Promise<string> {
-  const workspace = await getWorkspace(tree);
-  return options.project ?? [...workspace.projects.keys()][0];
 }
 
 function addProvider(options: NgAddOptions): Rule {

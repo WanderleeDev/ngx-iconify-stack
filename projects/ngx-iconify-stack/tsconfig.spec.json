@@ -4,8 +4,11 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/spec",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "node"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"],
-  "exclude": ["src/schematics/**"]
+  "include": [
+    "src/**/*.d.ts",
+    "src/lib/**/*.spec.ts",
+    "src/schematics/project.spec.ts"
+  ]
 }

@@ -6,10 +6,7 @@
   "properties": {
     "project": {
       "type": "string",
-      "description": "Target project name",
-      "$default": {
-        "$source": "project"
-      }
+      "description": "Target project name (defaults to the first application project)"
     },
     "installSkill": {
       "type": "boolean",

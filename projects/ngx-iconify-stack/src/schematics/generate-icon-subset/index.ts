@@ -3,7 +3,12 @@ import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import type { IconifyJSON } from '@iconify/types';
 import { GenerateIconSubsetOptions } from './schema';
 import { buildSubset, iconSetJsonPath, readJsonFile, scanIcons } from './icons';
-import { patchAppConfig, wireIconifyScripts } from '../utils';
+import {
+  patchAppConfig,
+  resolveProjectName,
+  toRelativeImport,
+  wireIconifyScripts,
+} from '../utils';
 
 /** Stable file header so reruns stay byte-identical. */
 const OUTPUT_HEADER =
@@ -18,17 +23,23 @@ function renderSubsetFile(collections: IconifyJSON[]): string {
   );
 }
 
+/** Config entry point used when wiring the subset import (Angular 20+ standalone). */
+function resolveConfigFile(tree: Tree, sourceRoot: string): string {
+  const appConfigPath = `${sourceRoot}/app/app.config.ts`.replace(/^\//, '');
+  const mainPath = `${sourceRoot}/main.ts`.replace(/^\//, '');
+  if (tree.exists(appConfigPath)) return appConfigPath;
+  if (tree.exists(mainPath)) return mainPath;
+  return appConfigPath;
+}
+
 export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
+    const projectName = await resolveProjectName(tree, options);
     const workspace = await getWorkspace(tree);
-    const projectName =
-      options.project ??
-      (workspace.extensions['defaultProject'] as string | undefined) ??
-      [...workspace.projects.keys()][0];
     const project = workspace.projects.get(projectName);
     const sourceRoot = project?.sourceRoot ?? 'src';
 
-    // ── 1. Inline scan + subset build (replaces the collect-icons script) ──
+    // ── 1. Inline scan + subset build ──
     const found = scanIcons(tree, sourceRoot);
     const collections = buildSubset(tree, found, context.logger);
 
@@ -41,12 +52,13 @@ export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
     }
     context.logger.info(`✓ Subset written to ${outputPath}`);
 
-    // ── 2. Legacy migration + script wiring + missing-set auto-install ──
+    // ── 2. Script wiring + missing-set auto-install ──
     const pkgPath = '/package.json';
     if (tree.exists(pkgPath)) {
+      // One-shot cleanup from older library versions that shipped a root script.
       if (tree.exists('/scripts/collect-icons.mjs')) {
         tree.delete('/scripts/collect-icons.mjs');
-        context.logger.info('✓ Deleted legacy scripts/collect-icons.mjs');
+        context.logger.info('✓ Deleted obsolete scripts/collect-icons.mjs');
       }
 
       const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
@@ -71,9 +83,13 @@ export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
       }
 
       wireIconifyScripts(pkg, projectName);
-      tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');    }
+      tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+    }
 
     // ── 3. Wire the subset into app.config via the shared patcher ──
+    const configFile = resolveConfigFile(tree, sourceRoot);
+    const subsetImport = toRelativeImport(configFile, outputPath);
+
     await patchAppConfig(
       tree,
       context,
@@ -82,7 +98,7 @@ export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
       'provideIconify',
       'ngx-iconify-stack',
       projectName,
-      [{ symbol: 'iconSubset', module: '../generated/icon-subset' }],
+      [{ symbol: 'iconSubset', module: subsetImport }],
     );
   };
 }

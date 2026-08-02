@@ -1,13 +1,29 @@
 // utils/patch-app-config.ts
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { addRootProvider } from '@schematics/angular/utility';
 import * as ts from 'typescript';
+import { pickProjectName, toRelativeImport } from './project';
+
+export { pickProjectName, toRelativeImport } from './project';
 
 /** Package.json script that (re)generates the offline icon subset. */
 export const ICONS_SCRIPT = 'ngx-iconify-stack:generate-icons';
 
 /** Package.json script that (re)generates the AI agent skill. */
 export const SKILL_SCRIPT = 'ngx-iconify-stack:skill';
+
+/**
+ * Resolve the target Angular project for a schematic (Angular 20+).
+ * See {@link pickProjectName} for selection rules — no legacy `defaultProject`.
+ */
+export async function resolveProjectName(
+  tree: Tree,
+  options: { project?: string } = {},
+): Promise<string> {
+  const workspace = await getWorkspace(tree);
+  return pickProjectName(workspace.projects, options.project);
+}
 
 /**
  * Idempotent script wiring for the skill generator: adds the

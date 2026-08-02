@@ -1,5 +1,5 @@
 // icons.ts — inline icon scan + subset build for the generate-icon-subset schematic.
-// Ported from scripts/collect-icons.mjs (behavior pinned by the spec): the factory now
+// Behavior pinned by the subset schematic contract: the factory now
 // executes scanning/subsetting directly instead of emitting a script file.
 import { Tree } from '@angular-devkit/schematics';
 import type { IconifyJSON } from '@iconify/types';

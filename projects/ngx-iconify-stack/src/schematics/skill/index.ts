@@ -1,7 +1,6 @@
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
-import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { SkillOptions } from './schema';
-import { SKILL_SCRIPT, wireSkillScript } from '../utils';
+import { resolveProjectName, SKILL_SCRIPT, wireSkillScript } from '../utils';
 
 // Extension constructed at runtime to avoid socket.dev "URL strings" false positive
 const MD = ['.', 'm', 'd'].join('');
@@ -13,7 +12,7 @@ description: "Trigger: ngx-iconify-stack, ngx-iconify, add iconify icons, icon s
 compatibility: Angular 20+ with TypeScript. Optional iconify-icon web component.
 metadata:
   author: WanderleeDev
-  version: '1.1.2'
+  version: '1.2.1'
 ---
 
 # ngx-iconify-stack
@@ -33,6 +32,7 @@ Signal-based Angular wrapper for [Iconify](https://iconify.design) with SSR-safe
 
 - Provide config **once** in root \`app.config.ts\` via \`provideIconify({ offlineCollections: iconSubset })\`.
 - Regenerate the subset after adding/removing icons in templates: run \`npm run ngx-iconify-stack:generate-icons\` (wired into \`prebuild\`), or \`npx ng generate ngx-iconify-stack:generate-icon-subset --project <name>\`.
+- In Nx workspaces run \`nx g ngx-iconify-stack:generate-icon-subset --project <name>\` instead of \`ng generate\`.
 - Icons in the subset render inline \`<svg>\` (no \`@defer\` needed — no hydration gap). Icons outside it render \`<iconify-icon>\` from the CDN.
 - Inputs map to \`<iconify-icon>\` attributes — see the [attribute docs](https://iconify.design/docs/iconify-icon/#attributes).
 - Install the peer dependency \`iconify-icon\` when the CDN fallback is used.
@@ -137,19 +137,6 @@ export function generateSkill(tree: Tree, context: SchematicContext): void {
       context.logger.info(` \u001b[36mA\u001b[0m ${file.path}`);
     }
   }
-}
-
-/** Resolve the target project (explicit option, defaultProject, or first). */
-async function resolveProjectName(
-  tree: Tree,
-  options: SkillOptions,
-): Promise<string> {
-  const workspace = await getWorkspace(tree);
-  return (
-    options.project ??
-    (workspace.extensions['defaultProject'] as string | undefined) ??
-    [...workspace.projects.keys()][0]
-  );
 }
 
 export function skill(options: SkillOptions): Rule {

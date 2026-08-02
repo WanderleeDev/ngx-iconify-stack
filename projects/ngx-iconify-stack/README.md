@@ -48,6 +48,15 @@ The schematic installs `iconify-icon`, adds the provider to `app.config.ts`, wir
 > ng generate ngx-iconify-stack:ng-add
 > ```
 
+> [!TIP]
+> **Using an Nx monorepo?**
+> Since `ng add` doesn't run in Nx workspaces, use the Nx-native two-step process:
+>
+> ```bash
+> nx add ngx-iconify-stack
+> nx g ngx-iconify-stack:ng-add --project <app-name>
+> ```
+
 ---
 
 ## 🛠️ Setup
@@ -71,6 +80,9 @@ npx ng generate ngx-iconify-stack:generate-icon-subset --project <project-name>
 # or, if the schematic wired it up for you:
 npm run ngx-iconify-stack:generate-icons
 ```
+
+> [!NOTE]
+> In a monorepo (Nx or multi-project Angular workspace) always pass `--project <app-name>` — without it, the schematic targets the first application project it finds.
 
 Skip `offlineCollections` entirely if you only want CDN icons. The component works without the provider.
 
