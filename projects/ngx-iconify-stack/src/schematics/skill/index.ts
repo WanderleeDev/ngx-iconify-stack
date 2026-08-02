@@ -1,6 +1,12 @@
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { SkillOptions } from './schema';
-import { resolveProjectName, SKILL_SCRIPT, wireSkillScript } from '../utils';
+import {
+  assertAngularProject,
+  resolveProjectName,
+  SKILL_SCRIPT,
+  wireSkillScript,
+} from '../utils';
 
 // Extension constructed at runtime to avoid socket.dev "URL strings" false positive
 const MD = ['.', 'm', 'd'].join('');
@@ -142,6 +148,10 @@ export function generateSkill(tree: Tree, context: SchematicContext): void {
 export function skill(options: SkillOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     const projectName = await resolveProjectName(tree, options);
+    const sourceRoot =
+      (await getWorkspace(tree)).projects.get(projectName)?.sourceRoot ?? 'src';
+    assertAngularProject(tree, sourceRoot, projectName);
+
     context.logger.info(`Generating AI agent skill for project: ${projectName}`);
 
     generateSkill(tree, context);
