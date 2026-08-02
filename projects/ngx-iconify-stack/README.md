@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎨 ngx-iconify-stack
+# ✨ ngx-iconify-stack
 
 ![ngx-iconify-stack banner](https://raw.githubusercontent.com/WanderleeDev/ngx-iconify-stack/main/projects/docs/public/banner.png)
 
