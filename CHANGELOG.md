@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.2.0](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.1.2...v1.2.0) (2026-08-02)
+
+
+### Bug Fixes
+
+* **schematics:** correct icon-subset import path and version in generated skill ([31a5053](https://github.com/WanderleeDev/ngx-iconify-stack/commit/31a50531ad80b1817828a019ea2563c4a381f4ed))
+
+
+### Features
+
+* **schematics:** wire ngx-iconify-stack:skill script into package.json ([5f41c12](https://github.com/WanderleeDev/ngx-iconify-stack/commit/5f41c12d7ecc0eeeaf17f4a703867cf620276fb9))
+
 # [1.1.2](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.1.1...v1.1.2) (2026-08-01)
 
 ### Docs
