@@ -6,7 +6,11 @@
   "properties": {
     "project": {
       "type": "string",
-      "description": "Target project name (defaults to the first application project)"
+      "description": "Target project name (defaults to the first application project)",
+      "x-prompt": "Which project should receive the ngx-iconify-stack skill?",
+      "$default": {
+        "$source": "projectName"
+      }
     }
   },
   "required": []
