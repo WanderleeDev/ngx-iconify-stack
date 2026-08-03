@@ -40,6 +40,12 @@ function addIconifyDependency(): Rule {
       version: '^3.0.2',
       overwrite: false,
     });
+    addPackageJsonDependency(tree, {
+      type: NodeDependencyType.Dev,
+      name: '@iconify/types',
+      version: '^2.0.0',
+      overwrite: false,
+    });
     return tree;
   };
 }
