@@ -88,9 +88,9 @@ export const appConfig: ApplicationConfig = {
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
 | \`icon\` | \`string\` | **required** | Iconify icon name, e.g. \`"mdi:home"\` |
-| \`size\` | \`number\` | — | Sets both width and height |
-| \`width\` | \`number \\| string\` | — | Explicit width (overrides \`size\`) |
-| \`height\` | \`number \\| string\` | — | Explicit height (overrides \`size\`) |
+| \`size\` | \`number \\| string\` | \`16px\` | Sets both width and height (e.g. \`"1em"\`, \`"24px"\`, \`24\`) |
+| \`width\` | \`number \\| string\` | \`16px\` | Explicit width (overrides \`size\`) |
+| \`height\` | \`number \\| string\` | icon's native | Explicit height (overrides \`size\`); falls back to the icon's native height when unset |
 | \`color\` | \`string\` | — | CSS color for the icon |
 | \`class\` | \`string\` | — | CSS class added to the rendered icon element |
 | \`inline\` | \`boolean\` | \`false\` | Align to text baseline (boolean attribute) |
