@@ -2,6 +2,7 @@ import { getWorkspace } from '@schematics/angular/utility/workspace';
 import {
   assertAngularProject,
   detectPackageManager,
+  detectRunner,
   patchAppConfig,
   resolveProjectName,
   SKILL_SCRIPT,
@@ -74,7 +75,12 @@ function wireIconifyScriptsRule(options: NgAddOptions): Rule {
     };
 
     const projectName = await resolveProjectName(tree, options);
-    const changed = wireIconifyScripts(pkg, projectName, detectPackageManager(tree));
+    const changed = wireIconifyScripts(
+      pkg,
+      projectName,
+      detectPackageManager(tree),
+      detectRunner(tree),
+    );
     if (!changed) {
       context.logger.info(
         ` \u001b[90mℹ\u001b[0m package.json (${'ngx-iconify-stack:generate-icons'} script + prebuild already correct — skipped)`,
@@ -102,7 +108,7 @@ function installSkill(options: NgAddOptions): Rule {
     const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
       scripts?: Record<string, string>;
     };
-    const result = wireSkillScript(pkg, projectName);
+    const result = wireSkillScript(pkg, projectName, detectRunner(tree));
     if (result === 'added') {
       tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
       context.logger.info(

@@ -81,6 +81,16 @@ export function assertAngularProject(
 }
 
 /**
+ * Detect the workspace schematic runner: `nx` in Nx workspaces (nx.json
+ * present), `ng` everywhere else. Injected scripts must call the runner that
+ * actually exists in the workspace — Nx monorepos often don't install the
+ * Angular CLI binary (`ng`), while plain/Turborepo workspaces rely on it.
+ */
+export function detectRunner(tree: Tree): 'nx' | 'ng' {
+  return tree.exists('nx.json') ? 'nx' : 'ng';
+}
+
+/**
  * Idempotent script wiring for the skill generator: adds or rewrites the
  * `ngx-iconify-stack:skill` script so it always targets the current project.
  * Returns 'added' | 'updated' | 'unchanged' so callers can log the right
@@ -89,9 +99,10 @@ export function assertAngularProject(
 export function wireSkillScript(
   pkg: { scripts?: Record<string, string> },
   projectName: string,
+  runner: 'nx' | 'ng' = 'ng',
 ): 'added' | 'updated' | 'unchanged' {
   pkg.scripts ??= {};
-  const command = `ng generate ngx-iconify-stack:skill --project ${projectName}`;
+  const command = `${runner} generate ngx-iconify-stack:skill --project ${projectName}`;
   const existing = pkg.scripts[SKILL_SCRIPT];
   if (!existing) {
     pkg.scripts[SKILL_SCRIPT] = command;
@@ -131,12 +142,13 @@ export function wireIconifyScripts(
   pkg: { scripts?: Record<string, string> },
   projectName: string,
   packageManager = 'npm',
+  runner: 'nx' | 'ng' = 'ng',
 ): boolean {
   pkg.scripts ??= {};
 
   let changed = false;
 
-  const expectedIconsScript = `ng generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
+  const expectedIconsScript = `${runner} generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
   if (pkg.scripts[ICONS_SCRIPT] !== expectedIconsScript) {
     pkg.scripts[ICONS_SCRIPT] = expectedIconsScript;
     changed = true;
