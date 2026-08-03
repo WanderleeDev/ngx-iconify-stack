@@ -2,6 +2,7 @@ import { HostTree } from '@angular-devkit/schematics';
 import {
   assertAngularProject,
   detectPackageManager,
+  detectRunner,
   ICONS_SCRIPT,
   looksLikeNestMain,
   SKILL_SCRIPT,
@@ -74,6 +75,65 @@ describe('wireSkillScript', () => {
       } as Record<string, string>,
     };
     expect(wireSkillScript(pkg, 'frontend')).toBe('unchanged');
+  });
+});
+
+describe('detectRunner', () => {
+  it('returns nx when nx.json exists', () => {
+    const tree = new HostTree();
+    tree.create('nx.json', '{}');
+    expect(detectRunner(tree)).toBe('nx');
+  });
+
+  it('returns ng without nx.json (plain or Turborepo workspace)', () => {
+    expect(detectRunner(new HostTree())).toBe('ng');
+  });
+});
+
+describe('wireIconifyScripts runner (nx vs ng)', () => {
+  it('writes nx generate in Nx workspaces', () => {
+    const pkg = { scripts: {} as Record<string, string> };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'npm', 'nx');
+    expect(changed).toBe(true);
+    expect(pkg.scripts[ICONS_SCRIPT]).toBe(
+      'nx generate ngx-iconify-stack:generate-icon-subset --project frontend',
+    );
+  });
+
+  it('migrates an existing ng script to nx when the workspace is Nx', () => {
+    const pkg = {
+      scripts: {
+        [ICONS_SCRIPT]:
+          'ng generate ngx-iconify-stack:generate-icon-subset --project frontend',
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'npm', 'nx');
+    expect(changed).toBe(true);
+    expect(pkg.scripts[ICONS_SCRIPT]).toBe(
+      'nx generate ngx-iconify-stack:generate-icon-subset --project frontend',
+    );
+  });
+});
+
+describe('wireSkillScript runner (nx vs ng)', () => {
+  it('writes nx generate in Nx workspaces', () => {
+    const pkg = { scripts: {} as Record<string, string> };
+    expect(wireSkillScript(pkg, 'frontend', 'nx')).toBe('added');
+    expect(pkg.scripts[SKILL_SCRIPT]).toBe(
+      'nx generate ngx-iconify-stack:skill --project frontend',
+    );
+  });
+
+  it('migrates an existing ng script to nx when the workspace is Nx', () => {
+    const pkg = {
+      scripts: {
+        [SKILL_SCRIPT]: 'ng generate ngx-iconify-stack:skill --project frontend',
+      } as Record<string, string>,
+    };
+    expect(wireSkillScript(pkg, 'frontend', 'nx')).toBe('updated');
+    expect(pkg.scripts[SKILL_SCRIPT]).toBe(
+      'nx generate ngx-iconify-stack:skill --project frontend',
+    );
   });
 });
 
