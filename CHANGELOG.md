@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.6](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.5...v1.2.6) (2026-08-03)
+
+
+### Features
+
+* **iconify:** accept string | number for size, width and height ([684cc36](https://github.com/WanderleeDev/ngx-iconify-stack/commit/684cc368eda1552636891cc78fe05e8412c37a52))
+* **schematics:** install @iconify/types on ng-add ([eb25402](https://github.com/WanderleeDev/ngx-iconify-stack/commit/eb2540217f3530148049983f8fc9fa965e58952f))
+
 ## [1.2.5](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.4...v1.2.5) (2026-08-03)
 
 
