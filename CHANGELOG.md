@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.5](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.4...v1.2.5) (2026-08-03)
+
+
+### Features
+
+* **schematics:** interactive project picker on skill schematic ([9b22ffc](https://github.com/WanderleeDev/ngx-iconify-stack/commit/9b22ffcfc12f9adc68ab24dc0989695ebae64c77))
+* **schematics:** use nx runner in generated scripts for Nx workspaces ([71d7f77](https://github.com/WanderleeDev/ngx-iconify-stack/commit/71d7f7779496330d9107effcb425c694b5c07947))
+
 ## [1.2.4](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.3...v1.2.4) (2026-08-02)
 
 
