@@ -92,14 +92,14 @@ export class NgxIconify {
 
   readonly class = input<string>();
 
-  /** Explicit width in pixels (overrides size) */
+  /** Explicit width (overrides size) */
   readonly width = input<number | string>();
 
-  /** Explicit height in pixels (overrides size) */
+  /** Explicit height (overrides size) */
   readonly height = input<number | string>();
 
   /** Convenience shorthand — sets both width and height */
-  readonly size = input<number>();
+  readonly size = input<number | string>();
 
   /** Rendering mode for the web component */
   readonly mode = input<IconMode>();
@@ -115,16 +115,14 @@ export class NgxIconify {
 
   // ── Computed display dimensions ──
 
-  readonly displayWidth = computed<number | undefined>(() => {
-    if (this.size()) return this.size();
-    const w = this.width();
-    return typeof w === 'number' ? w : undefined;
+  readonly displayWidth = computed<string>(() => {
+    const value = this.width() ?? this.size();
+    return value === undefined ? "16px" : (typeof value === 'number' ? String(value) : value);
   });
 
-  readonly displayHeight = computed<number | undefined>(() => {
-    if (this.size()) return this.size();
-    const h = this.height();
-    return typeof h === 'number' ? h : undefined;
+  readonly displayHeight = computed<string | undefined>(() => {
+    const value = this.height() ?? this.size();
+    return value === undefined ? undefined : (typeof value === 'number' ? String(value) : value);
   });
 
   readonly svgContent = computed<SafeHtml | null>(() => {
