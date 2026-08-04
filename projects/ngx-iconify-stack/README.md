@@ -37,7 +37,7 @@ Driven by signals, with offline icon subsetting and zero runtime overhead.
 ng add ngx-iconify-stack
 ```
 
-The schematic installs `iconify-icon`, adds the provider to `app.config.ts`, wires the `ngx-iconify-stack:generate-icons` script into `prebuild`, and asks whether to generate the AI agent skill.
+The schematic asks for the **delivery mode**, installs `iconify-icon`, adds the provider to `app.config.ts`, and asks whether to generate the AI agent skill. In `autohost` mode (default) it also scans your templates, generates the offline icon subset, adds the required `@iconify-json/*` dependencies, and wires the `ngx-iconify-stack:generate-icons` script into `prebuild`. See [Delivery modes](#-delivery-modes) below.
 
 > [!TIP]
 > **Using Bun?**
@@ -84,7 +84,28 @@ npm run ngx-iconify-stack:generate-icons
 > [!NOTE]
 > In a monorepo (Nx or multi-project Angular workspace) always pass `--project <app-name>` — without it, the schematic targets the first application project it finds.
 
-Skip `offlineCollections` entirely if you only want CDN icons. The component works without the provider.
+---
+
+## 🌐 Delivery Modes
+
+`ng add ngx-iconify-stack` asks how icons should be loaded at runtime. You can also pass the flag explicitly:
+
+```bash
+ng add ngx-iconify-stack --mode autohost   # default
+ng add ngx-iconify-stack --mode cdn
+```
+
+| Mode | Subset file | `prebuild` wiring | `@iconify-json/*` deps | Provider in `app.config.ts` |
+| --- | --- | --- | --- | --- |
+| **`autohost`** (default) | ✅ generates `src/ngx-iconify/icon-subset.ts` | ✅ wires `generate-icons` into `prebuild` | ✅ added + **installed automatically** when missing | `provideIconify({ offlineCollections: iconSubset })` |
+| **`cdn`** | ❌ none | ❌ none | ❌ none | `provideIconify()` |
+
+**`autohost`** is SSR-safe offline delivery: templates are scanned, the subset ships only the icons you actually use, and any missing `@iconify-json/*` set is declared and installed on the same run — no manual `npm install` step. Missing sets are also resolved automatically whenever the subset regenerates (e.g. on `prebuild`).
+
+**`cdn`** uses the Iconify CDN only — no subset file and no build wiring. Re-running `ng add --mode cdn` on a project that previously used `autohost` **removes** the prior wiring (subset file, `prebuild` segment, and `generate-icons` script). Switching back to `autohost` regenerates everything.
+
+> [!TIP]
+> **Changing modes later?** Just re-run `ng add` with the other `--mode`. Both directions are idempotent — nothing is duplicated on reruns.
 
 ---
 

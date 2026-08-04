@@ -33,11 +33,12 @@ Signal-based Angular wrapper for [Iconify](https://iconify.design) with SSR-safe
 - **Finding icons**: when the user does not know the exact icon name, ASK them which they prefer — offer the [Iconify icon sets catalog](https://icon-sets.iconify.design/) URL so they can browse it themselves, or offer to look it up for them (the agent can fetch that page to find the right set and exact \`prefix:name\`). Never silently decide on their behalf.
 - **SSR/offline**: icons that must render in server HTML need to be in the offline subset — run the subset generation after template changes.
 - **CDN-only**: skip \`offlineCollections\` entirely; the component works without the provider.
+- **Delivery mode**: \`ng add ngx-iconify-stack\` asks for the mode. \`autohost\` (default) generates the offline subset, adds \`@iconify-json/*\` dependencies (installing missing sets automatically), and wires \`prebuild\`. \`cdn\` uses the Iconify CDN only — no subset file, no prebuild wiring, provider is \`provideIconify()\`.
 
 ## Constraints & Rules
 
 - Provide config **once** in root \`app.config.ts\` via \`provideIconify({ offlineCollections: iconSubset })\`.
-- Regenerate the subset after adding/removing icons in templates: run \`npm run ngx-iconify-stack:generate-icons\` (wired into \`prebuild\`), or \`npx ng generate ngx-iconify-stack:generate-icon-subset --project <name>\`.
+- Regenerate the subset after adding/removing icons in templates: run \`npm run ngx-iconify-stack:generate-icons\` (wired into \`prebuild\`), or \`npx ng generate ngx-iconify-stack:generate-icon-subset --project <name>\`. Missing \`@iconify-json/*\` sets are declared and installed automatically on the next run.
 - In Nx workspaces run \`nx g ngx-iconify-stack:generate-icon-subset --project <name>\` instead of \`ng generate\`.
 - Icons in the subset render inline \`<svg>\` (no \`@defer\` needed — no hydration gap). Icons outside it render \`<iconify-icon>\` from the CDN.
 - Inputs map to \`<iconify-icon>\` attributes — see the [attribute docs](https://iconify.design/docs/iconify-icon/#attributes).
