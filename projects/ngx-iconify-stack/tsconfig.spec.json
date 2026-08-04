@@ -11,6 +11,9 @@
     "src/lib/**/*.spec.ts",
     "src/schematics/project.spec.ts",
     "src/schematics/schema.spec.ts",
-    "src/schematics/utils.spec.ts"
+    "src/schematics/utils.spec.ts",
+    "src/schematics/spec-run-rule.ts",
+    "src/schematics/ng-add.spec.ts",
+    "src/schematics/generate-icon-subset.spec.ts"
   ]
 }

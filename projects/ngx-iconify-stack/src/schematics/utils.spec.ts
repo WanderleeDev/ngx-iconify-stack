@@ -45,6 +45,59 @@ describe('wireIconifyScripts', () => {
     const changed = wireIconifyScripts(pkg, 'frontend');
     expect(changed).toBe(false);
   });
+
+  it('remove mode deletes the icons script and prebuild when they are solely icon wiring', () => {
+    const pkg = {
+      scripts: {
+        [ICONS_SCRIPT]:
+          'ng generate ngx-iconify-stack:generate-icon-subset --project frontend',
+        prebuild: `npm run ${ICONS_SCRIPT}`,
+        prestart: `npm run ${ICONS_SCRIPT}`,
+        'collect-icons': 'node scripts/collect-icons.mjs',
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'npm', 'ng', { remove: true });
+    expect(changed).toBe(true);
+    expect(pkg.scripts[ICONS_SCRIPT]).toBeUndefined();
+    expect(pkg.scripts['prebuild']).toBeUndefined();
+    expect(pkg.scripts['prestart']).toBeUndefined();
+    expect(pkg.scripts['collect-icons']).toBeUndefined();
+  });
+
+  it('remove mode strips only the icon segment from a mixed prebuild chain', () => {
+    const pkg = {
+      scripts: {
+        [ICONS_SCRIPT]:
+          'ng generate ngx-iconify-stack:generate-icon-subset --project frontend',
+        prebuild: `npm run ${ICONS_SCRIPT} && ng build`,
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'npm', 'ng', { remove: true });
+    expect(changed).toBe(true);
+    expect(pkg.scripts['prebuild']).toBe('ng build');
+    expect(pkg.scripts[ICONS_SCRIPT]).toBeUndefined();
+  });
+
+  it('remove mode is idempotent when there is nothing to remove', () => {
+    const pkg = { scripts: { build: 'ng build' } as Record<string, string> };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'npm', 'ng', { remove: true });
+    expect(changed).toBe(false);
+    expect(pkg.scripts['build']).toBe('ng build');
+  });
+
+  it('remove mode leaves non-icon scripts untouched', () => {
+    const pkg = {
+      scripts: {
+        prebuild: 'tsc -p tsconfig.server.json',
+        [ICONS_SCRIPT]:
+          'ng generate ngx-iconify-stack:generate-icon-subset --project frontend',
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'npm', 'ng', { remove: true });
+    expect(changed).toBe(true);
+    expect(pkg.scripts['prebuild']).toBe('tsc -p tsconfig.server.json');
+    expect(pkg.scripts[ICONS_SCRIPT]).toBeUndefined();
+  });
 });
 
 describe('wireSkillScript', () => {
