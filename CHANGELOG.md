@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.7](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.6...v1.2.7) (2026-08-04)
+
+
+### Features
+
+* **schematics:** add autohost/cdn delivery modes to ng-add ([8d61e71](https://github.com/WanderleeDev/ngx-iconify-stack/commit/8d61e7199483f68e85d5ff70a48d825372f5e477))
+* **schematics:** directed-install missing icon sets in generate-icon-subset ([2d0e6cf](https://github.com/WanderleeDev/ngx-iconify-stack/commit/2d0e6cf40c4c0ac8ae0257e2a12642542cc4de52))
+
 ## [1.2.6](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.5...v1.2.6) (2026-08-03)
 
 
