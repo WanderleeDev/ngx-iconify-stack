@@ -16,13 +16,21 @@ import {
   NodeDependencyType,
 } from '@schematics/angular/utility/dependencies';
 import { generateSkill } from '../skill/index';
+import { generateIconSubset } from '../generate-icon-subset/index';
 import { NgAddOptions } from './schema';
 
 export function ngAdd(options: NgAddOptions): Rule {
+  const autohost = options.mode !== 'cdn';
   return chain([
     addIconifyDependency(),
-    addProvider(options),
-    wireIconifyScriptsRule(options),
+    ...(autohost
+      ? // autohost (default): the subset schematic owns the whole flow —
+        // scan, subset file, @iconify-json/* deps, prebuild wiring, and the
+        // `provideIconify({ offlineCollections: iconSubset })` provider patch.
+        [generateIconSubset({ project: options.project })]
+      : // cdn: provider without offlineCollections, no prebuild wiring, and
+        // teardown of any previous autohost wiring/subset file.
+        [addProvider(options), removeAutohostWiring(options)]),
     installSkill(options),
     (tree: Tree, ctx: SchematicContext) => {
       ctx.addTask(
@@ -71,8 +79,24 @@ function addProvider(options: NgAddOptions): Rule {
   };
 }
 
-function wireIconifyScriptsRule(options: NgAddOptions): Rule {
+/**
+ * cdn mode teardown: delete a previously generated subset file (if any) and
+ * reverse the autohost script wiring (`generate-icons` + prebuild segments).
+ * Idempotent — a project that never used autohost is left untouched.
+ */
+function removeAutohostWiring(options: NgAddOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
+    const projectName = await resolveProjectName(tree, options);
+    const workspace = await getWorkspace(tree);
+    const project = workspace.projects.get(projectName);
+    const sourceRoot = project?.sourceRoot ?? 'src';
+
+    const subsetPath = `${sourceRoot}/ngx-iconify/icon-subset.ts`.replace(/^\//, '');
+    if (tree.exists(subsetPath)) {
+      tree.delete(subsetPath);
+      context.logger.info(` \u001b[33mM\u001b[0m Removed ${subsetPath}`);
+    }
+
     const pkgPath = '/package.json';
     if (!tree.exists(pkgPath)) return tree;
 
@@ -80,22 +104,22 @@ function wireIconifyScriptsRule(options: NgAddOptions): Rule {
       scripts?: Record<string, string>;
     };
 
-    const projectName = await resolveProjectName(tree, options);
     const changed = wireIconifyScripts(
       pkg,
       projectName,
       detectPackageManager(tree),
       detectRunner(tree),
+      { remove: true },
     );
     if (!changed) {
       context.logger.info(
-        ` \u001b[90mℹ\u001b[0m package.json (${'ngx-iconify-stack:generate-icons'} script + prebuild already correct — skipped)`,
+        ` \u001b[90mℹ\u001b[0m package.json (no ${'ngx-iconify-stack:generate-icons'} wiring to remove — skipped)`,
       );
       return tree;
     }
     tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
     context.logger.info(
-      ` \u001b[33mM\u001b[0m package.json (${'ngx-iconify-stack:generate-icons'} script + prebuild wiring)`,
+      ` \u001b[33mM\u001b[0m package.json (removed ${'ngx-iconify-stack:generate-icons'} script + prebuild wiring)`,
     );
     return tree;
   };

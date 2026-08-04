@@ -137,14 +137,26 @@ function isIconSegment(seg: string): boolean {
  * The `prebuild` wiring uses the detected package manager runner (`${pm} run`)
  * so pnpm/yarn/bun workspaces are not forced through npm. Returns true when
  * the package.json must be rewritten.
+ *
+ * When `opts.remove` is true the wiring is reversed: the
+ * `ngx-iconify-stack:generate-icons` script is deleted, icon segments are
+ * stripped from `prebuild`/`prestart` (deleting the script when it becomes
+ * empty), and the legacy `collect-icons` entry is dropped. Used by `ng-add`
+ * in `cdn` mode to tear down autohost wiring. Returns true when anything
+ * changed, false when already clean (idempotent).
  */
 export function wireIconifyScripts(
   pkg: { scripts?: Record<string, string> },
   projectName: string,
   packageManager = 'npm',
   runner: 'nx' | 'ng' = 'ng',
+  opts?: { remove?: boolean },
 ): boolean {
   pkg.scripts ??= {};
+
+  if (opts?.remove) {
+    return removeIconifyScripts(pkg);
+  }
 
   let changed = false;
 
@@ -182,6 +194,45 @@ export function wireIconifyScripts(
   } else if (pkg.scripts['prestart'] !== undefined) {
     delete pkg.scripts['prestart'];
     changed = true;
+  }
+
+  if (pkg.scripts['collect-icons'] !== undefined) {
+    delete pkg.scripts['collect-icons'];
+    changed = true;
+  }
+
+  return changed;
+}
+
+/**
+ * Tear down the autohost wiring added by {@link wireIconifyScripts} (the
+ * non-remove path). Deletes the generate-icons script, strips icon segments
+ * from `prebuild`/`prestart` (removing the script when it empties out), and
+ * drops the legacy `collect-icons` entry. Idempotent: returns true when
+ * anything changed, false when the scripts are already clean.
+ */
+function removeIconifyScripts(pkg: { scripts?: Record<string, string> }): boolean {
+  pkg.scripts ??= {};
+  let changed = false;
+
+  if (pkg.scripts[ICONS_SCRIPT] !== undefined) {
+    delete pkg.scripts[ICONS_SCRIPT];
+    changed = true;
+  }
+
+  for (const key of ['prebuild', 'prestart']) {
+    const segments = splitChain(pkg.scripts[key] ?? '');
+    const kept = segments.filter((seg) => !isIconSegment(seg));
+    if (kept.length > 0) {
+      const next = kept.join(' && ');
+      if (pkg.scripts[key] !== next) {
+        pkg.scripts[key] = next;
+        changed = true;
+      }
+    } else if (pkg.scripts[key] !== undefined) {
+      delete pkg.scripts[key];
+      changed = true;
+    }
   }
 
   if (pkg.scripts['collect-icons'] !== undefined) {

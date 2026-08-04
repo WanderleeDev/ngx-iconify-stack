@@ -17,6 +17,13 @@
       "default": true,
       "description": "Generate the AI agent skill (.agents/skills/ngx-iconify-stack) in the target project",
       "x-prompt": "Generate the AI agent skill (SKILL.md) for ngx-iconify-stack in the project?"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["autohost", "cdn"],
+      "default": "autohost",
+      "description": "How icons are resolved at runtime. autohost (default): scans templates, generates an offline icon subset (SSR-safe, self-hosted), adds @iconify-json/* dependencies and wires the prebuild script. cdn: uses the Iconify CDN only — no subset file, no prebuild wiring, provider is provideIconify() without offlineCollections.",
+      "x-prompt": "How should icons be loaded at runtime? (autohost: offline subset + prebuild wiring | cdn: Iconify CDN only)"
     }
   },
   "required": ["project"]
