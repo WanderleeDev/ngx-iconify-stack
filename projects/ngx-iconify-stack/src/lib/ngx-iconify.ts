@@ -22,6 +22,11 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
  * **CDN fallback**: icons not in the subset fall through to the native
  * `<iconify-icon>` web component, which resolves them from the Iconify CDN.
  *
+ * **Per-icon CDN bypass**: set `[forceCdn]="true"` on an icon that IS in the
+ * subset but that you want resolved from the CDN anyway (e.g. a rarely-used
+ * icon you chose not to include in the generated subset). It skips the offline
+ * lookup and renders the `<iconify-icon>` web component for that icon.
+ *
  * `mode` and `noObserver` are CDN-fallback-only passthroughs to the
  * `<iconify-icon>` web component; they are no-ops for inline subset icons.
  *
@@ -36,6 +41,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
  * <ngx-iconify icon="mdi:home" [size]="24" />
  * <ngx-iconify icon="lucide:arrow-right" color="#ff0000" />
  * <ngx-iconify icon="mdi:arrow-right" class="scale-x-[-1]" />
+ * <ngx-iconify icon="mdi:rare-icon" forceCdn />
  * ```
  */
 @Component({
@@ -49,7 +55,6 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
         [attr.class]="class() || null"
         [style.width.px]="displayWidth()"
         [style.height.px]="displayHeight()"
-        [style.verticalAlign]="inline() ? '-0.125em' : null"
         [style.fontSize.px]="size()"
       ></span>
     } @else {
@@ -79,6 +84,13 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       line-height: 0;
     }
   `,
+  // `inline` must be applied to the host, NOT to the child (span / iconify-icon):
+  // both children are flex items of the inline-flex host, and vertical-align is
+  // ignored on flex items. The host is the element that sits in the text line,
+  // so it is the only place where vertical-align has any effect.
+  host: {
+    '[style.vertical-align]': 'inline() ? "-0.125em" : null',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxIconify {
@@ -107,6 +119,9 @@ export class NgxIconify {
   /** Render icon inline (aligns to text baseline) */
   readonly inline = input<boolean>(false, { transform: booleanAttribute });
 
+  /** Force CDN resolution for this icon, even if it exists in the subset */
+  readonly forceCdn = input<boolean>(false, { transform: booleanAttribute });
+
   /** Disable intersection observer for lazy loading */
   readonly noObserver = input<boolean>(false, { transform: booleanAttribute });
 
@@ -126,6 +141,10 @@ export class NgxIconify {
   });
 
   readonly svgContent = computed<SafeHtml | null>(() => {
+    // forceCdn skips the offline lookup so the template falls through to the
+    // <iconify-icon> web component, which resolves from the Iconify CDN.
+    if (this.forceCdn()) return null;
+
     const iconLookup = lookupIcon(this.icon(), this.config?.offlineCollections);
     if (!iconLookup) return null;
 

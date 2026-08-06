@@ -89,6 +89,65 @@ describe('NgxIconify', () => {
     expect(svg.getAttribute('viewBox')).toBe('0 0 24 24');
   });
 
+  it('applies inline to the host element, not to the svg wrapper', () => {
+    fixture.componentRef.setInput('icon', 'mdi:home');
+    fixture.componentRef.setInput('inline', true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    // The vertical-align must live on the host: it is the element that sits in
+    // the text line. Children are flex items and ignore vertical-align.
+    expect(host.style.verticalAlign).toBe('-0.125em');
+    const span = host.querySelector('span') as HTMLElement;
+    expect(span.style.verticalAlign).toBe('');
+    const svg = host.querySelector('svg') as SVGElement;
+    expect(svg.getAttribute('vertical-align')).toBeNull();
+  });
+
+  it('clears the inline host style when inline is false', () => {
+    fixture.componentRef.setInput('icon', 'mdi:home');
+    fixture.componentRef.setInput('inline', false);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.style.verticalAlign).toBe('');
+  });
+
+  it('forwards inline to the CDN fallback web component', () => {
+    fixture.componentRef.setInput('icon', 'mdi:does-not-exist');
+    fixture.componentRef.setInput('inline', true);
+    fixture.detectChanges();
+
+    const fallback = fixture.nativeElement.querySelector(
+      'iconify-icon',
+    ) as HTMLElement;
+    expect(fallback).not.toBeNull();
+    expect(fallback.hasAttribute('inline')).toBe(true);
+  });
+
+  it('forces CDN for an icon that exists in the subset when forceCdn is set', () => {
+    fixture.componentRef.setInput('icon', 'mdi:home');
+    fixture.componentRef.setInput('forceCdn', true);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.svgContent()).toBeNull();
+    expect(fixture.nativeElement.querySelector('svg')).toBeNull();
+    const fallback = fixture.nativeElement.querySelector(
+      'iconify-icon',
+    ) as HTMLElement;
+    expect(fallback).not.toBeNull();
+    expect(fallback.getAttribute('icon')).toBe('mdi:home');
+  });
+
+  it('keeps the inline svg path when forceCdn is false (default)', () => {
+    fixture.componentRef.setInput('icon', 'mdi:home');
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.svgContent()).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('svg')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('iconify-icon')).toBeNull();
+  });
+
   it('sizes the svg from the width input while keeping the icon viewBox', () => {
     fixture.componentRef.setInput('icon', 'mdi:wide');
     fixture.componentRef.setInput('width', 16);

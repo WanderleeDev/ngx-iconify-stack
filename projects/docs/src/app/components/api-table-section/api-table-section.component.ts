@@ -73,7 +73,14 @@ export class ApiTableSectionComponent {
       type: 'boolean',
       required: false,
       default: 'false',
-      description: 'Renders inline — aligns icon to text baseline.',
+      description: 'Renders inline — aligns icon to text baseline (applied on the host element).',
+    },
+    {
+      name: 'forceCdn',
+      type: 'boolean',
+      required: false,
+      default: 'false',
+      description: 'Forces CDN resolution and excludes the icon from the generated subset.',
     },
     {
       name: 'noObserver',
@@ -114,6 +121,13 @@ export class ApiTableSectionComponent {
   <ngx-iconify icon="mdi:cog" [size]="18" [inline]="true" />
   settings icon to configure.
 </p>`,
+    },
+    {
+      id: 'force-cdn',
+      label: 'Force CDN',
+      code: `<!-- Force CDN and keep the icon out of the generated subset -->
+<!-- The subset scanner excludes forceCdn icons on regeneration -->
+<ngx-iconify icon="mdi:rare-icon" forceCdn />`,
     },
     {
       id: 'dynamic',
