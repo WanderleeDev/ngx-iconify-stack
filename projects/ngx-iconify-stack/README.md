@@ -84,6 +84,16 @@ npm run ngx-iconify-stack:generate-icons
 > [!NOTE]
 > In a monorepo (Nx or multi-project Angular workspace) always pass `--project <app-name>` — without it, the schematic targets the first application project it finds.
 
+### Dynamic icons (signals & services)
+
+The scanner only captures **static template literals** (`icon="mdi:home"`). Icons resolved at runtime from signals or services are not scanned — they are not false positives and simply load from the CDN by default. To include one in the SSR offline subset, declare it in `src/ngx-iconify/icon-manifest.ts` (`dynamicSubsetIcons`) or run:
+
+```bash
+ng g ngx-iconify-stack:add-icon --project <project-name> --icon mdi:home
+```
+
+The `add-icon` schematic validates the icon (installing the icon set if needed), appends it to the manifest idempotently, and regenerates the subset.
+
 ---
 
 ## 🌐 Delivery Modes
@@ -133,8 +143,9 @@ export class ExampleComponent {}
 | `width` / `height` | `number \| string`                     | Explicit dimensions (override `size`)               |
 | `color`            | `string`                               | CSS color for the icon                              |
 | `class`            | `string`                               | CSS class added to the rendered icon element        |
-| `inline`           | `boolean`                              | Align icon to the text baseline                     |
+| `inline`           | `boolean`                              | Align icon to the text baseline (applied on the host element) |
 | `mode`             | `"svg" \| "bg" \| "mask" \| "style"`   | Rendering mode for the web component                |
+| `forceCdn`         | `boolean`                              | Force CDN resolution and exclude from the generated subset |
 | `noObserver`       | `boolean`                              | Disable lazy rendering on scroll                    |
 
 These map to the [`<iconify-icon>` attributes](https://iconify.design/docs/iconify-icon/#attributes) — see the [Iconify docs](https://iconify.design/docs/) for icon names and behavior details.
@@ -158,6 +169,7 @@ icon="mdi:home"
 
 - **In subset** → inline `<svg>` rendered on the server, no flicker or hydration gap.
 - **Not in subset** → `<iconify-icon>` web component resolves it from the Iconify CDN.
+- **`[forceCdn]="true"`** → skips the subset and resolves from the CDN even for subset icons (useful for icons deliberately kept out of the generated subset). The subset scanner also excludes any icon referenced with `forceCdn`, so regenerating drops it from `icon-subset.ts`.
 - Inputs are signals, so switching icons recalculates reactively — works in zoneless apps.
 
 **ngx-iconify-stack is a thin Angular wrapper around [Iconify](https://iconify.design).** It provides:

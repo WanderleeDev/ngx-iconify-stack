@@ -35,6 +35,8 @@ Run these commands from the root directory:
 | **Run Tests**     | `ng test ngx-iconify-stack` | Runs the library unit tests (Vitest).                               |
 | **Icon Subset**   | `npm run ngx-iconify-stack:generate-icons` | Scans templates and rebuilds the offline icon subset. |
 
+> **Gotcha — building the library**: a bare `ng build ngx-iconify-stack` (ng-packagr) wipes `dist/` and emits **only** library bundles — **no schematics**. The schematics (`ng-add`, `generate-icon-subset`, `add-icon`, `skill`) land in `dist/` only via `npm run build:lib`, which runs `tsc` to `dist/` plus a `copyfiles` postbuild. Always use `npm run build:lib` (or the library's own `npm run build`) when you need the schematics in `dist/`, e.g. before installing the library into a scratch app for E2E.
+
 ---
 
 ## 🤝 Contribution Guidelines
