@@ -166,4 +166,160 @@ describe('generateIconSubset', () => {
     expect(pkg.dependencies['@iconify-json/lucide']).toBeUndefined();
     expect(mockedSpawnSync).not.toHaveBeenCalled();
   });
+
+  it('excludes icons referenced with forceCdn from the subset', async () => {
+    const workspace = createWorkspace();
+    workspace.overwrite(
+      '/src/app/app.component.html',
+      [
+        '<ngx-iconify icon="mdi:home" />',
+        '<ngx-iconify icon="mdi:cloud" forceCdn />',
+        '<ngx-iconify icon="lucide:star" [forceCdn]="true" />',
+      ].join('\n'),
+    );
+    installSet(workspace, 'mdi', {
+      home: { body: '<path d="M1 2"/>' },
+      cloud: { body: '<path d="M3 4"/>' },
+    });
+    installSet(workspace, 'lucide', { star: { body: '<path d="M5 6"/>' } });
+
+    const tree = await runRule(
+      generateIconSubset({ project: 'frontend' }),
+      workspace,
+      stubContext(),
+    );
+
+    const subset = tree.read('/src/ngx-iconify/icon-subset.ts')!.toString();
+    expect(subset).toContain('"home"');
+    expect(subset).not.toContain('"cloud"');
+    expect(subset).not.toContain('"star"');
+    // The set with all its icons force-CDN'd is not in the subset at all.
+    expect(subset).not.toContain('"prefix": "lucide"');
+    expect(subset).toContain('"prefix": "mdi"');
+  });
+
+  it('removes an icon from the subset after forceCdn is added and regenerated', async () => {
+    const workspace = createWorkspace();
+    installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });
+
+    // First run: mdi:home is used without forceCdn → included.
+    const first = await runRule(
+      generateIconSubset({ project: 'frontend' }),
+      workspace,
+      stubContext(),
+    );
+    expect(first.read('/src/ngx-iconify/icon-subset.ts')!.toString()).toContain('"home"');
+
+    // Add forceCdn to the template, regenerate → home is dropped.
+    workspace.overwrite(
+      '/src/app/app.component.html',
+      '<ngx-iconify icon="mdi:home" forceCdn />\n',
+    );
+    const second = await runRule(
+      generateIconSubset({ project: 'frontend' }),
+      workspace,
+      stubContext(),
+    );
+    const subset = second.read('/src/ngx-iconify/icon-subset.ts')!.toString();
+    expect(subset).not.toContain('"home"');
+    expect(subset).not.toContain('"prefix": "mdi"');
+  });
+
+  it('merges dynamicSubsetIcons from the manifest into the generated subset', async () => {
+    const workspace = createWorkspace();
+    // The dynamic icons exist ONLY in the manifest — no template references them.
+    workspace.overwrite(
+      '/src/app/app.component.html',
+      '<ngx-iconify icon="lucide:arrow-right" />\n',
+    );
+    workspace.create(
+      '/src/ngx-iconify/icon-manifest.ts',
+      [
+        '// src/ngx-iconify/icon-manifest.ts',
+        '// 🔧 MANUAL — fuente de verdad.',
+        "export const dynamicSubsetIcons = ['mdi:home', 'mdi:user'] as const;",
+        '',
+      ].join('\n'),
+    );
+    installSet(workspace, 'mdi', {
+      home: { body: '<path d="M1 2"/>' },
+      user: { body: '<path d="M3 4"/>' },
+    });
+    installSet(workspace, 'lucide', { 'arrow-right': { body: '<path d="M5 6"/>' } });
+
+    const tree = await runRule(
+      generateIconSubset({ project: 'frontend' }),
+      workspace,
+      stubContext(),
+    );
+
+    const subset = tree.read('/src/ngx-iconify/icon-subset.ts')!.toString();
+    expect(subset).toContain('"prefix": "mdi"');
+    expect(subset).toContain('"home"');
+    expect(subset).toContain('"user"');
+    expect(subset).toContain('"prefix": "lucide"');
+    expect(subset).toContain('"arrow-right"');
+    // Manifest entries never leak into the generated file itself.
+    expect(subset).not.toContain('dynamicSubsetIcons');
+  });
+
+  it('ignores comments inside the manifest array (bracket and icon-like strings)', async () => {
+    const workspace = createWorkspace();
+    workspace.overwrite(
+      '/src/app/app.component.html',
+      '<ngx-iconify icon="lucide:arrow-right" />\n',
+    );
+    // A `]` and a quoted `prefix:name` inside line/block comments must NOT
+    // truncate the lazy array match nor inject false positives.
+    workspace.create(
+      '/src/ngx-iconify/icon-manifest.ts',
+      [
+        '// src/ngx-iconify/icon-manifest.ts',
+        '// 🔧 MANUAL — fuente de verdad.',
+        'export const dynamicSubsetIcons = [',
+        "  'mdi:home', // sección del [dashboard]",
+        '  /* TODO: cambiar a mdi:alert */',
+        "  'mdi:user',",
+        "] as const;",
+        '',
+      ].join('\n'),
+    );
+    installSet(workspace, 'mdi', {
+      home: { body: '<path d="M1 2"/>' },
+      user: { body: '<path d="M3 4"/>' },
+    });
+    installSet(workspace, 'lucide', { 'arrow-right': { body: '<path d="M5 6"/>' } });
+
+    const tree = await runRule(
+      generateIconSubset({ project: 'frontend' }),
+      workspace,
+      stubContext(),
+    );
+
+    const subset = tree.read('/src/ngx-iconify/icon-subset.ts')!.toString();
+    // Real entries survive the bracket-in-comment truncation.
+    expect(subset).toContain('"home"');
+    expect(subset).toContain('"user"');
+    // Comment-only icon-like strings never leak into the subset.
+    expect(subset).not.toContain('"alert"');
+  });
+
+  it('leaves the subset unchanged when no manifest exists', async () => {
+    const workspace = createWorkspace();
+    installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });
+    installSet(workspace, 'lucide', { 'arrow-right': { body: '<path d="M3 4"/>' } });
+
+    const tree = await runRule(
+      generateIconSubset({ project: 'frontend' }),
+      workspace,
+      stubContext(),
+    );
+
+    expect(tree.exists('/src/ngx-iconify/icon-manifest.ts')).toBe(false);
+    const subset = tree.read('/src/ngx-iconify/icon-subset.ts')!.toString();
+    expect(subset).toContain('"prefix": "mdi"');
+    expect(subset).toContain('"home"');
+    expect(subset).toContain('"prefix": "lucide"');
+    expect(subset).toContain('"arrow-right"');
+  });
 });

@@ -10,6 +10,9 @@ export { pickProjectName, toRelativeImport } from './project';
 /** Package.json script that (re)generates the offline icon subset. */
 export const ICONS_SCRIPT = 'ngx-iconify-stack:generate-icons';
 
+/** Package.json script that adds an icon to the subset via the manifest. */
+export const ADD_ICON_SCRIPT = 'ngx-iconify-stack:add-icon';
+
 /** Package.json script that (re)generates the AI agent skill. */
 export const SKILL_SCRIPT = 'ngx-iconify-stack:skill';
 
@@ -132,18 +135,20 @@ function isIconSegment(seg: string): boolean {
 /**
  * Idempotent script wiring (marker-based, so reruns never double-append):
  * adds the `ngx-iconify-stack:generate-icons` script (removing the legacy
- * `icons` entry), creates `prebuild` when missing or chains into it, strips
- * icon segments from `prestart`, and removes the dead legacy `collect-icons`.
- * The `prebuild` wiring uses the detected package manager runner (`${pm} run`)
- * so pnpm/yarn/bun workspaces are not forced through npm. Returns true when
- * the package.json must be rewritten.
+ * `icons` entry) and the `ngx-iconify-stack:add-icon` script, creates
+ * `prebuild` when missing or chains into it, strips icon segments from
+ * `prestart`, and removes the dead legacy `collect-icons`. The `prebuild`
+ * wiring uses the detected package manager runner (`${pm} run`) so
+ * pnpm/yarn/bun workspaces are not forced through npm. Returns true when the
+ * package.json must be rewritten.
  *
  * When `opts.remove` is true the wiring is reversed: the
- * `ngx-iconify-stack:generate-icons` script is deleted, icon segments are
- * stripped from `prebuild`/`prestart` (deleting the script when it becomes
- * empty), and the legacy `collect-icons` entry is dropped. Used by `ng-add`
- * in `cdn` mode to tear down autohost wiring. Returns true when anything
- * changed, false when already clean (idempotent).
+ * `ngx-iconify-stack:generate-icons` and `ngx-iconify-stack:add-icon` scripts
+ * are deleted, icon segments are stripped from `prebuild`/`prestart`
+ * (deleting the script when it becomes empty), and the legacy `collect-icons`
+ * entry is dropped. Used by `ng-add` in `cdn` mode to tear down autohost
+ * wiring. Returns true when anything changed, false when already clean
+ * (idempotent).
  */
 export function wireIconifyScripts(
   pkg: { scripts?: Record<string, string> },
@@ -163,6 +168,12 @@ export function wireIconifyScripts(
   const expectedIconsScript = `${runner} generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
   if (pkg.scripts[ICONS_SCRIPT] !== expectedIconsScript) {
     pkg.scripts[ICONS_SCRIPT] = expectedIconsScript;
+    changed = true;
+  }
+
+  const expectedAddIconScript = `${runner} generate ngx-iconify-stack:add-icon --project ${projectName}`;
+  if (pkg.scripts[ADD_ICON_SCRIPT] !== expectedAddIconScript) {
+    pkg.scripts[ADD_ICON_SCRIPT] = expectedAddIconScript;
     changed = true;
   }
 
@@ -206,10 +217,10 @@ export function wireIconifyScripts(
 
 /**
  * Tear down the autohost wiring added by {@link wireIconifyScripts} (the
- * non-remove path). Deletes the generate-icons script, strips icon segments
- * from `prebuild`/`prestart` (removing the script when it empties out), and
- * drops the legacy `collect-icons` entry. Idempotent: returns true when
- * anything changed, false when the scripts are already clean.
+ * non-remove path). Deletes the generate-icons and add-icon scripts, strips
+ * icon segments from `prebuild`/`prestart` (removing the script when it
+ * empties out), and drops the legacy `collect-icons` entry. Idempotent:
+ * returns true when anything changed, false when the scripts are already clean.
  */
 function removeIconifyScripts(pkg: { scripts?: Record<string, string> }): boolean {
   pkg.scripts ??= {};
@@ -217,6 +228,11 @@ function removeIconifyScripts(pkg: { scripts?: Record<string, string> }): boolea
 
   if (pkg.scripts[ICONS_SCRIPT] !== undefined) {
     delete pkg.scripts[ICONS_SCRIPT];
+    changed = true;
+  }
+
+  if (pkg.scripts[ADD_ICON_SCRIPT] !== undefined) {
+    delete pkg.scripts[ADD_ICON_SCRIPT];
     changed = true;
   }
 

@@ -11,6 +11,11 @@
       "factory": "./generate-icon-subset/index#generateIconSubset",
       "schema": "./generate-icon-subset/schema.json"
     },
+    "add-icon": {
+      "description": "Adds an icon to the SSR offline subset via the dynamic icon manifest and regenerates it",
+      "factory": "./add-icon/index#addIcon",
+      "schema": "./add-icon/schema.json"
+    },
     "skill": {
       "description": "Regenerates the AI agent skill (.agents/skills/ngx-iconify-stack) in the target project",
       "factory": "./skill/index#skill",

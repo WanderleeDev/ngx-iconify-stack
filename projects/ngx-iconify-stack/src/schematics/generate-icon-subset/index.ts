@@ -3,7 +3,13 @@ import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { spawnSync } from 'node:child_process';
 import type { IconifyJSON } from '@iconify/types';
 import { GenerateIconSubsetOptions } from './schema';
-import { buildSubset, iconSetJsonPath, readJsonFile, scanIcons } from './icons';
+import {
+  buildSubset,
+  iconSetJsonPath,
+  mergeManifestIcons,
+  readJsonFile,
+  scanIcons,
+} from './icons';
 import {
   assertAngularProject,
   detectPackageManager,
@@ -48,7 +54,7 @@ export function directedInstallCommand(packageManager: string): string {
  * fails — e.g. CI with a frozen lockfile — instead of breaking the build.
  * Idempotent: a set already installed is never reinstalled.
  */
-function installMissingSets(
+export function installMissingSets(
   missing: string[],
   packageManager: string,
   logger: { info(message: string): void; warn(message: string): void },
@@ -75,88 +81,123 @@ function installMissingSets(
   }
 }
 
-export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
-  return async (tree: Tree, context: SchematicContext) => {
-    const projectName = await resolveProjectName(tree, options);
-    const workspace = await getWorkspace(tree);
-    const project = workspace.projects.get(projectName);
-    const sourceRoot = project?.sourceRoot ?? 'src';
-
-    assertAngularProject(tree, sourceRoot, projectName);
-
-    // ── 1. Inline scan ──
-    const found = scanIcons(tree, sourceRoot);
-
-    // ── 2. Declare + directed-install missing sets BEFORE building the subset ──
-    // A set counts as missing only when it is neither installed nor already
-    // listed in dependencies, so reruns never duplicate or reinstall (idempotent).
-    const pkgPath = '/package.json';
-    const packageManager = detectPackageManager(tree);
-    const missing: string[] = [];
-    if (tree.exists(pkgPath)) {
-      const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
-        dependencies?: Record<string, string>;
-      };
-      pkg.dependencies ??= {};
-      for (const prefix of found.keys()) {
-        const depName = `@iconify-json/${prefix}`;
-        if (pkg.dependencies[depName]) continue;
-        if (readJsonFile(tree, iconSetJsonPath(prefix)) !== null) continue;
-        pkg.dependencies[depName] = '^1.0.0';
-        missing.push(prefix);
-        context.logger.info(`✓ Added ${depName} to dependencies`);
-      }
-      if (missing.length > 0) {
-        tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-      }
+/**
+ * Declare + directed-install the missing `@iconify-json/<prefix>` sets for the
+ * given prefixes. A set counts as missing only when it is neither installed nor
+ * already listed in dependencies, so reruns never duplicate or reinstall
+ * (idempotent). Shared by generate-icon-subset and add-icon.
+ */
+export function declareAndInstallMissingSets(
+  tree: Tree,
+  context: SchematicContext,
+  prefixes: Iterable<string>,
+): void {
+  const pkgPath = '/package.json';
+  const packageManager = detectPackageManager(tree);
+  const missing: string[] = [];
+  if (tree.exists(pkgPath)) {
+    const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
+      dependencies?: Record<string, string>;
+    };
+    pkg.dependencies ??= {};
+    for (const prefix of prefixes) {
+      const depName = `@iconify-json/${prefix}`;
+      if (pkg.dependencies[depName]) continue;
+      if (readJsonFile(tree, iconSetJsonPath(prefix)) !== null) continue;
+      pkg.dependencies[depName] = '^1.0.0';
+      missing.push(prefix);
+      context.logger.info(`✓ Added ${depName} to dependencies`);
     }
-
     if (missing.length > 0) {
-      installMissingSets(missing, packageManager, context.logger);
-    }
-
-    // ── 3. Build + write the subset (sets are now installed) ──
-    const collections = buildSubset(tree, found, context.logger);
-
-    const outputPath = `${sourceRoot}/ngx-iconify/icon-subset.ts`.replace(/^\//, '');
-    const content = renderSubsetFile(collections);
-    if (tree.exists(outputPath)) {
-      tree.overwrite(outputPath, content);
-    } else {
-      tree.create(outputPath, content);
-    }
-    context.logger.info(`✓ Subset written to ${outputPath}`);
-
-    // ── 4. Script wiring + one-shot cleanup ──
-    if (tree.exists(pkgPath)) {
-      // One-shot cleanup from older library versions that shipped a root script.
-      if (tree.exists('/scripts/collect-icons.mjs')) {
-        tree.delete('/scripts/collect-icons.mjs');
-        context.logger.info('✓ Deleted obsolete scripts/collect-icons.mjs');
-      }
-
-      const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
-        scripts: Record<string, string>;
-      };
-      pkg.scripts ??= {};
-
-      wireIconifyScripts(pkg, projectName, packageManager, detectRunner(tree));
       tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
     }
+  }
 
-    // ── 5. Wire the subset into app.config via the shared patcher ──
-    const configFile = resolveConfigFile(tree, sourceRoot);
-    const subsetImport = toRelativeImport(configFile, outputPath);
+  if (missing.length > 0) {
+    installMissingSets(missing, packageManager, context.logger);
+  }
+}
 
-    await patchAppConfig(
-      tree,
-      context,
-      sourceRoot,
-      'provideIconify({ offlineCollections: iconSubset })',
-      'provideIconify',
-      'ngx-iconify-stack',
-      projectName,
-      [{ symbol: 'iconSubset', module: subsetImport }],
+/**
+ * Full subset pipeline shared by generate-icon-subset and add-icon:
+ * resolve project → scan templates → merge the dynamic-icon manifest →
+ * declare/install missing sets → build + write icon-subset.ts → script wiring
+ * and cleanup → wire `provideIconify` into the app config.
+ */
+export async function regenerateIconSubset(
+  tree: Tree,
+  context: SchematicContext,
+  options: GenerateIconSubsetOptions,
+): Promise<string> {
+  const projectName = await resolveProjectName(tree, options);
+  const workspace = await getWorkspace(tree);
+  const project = workspace.projects.get(projectName);
+  const sourceRoot = project?.sourceRoot ?? 'src';
+
+  assertAngularProject(tree, sourceRoot, projectName);
+
+  // ── 1. Inline scan + merge dynamic icons from the manifest ──
+  const found = scanIcons(tree, sourceRoot);
+  const manifestRefs = mergeManifestIcons(tree, sourceRoot, found);
+  if (manifestRefs.length > 0) {
+    context.logger.info(
+      `✓ Manifest: +${manifestRefs.length} dynamic icons (${manifestRefs.join(', ')})`,
     );
+  }
+
+  // ── 2. Declare + directed-install missing sets BEFORE building the subset ──
+  declareAndInstallMissingSets(tree, context, found.keys());
+
+  // ── 3. Build + write the subset (sets are now installed) ──
+  const collections = buildSubset(tree, found, context.logger);
+
+  const outputPath = `${sourceRoot}/ngx-iconify/icon-subset.ts`.replace(/^\//, '');
+  const content = renderSubsetFile(collections);
+  if (tree.exists(outputPath)) {
+    tree.overwrite(outputPath, content);
+  } else {
+    tree.create(outputPath, content);
+  }
+  context.logger.info(`✓ Subset written to ${outputPath}`);
+
+  // ── 4. Script wiring + one-shot cleanup ──
+  const pkgPath = '/package.json';
+  if (tree.exists(pkgPath)) {
+    // One-shot cleanup from older library versions that shipped a root script.
+    if (tree.exists('/scripts/collect-icons.mjs')) {
+      tree.delete('/scripts/collect-icons.mjs');
+      context.logger.info('✓ Deleted obsolete scripts/collect-icons.mjs');
+    }
+
+    const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
+      scripts: Record<string, string>;
+    };
+    pkg.scripts ??= {};
+
+    wireIconifyScripts(pkg, projectName, detectPackageManager(tree), detectRunner(tree));
+    tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+  }
+
+  // ── 5. Wire the subset into app.config via the shared patcher ──
+  const configFile = resolveConfigFile(tree, sourceRoot);
+  const subsetImport = toRelativeImport(configFile, outputPath);
+
+  await patchAppConfig(
+    tree,
+    context,
+    sourceRoot,
+    'provideIconify({ offlineCollections: iconSubset })',
+    'provideIconify',
+    'ngx-iconify-stack',
+    projectName,
+    [{ symbol: 'iconSubset', module: subsetImport }],
+  );
+
+  return projectName;
+}
+
+export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
+  return async (tree: Tree, context: SchematicContext) => {
+    await regenerateIconSubset(tree, context, options);
   };
 }

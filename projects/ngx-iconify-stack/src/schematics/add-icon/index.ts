@@ -1,0 +1,135 @@
+import { getWorkspace } from '@schematics/angular/utility/workspace';
+import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
+import type { IconifyJSON } from '@iconify/types';
+import { AddIconOptions } from './schema';
+import { assertAngularProject, resolveProjectName } from '../utils';
+import {
+  iconManifestPath,
+  iconSetJsonPath,
+  parseManifestDynamicIcons,
+  readJsonFile,
+  resolveIcon,
+} from '../generate-icon-subset/icons';
+import {
+  declareAndInstallMissingSets,
+  regenerateIconSubset,
+} from '../generate-icon-subset';
+
+/** Stable header for a NEW manifest (kept verbatim from an existing file). */
+const MANIFEST_HEADER = [
+  '// src/ngx-iconify/icon-manifest.ts',
+  '// 🔧 MANUAL — fuente de verdad. El scanner no ve iconos dinámicos (signals,',
+  '// servicios): si querés que uno entre al subset SSR, decláralo acá.',
+].join('\n');
+
+/** A valid Iconify reference is exactly `prefix:name` (no extra colons/spaces). */
+const ICON_REF_PATTERN = /^[\w-]+:[\w-]+$/;
+
+function normalizeIcons(icon: string | string[] | undefined): string[] {
+  if (!icon) return [];
+  return Array.isArray(icon) ? icon : [icon];
+}
+
+/**
+ * Persist the refs in `dynamicSubsetIcons` inside the icon manifest. Idempotent:
+ * preserves the file's header comment and any existing entries, and never
+ * duplicates a ref. Sorted output keeps reruns byte-identical.
+ */
+function persistManifestIcons(
+  tree: Tree,
+  sourceRoot: string,
+  refs: string[],
+): void {
+  const path = iconManifestPath(sourceRoot);
+  let header = MANIFEST_HEADER;
+  let existing: string[] = [];
+  if (tree.exists(path)) {
+    const content = tree.read(path)!.toString('utf8');
+    const declaration = content.match(/export\s+const\s+dynamicSubsetIcons\s*=/);
+    if (declaration && declaration.index !== undefined) {
+      header = content.slice(0, declaration.index).replace(/\s+$/, '');
+      existing = parseManifestDynamicIcons(content.slice(declaration.index));
+    } else {
+      header = content.replace(/\s+$/, '');
+    }
+  }
+
+  const merged = [...new Set([...existing, ...refs])].sort();
+  const body =
+    `export const dynamicSubsetIcons = [${merged.map((r) => `'${r}'`).join(', ')}] as const;`;
+
+  const next = `${header}\n${body}\n`;
+  if (tree.exists(path)) {
+    tree.overwrite(path, next);
+  } else {
+    tree.create(path, next);
+  }
+}
+
+export function addIcon(options: AddIconOptions): Rule {
+  return async (tree: Tree, context: SchematicContext) => {
+    const projectName = await resolveProjectName(tree, options);
+    const workspace = await getWorkspace(tree);
+    const project = workspace.projects.get(projectName);
+    const sourceRoot = project?.sourceRoot ?? 'src';
+
+    assertAngularProject(tree, sourceRoot, projectName);
+
+    const icons = normalizeIcons(options.icon);
+    if (icons.length === 0) {
+      throw new SchematicsException(
+        'No icon provided — pass --icon <prefix:name> (repeatable), e.g. --icon mdi:home.',
+      );
+    }
+
+    // Validate every ref shape first, so malformed input fails fast.
+    const refs = icons.map((ref) => {
+      if (!ICON_REF_PATTERN.test(ref)) {
+        throw new SchematicsException(
+          `Invalid icon reference "${ref}" — expected prefix:name (e.g. mdi:home).`,
+        );
+      }
+      return ref;
+    });
+
+    // A set that is neither installed nor declared counts as missing: declare it
+    // and directed-install BEFORE validating, so one run can add the icon end to end.
+    const missingPrefixes = [
+      ...new Set(
+        refs
+          .map((ref) => ref.slice(0, ref.indexOf(':')))
+          .filter((prefix) => readJsonFile(tree, iconSetJsonPath(prefix)) === null),
+      ),
+    ];
+    if (missingPrefixes.length > 0) {
+      declareAndInstallMissingSets(tree, context, missingPrefixes);
+    }
+
+    // Validate existence within each installed set (alias-aware).
+    for (const ref of refs) {
+      const sep = ref.indexOf(':');
+      const prefix = ref.slice(0, sep);
+      const name = ref.slice(sep + 1);
+      const fullSet = readJsonFile(tree, iconSetJsonPath(prefix)) as IconifyJSON | null;
+      if (fullSet === null) {
+        throw new SchematicsException(
+          `Icon set "${prefix}" is not installed — install @iconify-json/${prefix} and re-run.`,
+        );
+      }
+      if (!resolveIcon(fullSet, name)) {
+        throw new SchematicsException(
+          `Icon "${ref}" not found in set "${prefix}" — ` +
+            `browse https://icon-sets.iconify.design/${prefix}/ for valid names.`,
+        );
+      }
+    }
+
+    // Persist the refs in the manifest, then regenerate the subset through the
+    // shared pipeline (scan + manifest merge + build + wire).
+    persistManifestIcons(tree, sourceRoot, refs);
+    context.logger.info(`✓ Manifest updated at ${iconManifestPath(sourceRoot)}`);
+
+    await regenerateIconSubset(tree, context, options);
+    context.logger.info(`✓ Added ${refs.length} icon(s) to the subset: ${refs.join(', ')}`);
+  };
+}

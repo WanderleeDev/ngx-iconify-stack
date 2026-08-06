@@ -14,6 +14,7 @@
     "src/schematics/utils.spec.ts",
     "src/schematics/spec-run-rule.ts",
     "src/schematics/ng-add.spec.ts",
-    "src/schematics/generate-icon-subset.spec.ts"
+    "src/schematics/generate-icon-subset.spec.ts",
+    "src/schematics/add-icon.spec.ts"
   ]
 }

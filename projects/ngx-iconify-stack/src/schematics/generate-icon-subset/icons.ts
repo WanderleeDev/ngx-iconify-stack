@@ -2,7 +2,7 @@
 // Behavior pinned by the subset schematic contract: the factory now
 // executes scanning/subsetting directly instead of emitting a script file.
 import { Tree } from '@angular-devkit/schematics';
-import type { IconifyJSON } from '@iconify/types';
+import type { IconifyIcon, IconifyJSON } from '@iconify/types';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -18,15 +18,83 @@ export function iconSetJsonPath(prefix: string): string {
   return `node_modules/@iconify-json/${prefix}/icons.json`;
 }
 
+/** Path of the hand-written dynamic-icon manifest in a target project. */
+export function iconManifestPath(sourceRoot: string): string {
+  return `${sourceRoot}/ngx-iconify/icon-manifest.ts`.replace(/^\//, '');
+}
+
+/**
+ * Extract the `prefix:name` literals from a `dynamicSubsetIcons = [...]` array
+ * literal. Build-time regex parse (NOT a TS AST) — the manifest is a hand-written
+ * source of truth for icons the template scanner cannot see (signals, services).
+ */
+export function parseManifestDynamicIcons(content: string): string[] {
+  // Strip comments BEFORE matching the array so a `]` or a quoted `prefix:name`
+  // inside a comment cannot truncate the lazy match or inject false positives.
+  const withoutComments = content
+    .replace(/\/\*[\s\S]*?\*\//g, '') // block comments
+    .replace(/\/\/[^\n]*/g, ''); // line comments
+  const arrayMatch = withoutComments.match(/dynamicSubsetIcons\s*=\s*\[([\s\S]*?)\]/);
+  if (!arrayMatch) return [];
+  const refs: string[] = [];
+  for (const match of arrayMatch[1].matchAll(/['"]([\w-]+:[\w-]+)['"]/g)) {
+    refs.push(match[1]);
+  }
+  return refs;
+}
+
+/**
+ * Merge the dynamic icons declared in `<sourceRoot>/ngx-iconify/icon-manifest.ts`
+ * into the scanned `prefix -> Set<name>` map (prefix:name -> Map<prefix, Set<name>>).
+ * Absent manifest => no-op (backwards compatible). Returns the merged refs so
+ * callers can log what came from the manifest.
+ */
+export function mergeManifestIcons(
+  tree: Tree,
+  sourceRoot: string,
+  found: Map<string, Set<string>>,
+): string[] {
+  const manifestPath = iconManifestPath(sourceRoot);
+  if (!tree.exists(manifestPath)) return [];
+  const refs = parseManifestDynamicIcons(tree.read(manifestPath)!.toString('utf8'));
+  for (const ref of refs) {
+    const sep = ref.indexOf(':');
+    if (sep === -1) continue;
+    const prefix = ref.slice(0, sep);
+    const name = ref.slice(sep + 1);
+    const names = found.get(prefix);
+    if (names) {
+      names.add(name);
+    } else {
+      found.set(prefix, new Set([name]));
+    }
+  }
+  return refs;
+}
+
 /** Minimal logger surface required for subset warnings. */
 export interface SubsetLogger {
   warn(message: string): void;
 }
 
 /**
+ * Extract the full tag text (`<...>`) containing a match at `matchStart`.
+ * Used to detect per-tag attributes like `forceCdn` on `<ngx-iconify>`.
+ */
+function tagTextAt(content: string, matchStart: number, matchEnd: number): string {
+  const tagStart = content.lastIndexOf('<', matchStart);
+  const tagEnd = content.indexOf('>', matchEnd);
+  if (tagStart === -1 || tagEnd === -1) return '';
+  return content.slice(tagStart, tagEnd + 1);
+}
+
+/**
  * Walk every `.html`/`.ts` file under `sourceRoot` and collect `prefix -> Set<name>`
  * references matching the pinned pattern. Never matches `mdi-home`, `iconName =`, or
  * the literal word `iconify`.
+ *
+ * Icons referenced in a tag carrying `forceCdn` (presence or `[forceCdn]="true"`)
+ * are CDN-only by intent and are EXCLUDED from the subset.
  */
 export function scanIcons(tree: Tree, sourceRoot: string): Map<string, Set<string>> {
   const found = new Map<string, Set<string>>();
@@ -47,6 +115,11 @@ export function scanIcons(tree: Tree, sourceRoot: string): Map<string, Set<strin
       const ref = match[1];
       const sep = ref.indexOf(':');
       if (sep === -1) continue;
+
+      const matchStart = match.index ?? 0;
+      const tag = tagTextAt(content, matchStart, matchStart + match[0].length);
+      if (/\bforceCdn\b/.test(tag)) continue;
+
       const prefix = ref.slice(0, sep);
       const name = ref.slice(sep + 1);
       const names = found.get(prefix);
@@ -88,6 +161,22 @@ export function readJsonFile(tree: Tree, path: string): unknown | null {
 }
 
 /**
+ * Resolve a name inside a set: concrete icon first, then the alias chain
+ * (parent traversal, depth cap MAX_ALIAS_DEPTH). Returns the icon body, or
+ * undefined when the name resolves to nothing.
+ */
+export function resolveIcon(fullSet: IconifyJSON, name: string): IconifyIcon | undefined {
+  if (fullSet.icons[name]) return fullSet.icons[name];
+  let resolved = name;
+  let depth = 0;
+  while (fullSet.aliases?.[resolved]?.parent && depth < MAX_ALIAS_DEPTH) {
+    resolved = fullSet.aliases[resolved].parent;
+    depth++;
+  }
+  return fullSet.icons[resolved];
+}
+
+/**
  * Build an `IconifyJSON[]` subset from the scanned `prefix -> names` map. Reads each
  * set's `icons.json`, resolves alias chains (parent traversal, depth cap 10, body
  * copied under the alias name), and warns + skips what cannot be resolved.
@@ -114,20 +203,9 @@ export function buildSubset(
     };
 
     for (const name of names) {
-      if (fullSet.icons[name]) {
-        subset.icons[name] = fullSet.icons[name];
-        continue;
-      }
-
-      // Try the alias chain: walk parents until a concrete icon is found.
-      let resolved = name;
-      let depth = 0;
-      while (fullSet.aliases?.[resolved]?.parent && depth < MAX_ALIAS_DEPTH) {
-        resolved = fullSet.aliases[resolved].parent;
-        depth++;
-      }
-      if (fullSet.icons[resolved]) {
-        subset.icons[name] = fullSet.icons[resolved];
+      const icon = resolveIcon(fullSet, name);
+      if (icon) {
+        subset.icons[name] = icon;
       } else {
         logger.warn(`Icon "${prefix}:${name}" not found in set`);
       }

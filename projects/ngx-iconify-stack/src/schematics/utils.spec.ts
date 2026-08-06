@@ -1,5 +1,6 @@
 import { HostTree } from '@angular-devkit/schematics';
 import {
+  ADD_ICON_SCRIPT,
   assertAngularProject,
   detectPackageManager,
   detectRunner,
@@ -39,6 +40,7 @@ describe('wireIconifyScripts', () => {
       scripts: {
         [ICONS_SCRIPT]:
           'ng generate ngx-iconify-stack:generate-icon-subset --project frontend',
+        [ADD_ICON_SCRIPT]: 'ng generate ngx-iconify-stack:add-icon --project frontend',
         prebuild: `npm run ${ICONS_SCRIPT}`,
       } as Record<string, string>,
     };
@@ -97,6 +99,49 @@ describe('wireIconifyScripts', () => {
     expect(changed).toBe(true);
     expect(pkg.scripts['prebuild']).toBe('tsc -p tsconfig.server.json');
     expect(pkg.scripts[ICONS_SCRIPT]).toBeUndefined();
+  });
+});
+
+describe('wireIconifyScripts add-icon script', () => {
+  it('adds the add-icon script when missing', () => {
+    const pkg = { scripts: {} as Record<string, string> };
+    const changed = wireIconifyScripts(pkg, 'frontend');
+    expect(changed).toBe(true);
+    expect(pkg.scripts[ADD_ICON_SCRIPT]).toBe(
+      'ng generate ngx-iconify-stack:add-icon --project frontend',
+    );
+  });
+
+  it('rewrites the add-icon script when it targets another project (self-heal)', () => {
+    const pkg = {
+      scripts: {
+        [ADD_ICON_SCRIPT]: 'ng generate ngx-iconify-stack:add-icon --project backend',
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend');
+    expect(changed).toBe(true);
+    expect(pkg.scripts[ADD_ICON_SCRIPT]).toBe(
+      'ng generate ngx-iconify-stack:add-icon --project frontend',
+    );
+  });
+
+  it('writes nx generate in Nx workspaces', () => {
+    const pkg = { scripts: {} as Record<string, string> };
+    wireIconifyScripts(pkg, 'frontend', 'npm', 'nx');
+    expect(pkg.scripts[ADD_ICON_SCRIPT]).toBe(
+      'nx generate ngx-iconify-stack:add-icon --project frontend',
+    );
+  });
+
+  it('remove mode deletes the add-icon script', () => {
+    const pkg = {
+      scripts: {
+        [ADD_ICON_SCRIPT]: 'ng generate ngx-iconify-stack:add-icon --project frontend',
+      } as Record<string, string>,
+    };
+    const changed = wireIconifyScripts(pkg, 'frontend', 'npm', 'ng', { remove: true });
+    expect(changed).toBe(true);
+    expect(pkg.scripts[ADD_ICON_SCRIPT]).toBeUndefined();
   });
 });
 
@@ -268,6 +313,7 @@ describe('wireIconifyScripts package manager', () => {
       scripts: {
         [ICONS_SCRIPT]:
           'ng generate ngx-iconify-stack:generate-icon-subset --project frontend',
+        [ADD_ICON_SCRIPT]: 'ng generate ngx-iconify-stack:add-icon --project frontend',
         prebuild: 'pnpm run ngx-iconify-stack:generate-icons',
       } as Record<string, string>,
     };
