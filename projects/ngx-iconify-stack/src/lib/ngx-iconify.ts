@@ -13,6 +13,19 @@ import {
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 /**
+ * Rendered default for the inline `<svg>` when neither `width`/`size` is set.
+ * The schematics side names the sibling concept `DEFAULT_ICON_SIZE` (= 24) in
+ * `generate-icon-subset/icons.ts`; this constant is the lib's rendered default.
+ */
+const DEFAULT_ICON_WIDTH = '16px';
+
+/**
+ * Iconify inline baseline offset — the `vertical-align` adjustment applied to
+ * inline icons so they align to the surrounding text baseline.
+ */
+const INLINE_BASELINE_OFFSET = '-0.125em';
+
+/**
  * Angular component wrapping Iconify with SSR-safe inline SVG rendering.
  *
  * **SSR + client**: if the icon is found in `offlineCollections`, renders
@@ -50,11 +63,14 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     @if (svgContent(); as safe) {
+      <!-- No .px suffix on the width/height bindings: displayWidth/displayHeight
+           already emit a full CSS length (16px, 24px, 1em), and the .px binding
+           appends one more unit to whatever it receives. -->
       <span
         [innerHTML]="safe"
         [attr.class]="class() || null"
-        [style.width.px]="displayWidth()"
-        [style.height.px]="displayHeight()"
+        [style.width]="displayWidth()"
+        [style.height]="displayHeight()"
         [style.fontSize.px]="size()"
       ></span>
     } @else {
@@ -89,13 +105,16 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   // ignored on flex items. The host is the element that sits in the text line,
   // so it is the only place where vertical-align has any effect.
   host: {
-    '[style.vertical-align]': 'inline() ? "-0.125em" : null',
+    '[style.vertical-align]': 'inline() ? inlineBaselineOffset : null',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxIconify {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly config = inject(NGX_ICONIFY_CONFIG, { optional: true });
+
+  /** Exposed for the host binding — see {@link INLINE_BASELINE_OFFSET}. */
+  readonly inlineBaselineOffset = INLINE_BASELINE_OFFSET;
 
   // ── Inputs ──
 
@@ -132,13 +151,23 @@ export class NgxIconify {
 
   readonly displayWidth = computed<string>(() => {
     const value = this.width() ?? this.size();
-    return value === undefined ? "16px" : (typeof value === 'number' ? String(value) : value);
+    if (value === undefined) return DEFAULT_ICON_WIDTH;
+    // Numbers become a px CSS length; string inputs ("1em", "24px", "24")
+    // pass through untouched — the style binding applies them as-is.
+    return typeof value === 'number' ? `${value}px` : value;
   });
 
   readonly displayHeight = computed<string | undefined>(() => {
     const value = this.height() ?? this.size();
-    return value === undefined ? undefined : (typeof value === 'number' ? String(value) : value);
+    if (value === undefined) return undefined;
+    return typeof value === 'number' ? `${value}px` : value;
   });
+
+  /** SVG attribute form of a dimension: numbers stay unitless (bare SVG length). */
+  private svgDim(value: number | string | undefined): string | undefined {
+    if (value === undefined) return undefined;
+    return typeof value === 'number' ? String(value) : value;
+  }
 
   readonly svgContent = computed<SafeHtml | null>(() => {
     // forceCdn skips the offline lookup so the template falls through to the
@@ -148,12 +177,20 @@ export class NgxIconify {
     const iconLookup = lookupIcon(this.icon(), this.config?.offlineCollections);
     if (!iconLookup) return null;
 
-    const w = this.displayWidth() ?? iconLookup.width;
-    const h = this.displayHeight() ?? iconLookup.height;
+    // SVG width/height attributes stay unitless (a bare number is the native
+    // SVG length) and are independent of the CSS-length style computeds.
+    // No natural-size width defaulting: DEFAULT_ICON_WIDTH unless size/width is
+    // set. Height differs: when unset it falls back to the icon's native height.
+    const w = this.svgDim(this.width() ?? this.size()) ?? DEFAULT_ICON_WIDTH;
+    const h = this.svgDim(this.height() ?? this.size()) ?? String(iconLookup.height);
     const color = this.color();
 
     let body = iconLookup.body;
     if (color) {
+      // Monotone icons use fill/stroke="currentColor"; the replacement is
+      // intentionally global because it cannot know which attributes are color
+      // values. That is a documented limitation: a body embedding the literal
+      // text `currentColor` (e.g. in a data-URI or style string) is rewritten.
       body = body.replace(/currentColor/g, color);
     }
 

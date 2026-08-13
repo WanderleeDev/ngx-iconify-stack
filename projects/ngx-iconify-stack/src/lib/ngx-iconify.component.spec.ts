@@ -80,8 +80,8 @@ describe('NgxIconify', () => {
     fixture.componentRef.setInput('size', 32);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.displayWidth()).toBe("32");
-    expect(fixture.componentInstance.displayHeight()).toBe("32");
+    expect(fixture.componentInstance.displayWidth()).toBe("32px");
+    expect(fixture.componentInstance.displayHeight()).toBe("32px");
 
     const svg = fixture.nativeElement.querySelector('svg') as SVGElement;
     expect(svg.getAttribute('width')).toBe('32');
@@ -153,7 +153,7 @@ describe('NgxIconify', () => {
     fixture.componentRef.setInput('width', 16);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.displayWidth()).toBe("16");
+    expect(fixture.componentInstance.displayWidth()).toBe("16px");
     expect(fixture.componentInstance.displayHeight()).toBeUndefined();
 
     const svg = fixture.nativeElement.querySelector('svg') as SVGElement;

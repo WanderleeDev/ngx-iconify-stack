@@ -1,6 +1,14 @@
 import type { IconifyJSON } from '@iconify/types';
 import { getIconData } from '@iconify/utils';
 
+/**
+ * Default icon box size when neither the icon nor its set declares width/height.
+ * Cross-reference: `schematics/generate-icon-subset/icons.ts` exports the same
+ * `DEFAULT_ICON_SIZE = 24` for the subset builder — keep the two in sync by hand
+ * (the runtime library cannot import schematics code).
+ */
+const DEFAULT_ICON_SIZE = 24;
+
 export interface IconLookupResult {
   body: string;
   width: number;
@@ -43,7 +51,7 @@ export function lookupIcon(
 
   return {
     body: icon.body,
-    width: icon.width ?? set.width ?? 24,
-    height: icon.height ?? set.height ?? 24,
+    width: icon.width ?? set.width ?? DEFAULT_ICON_SIZE,
+    height: icon.height ?? set.height ?? DEFAULT_ICON_SIZE,
   };
 }
