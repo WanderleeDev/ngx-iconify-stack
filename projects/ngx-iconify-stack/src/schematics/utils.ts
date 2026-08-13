@@ -1,6 +1,6 @@
-// utils/patch-app-config.ts
-import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
+import { callRule, Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
 import { getWorkspace } from '@schematics/angular/utility/workspace';
+import { lastValueFrom } from 'rxjs';
 import { addRootProvider } from '@schematics/angular/utility';
 import * as ts from 'typescript';
 import { pickProjectName, toRelativeImport } from './project';
@@ -390,7 +390,7 @@ export async function patchAppConfig(
             .replace(new RegExp(`^${providerName}\\(`), '')
             .replace(/\)$/, '')})`,
       );
-      await Promise.resolve((rule as (t: Tree, ctx: SchematicContext) => unknown)(tree, context));
+      await lastValueFrom(callRule(rule, tree, context));
 
       const updatedContent = tree.read(startFile)?.toString() || '';
       if (updatedContent.includes(providerName)) {
