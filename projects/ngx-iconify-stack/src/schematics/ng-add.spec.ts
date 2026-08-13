@@ -74,6 +74,12 @@ describe('ngAdd mode', () => {
       'ng generate ngx-iconify-stack:generate-icon-subset --project frontend',
     );
     expect(pkg.scripts['prebuild']).toContain('ngx-iconify-stack:generate-icons');
+
+    // The skill is installed by default: catalog script + collections dep.
+    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBe(
+      'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
+    );
+    expect(pkg.devDependencies['@iconify/collections']).toBeDefined();
   });
 
   it('cdn mode patches a plain provideIconify() with no subset and no prebuild', async () => {
@@ -93,6 +99,12 @@ describe('ngAdd mode', () => {
     const pkg = readJson(result, '/package.json');
     expect(pkg.scripts['ngx-iconify-stack:generate-icons']).toBeUndefined();
     expect(pkg.scripts['prebuild']).toBeUndefined();
+
+    // cdn mode still installs the skill (catalog tool + collections dep).
+    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBe(
+      'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
+    );
+    expect(pkg.devDependencies['@iconify/collections']).toBeDefined();
   });
 
   it('switching autohost → cdn replaces the provider call and removes the wiring', async () => {

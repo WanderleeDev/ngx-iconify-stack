@@ -3,10 +3,12 @@ import {
   assertAngularProject,
   detectPackageManager,
   detectRunner,
+  LIST_SETS_SCRIPT,
   patchAppConfig,
   resolveProjectName,
   SKILL_SCRIPT,
   wireIconifyScripts,
+  wireListSetsScript,
   wireSkillScript,
 } from '../utils';
 import { Rule, chain, SchematicContext, Tree } from '@angular-devkit/schematics';
@@ -52,6 +54,12 @@ function addIconifyDependency(): Rule {
       type: NodeDependencyType.Dev,
       name: '@iconify/types',
       version: '^2.0.0',
+      overwrite: false,
+    });
+    addPackageJsonDependency(tree, {
+      type: NodeDependencyType.Dev,
+      name: '@iconify/collections',
+      version: '^1.0.724',
       overwrite: false,
     });
     return tree;
@@ -152,6 +160,24 @@ function installSkill(options: NgAddOptions): Rule {
     } else {
       context.logger.info(
         ` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script already correct — skipped)`,
+      );
+    }
+
+    // Wire the read-only catalog tool script (same rewrite protocol).
+    const listSetsResult = wireListSetsScript(pkg);
+    if (listSetsResult === 'added') {
+      tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+      context.logger.info(
+        ` \u001b[33mM\u001b[0m package.json (${LIST_SETS_SCRIPT} script added)`,
+      );
+    } else if (listSetsResult === 'updated') {
+      tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+      context.logger.info(
+        ` \u001b[33mM\u001b[0m package.json (${LIST_SETS_SCRIPT} script updated)`,
+      );
+    } else {
+      context.logger.info(
+        ` \u001b[90mℹ\u001b[0m package.json (${LIST_SETS_SCRIPT} script already present — skipped)`,
       );
     }
 
