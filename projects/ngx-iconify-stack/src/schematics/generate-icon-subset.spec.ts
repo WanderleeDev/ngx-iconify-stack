@@ -198,6 +198,27 @@ describe('generateIconSubset', () => {
     expect(subset).toContain('"prefix": "mdi"');
   });
 
+  it('still detects forceCdn after a quoted `>` in a binding attribute', async () => {
+    const workspace = createWorkspace();
+    workspace.overwrite(
+      '/src/app/app.component.html',
+      '<ngx-iconify icon="mdi:home" [attr.title]="max > min" forceCdn />\n',
+    );
+    installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });
+
+    const tree = await runRule(
+      generateIconSubset({ project: 'frontend' }),
+      workspace,
+      stubContext(),
+    );
+
+    // The `>` inside the quoted binding must NOT truncate the tag text before
+    // `forceCdn` is seen — otherwise the icon would leak into the subset.
+    const subset = tree.read('/src/ngx-iconify/icon-subset.ts')!.toString();
+    expect(subset).not.toContain('"home"');
+    expect(subset).not.toContain('"prefix": "mdi"');
+  });
+
   it('removes an icon from the subset after forceCdn is added and regenerated', async () => {
     const workspace = createWorkspace();
     installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });

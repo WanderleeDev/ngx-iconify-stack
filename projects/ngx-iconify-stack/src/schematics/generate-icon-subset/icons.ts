@@ -87,13 +87,26 @@ type IconSubsetResult = IconifyJSON & { not_found?: string[] };
 
 /**
  * Extract the full tag text (`<...>`) containing a match at `matchStart`.
- * Used to detect per-tag attributes like `forceCdn` on `<ngx-iconify>`.
+ * Walks the tag character by character tracking quote state, so a `>` inside
+ * a quoted attribute binding (e.g. `[attr.x]="a > b"`) is NOT treated as the
+ * end of the tag. Used to detect per-tag attributes like `forceCdn`.
+ * Returns '' when the tag never closes.
  */
-function tagTextAt(content: string, matchStart: number, matchEnd: number): string {
+function tagTextAt(content: string, matchStart: number, _matchEnd: number): string {
   const tagStart = content.lastIndexOf('<', matchStart);
-  const tagEnd = content.indexOf('>', matchEnd);
-  if (tagStart === -1 || tagEnd === -1) return '';
-  return content.slice(tagStart, tagEnd + 1);
+  if (tagStart === -1) return '';
+  let quote: string | null = null;
+  for (let i = tagStart + 1; i < content.length; i++) {
+    const ch = content[i];
+    if (quote !== null) {
+      if (ch === quote) quote = null;
+    } else if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (ch === '>') {
+      return content.slice(tagStart, i + 1);
+    }
+  }
+  return '';
 }
 
 /**
