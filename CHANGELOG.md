@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.3.0-next.0](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.8...v1.3.0-next.0) (2026-08-13)
+
+
+### Features
+
+* **iconify:** delegate icon lookup and subsetting to @iconify/utils ([23a8982](https://github.com/WanderleeDev/ngx-iconify-stack/commit/23a89824157161a6183bce73ff9b6f69b7aa49f3))
+* **schematics:** add read-only icon catalog tool to skill ([32ccf71](https://github.com/WanderleeDev/ngx-iconify-stack/commit/32ccf7192e35dd75872ace91135c9323ba2e53e1))
+
 ## [1.2.7](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.6...v1.2.7) (2026-08-04)
 
 
