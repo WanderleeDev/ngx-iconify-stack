@@ -1,11 +1,10 @@
-import { getWorkspace } from '@schematics/angular/utility/workspace';
 import {
   applyScriptWires,
-  assertAngularProject,
   detectPackageManager,
   detectRunner,
   LIST_SETS_SCRIPT,
   patchAppConfig,
+  resolveProject,
   resolveProjectName,
   SKILL_SCRIPT,
   wireIconifyScripts,
@@ -69,12 +68,7 @@ function addIconifyDependency(): Rule {
 
 function addProvider(options: NgAddOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
-    const projectName = await resolveProjectName(tree, options);
-    const workspace = await getWorkspace(tree);
-    const project = workspace.projects.get(projectName);
-    const sourceRoot = project?.sourceRoot ?? 'src';
-
-    assertAngularProject(tree, sourceRoot, projectName);
+    const { projectName, sourceRoot } = await resolveProject(tree, options);
 
     await patchAppConfig(
       tree,
@@ -95,10 +89,7 @@ function addProvider(options: NgAddOptions): Rule {
  */
 function removeAutohostWiring(options: NgAddOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
-    const projectName = await resolveProjectName(tree, options);
-    const workspace = await getWorkspace(tree);
-    const project = workspace.projects.get(projectName);
-    const sourceRoot = project?.sourceRoot ?? 'src';
+    const { projectName, sourceRoot } = await resolveProject(tree, options);
 
     const subsetPath = `${sourceRoot}/ngx-iconify/icon-subset.ts`.replace(/^\//, '');
     if (tree.exists(subsetPath)) {

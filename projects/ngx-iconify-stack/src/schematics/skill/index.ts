@@ -1,6 +1,5 @@
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
-import { getWorkspace } from '@schematics/angular/utility/workspace';
 import {
   addPackageJsonDependency,
   NodeDependencyType,
@@ -8,10 +7,9 @@ import {
 import { SkillOptions } from './schema';
 import {
   applyScriptWires,
-  assertAngularProject,
   detectPackageManager,
   LIST_SETS_SCRIPT,
-  resolveProjectName,
+  resolveProject,
   SKILL_SCRIPT,
   wireListSetsScript,
   wireSkillScript,
@@ -369,10 +367,7 @@ export function ensureCatalogDependency(tree: Tree): boolean {
 
 export function skill(options: SkillOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
-    const projectName = await resolveProjectName(tree, options);
-    const sourceRoot =
-      (await getWorkspace(tree)).projects.get(projectName)?.sourceRoot ?? 'src';
-    assertAngularProject(tree, sourceRoot, projectName);
+    const { projectName } = await resolveProject(tree, options);
 
     context.logger.info(`Generating AI agent skill for project: ${projectName}`);
 

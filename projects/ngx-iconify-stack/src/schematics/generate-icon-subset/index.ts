@@ -1,4 +1,3 @@
-import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { spawnSync } from 'node:child_process';
 import type { IconifyJSON } from '@iconify/types';
@@ -11,11 +10,11 @@ import {
   scanIcons,
 } from './icons';
 import {
-  assertAngularProject,
   detectPackageManager,
   detectRunner,
   patchAppConfig,
-  resolveProjectName,
+  resolveConfigFile,
+  resolveProject,
   toRelativeImport,
   wireIconifyScripts,
 } from '../utils';
@@ -31,15 +30,6 @@ function renderSubsetFile(collections: IconifyJSON[]): string {
     `${OUTPUT_HEADER}\n${TYPE_IMPORT}\n\n` +
     `export const iconSubset: IconifyJSON[] = ${JSON.stringify(collections, null, 2)};\n`
   );
-}
-
-/** Config entry point used when wiring the subset import (Angular 20+ standalone). */
-function resolveConfigFile(tree: Tree, sourceRoot: string): string {
-  const appConfigPath = `${sourceRoot}/app/app.config.ts`.replace(/^\//, '');
-  const mainPath = `${sourceRoot}/main.ts`.replace(/^\//, '');
-  if (tree.exists(appConfigPath)) return appConfigPath;
-  if (tree.exists(mainPath)) return mainPath;
-  return appConfigPath;
 }
 
 /** Package-manager subcommand that installs named packages (npm/pnpm install, yarn/bun add). */
@@ -129,12 +119,7 @@ export async function regenerateIconSubset(
   context: SchematicContext,
   options: GenerateIconSubsetOptions,
 ): Promise<string> {
-  const projectName = await resolveProjectName(tree, options);
-  const workspace = await getWorkspace(tree);
-  const project = workspace.projects.get(projectName);
-  const sourceRoot = project?.sourceRoot ?? 'src';
-
-  assertAngularProject(tree, sourceRoot, projectName);
+  const { projectName, sourceRoot } = await resolveProject(tree, options);
 
   // ── 1. Inline scan + merge dynamic icons from the manifest ──
   const found = scanIcons(tree, sourceRoot);
@@ -179,7 +164,7 @@ export async function regenerateIconSubset(
   }
 
   // ── 5. Wire the subset into app.config via the shared patcher ──
-  const configFile = resolveConfigFile(tree, sourceRoot);
+  const configFile = resolveConfigFile(tree, sourceRoot) ?? `${sourceRoot}/app/app.config.ts`;
   const subsetImport = toRelativeImport(configFile, outputPath);
 
   await patchAppConfig(

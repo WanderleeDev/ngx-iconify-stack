@@ -1,9 +1,8 @@
-import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
 import type { IconifyJSON } from '@iconify/types';
 import { getIconData } from '@iconify/utils';
 import { AddIconOptions } from './schema';
-import { assertAngularProject, resolveProjectName } from '../utils';
+import { resolveProject } from '../utils';
 import {
   iconManifestPath,
   iconSetJsonPath,
@@ -68,12 +67,7 @@ function persistManifestIcons(
 
 export function addIcon(options: AddIconOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
-    const projectName = await resolveProjectName(tree, options);
-    const workspace = await getWorkspace(tree);
-    const project = workspace.projects.get(projectName);
-    const sourceRoot = project?.sourceRoot ?? 'src';
-
-    assertAngularProject(tree, sourceRoot, projectName);
+    const { sourceRoot } = await resolveProject(tree, options);
 
     const icons = normalizeIcons(options.icon);
     if (icons.length === 0) {

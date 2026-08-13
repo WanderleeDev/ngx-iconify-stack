@@ -71,6 +71,25 @@ export async function resolveProjectName(
 }
 
 /**
+ * Resolve the target Angular project plus its source root and guard it against
+ * non-Angular targets. Wraps {@link resolveProjectName} with the workspace
+ * lookup and the `sourceRoot ?? 'src'` default, then runs
+ * {@link assertAngularProject}. Shared by every schematic entry point so the
+ * resolution logic cannot diverge.
+ */
+export async function resolveProject(
+  tree: Tree,
+  options: { project?: string } = {},
+): Promise<{ projectName: string; sourceRoot: string }> {
+  const projectName = await resolveProjectName(tree, options);
+  const workspace = await getWorkspace(tree);
+  const project = workspace.projects.get(projectName);
+  const sourceRoot = project?.sourceRoot ?? 'src';
+  assertAngularProject(tree, sourceRoot, projectName);
+  return { projectName, sourceRoot };
+}
+
+/**
  * Detect the workspace package manager (monorepo-aware).
  * Reads the `packageManager` field first, then falls back to lockfiles.
  * Unknown or absent managers default to `npm`.
@@ -123,6 +142,18 @@ export function assertAngularProject(
     `"${projectName}" looks like a NestJS application, not an Angular app. ` +
       `Pass --project <angular-app-name> to target the Angular app.`,
   );
+}
+
+/**
+ * Resolve the Angular entry file a standalone app bootstraps from: prefer
+ * `app/app.config.ts`, else `main.ts`. Returns null when neither exists.
+ */
+export function resolveConfigFile(tree: Tree, sourceRoot: string): string | null {
+  const appConfigPath = `${sourceRoot}/app/app.config.ts`.replace(/^\//, '');
+  const mainPath = `${sourceRoot}/main.ts`.replace(/^\//, '');
+  if (tree.exists(appConfigPath)) return appConfigPath;
+  if (tree.exists(mainPath)) return mainPath;
+  return null;
 }
 
 /**
@@ -363,12 +394,7 @@ export async function patchAppConfig(
   projectName?: string,
   extraImports?: { symbol: string; module: string }[],
 ): Promise<void> {
-  const mainPath = `${projectSourceRoot}/main.ts`.replace(/^\//, '');
-  const appConfigPath = `${projectSourceRoot}/app/app.config.ts`.replace(/^\//, '');
-
-  let startFile: string | null = null;
-  if (tree.exists(appConfigPath)) startFile = appConfigPath;
-  else if (tree.exists(mainPath)) startFile = mainPath;
+  const startFile = resolveConfigFile(tree, projectSourceRoot);
 
   if (!startFile) {
     context.logger.warn(
