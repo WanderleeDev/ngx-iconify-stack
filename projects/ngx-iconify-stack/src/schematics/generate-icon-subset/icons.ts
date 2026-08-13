@@ -40,7 +40,7 @@ export function parseManifestDynamicIcons(content: string): string[] {
   const withoutComments = content
     .replace(/\/\*[\s\S]*?\*\//g, '') // block comments
     .replace(/\/\/[^\n]*/g, ''); // line comments
-  const arrayMatch = withoutComments.match(/dynamicSubsetIcons\s*=\s*\[([\s\S]*?)\]/);
+  const arrayMatch = withoutComments.match(/dynamicSubsetIcons[^=\r\n]*=\s*\[([\s\S]*?)\]/);
   if (!arrayMatch) return [];
   const refs: string[] = [];
   for (const match of arrayMatch[1].matchAll(/['"]([\w-]+:[\w-]+)['"]/g)) {

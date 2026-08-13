@@ -42,10 +42,18 @@ function persistManifestIcons(
   let existing: string[] = [];
   if (tree.exists(path)) {
     const content = tree.read(path)!.toString('utf8');
-    const declaration = content.match(/export\s+const\s+dynamicSubsetIcons\s*=/);
-    if (declaration && declaration.index !== undefined) {
-      header = content.slice(0, declaration.index).replace(/\s+$/, '');
-      existing = parseManifestDynamicIcons(content.slice(declaration.index));
+    // Anchor on the identifier position and the '=' that follows it (rather
+    // than requiring `export const dynamicSubsetIcons` directly) so typed
+    // declarations like `dynamicSubsetIcons: string[] = [...]` are rewritten
+    // in place instead of appending a duplicate declaration.
+    const identIndex = content.indexOf('dynamicSubsetIcons');
+    const headerEnd = identIndex === -1 ? -1 : content.indexOf('=', identIndex);
+    const lineStart = headerEnd === -1 ? -1 : content.lastIndexOf('\n', identIndex) + 1;
+    const isDeclaration =
+      headerEnd !== -1 && /\bexport\b/.test(content.slice(lineStart, headerEnd));
+    if (isDeclaration) {
+      header = content.slice(0, lineStart).replace(/\s+$/, '');
+      existing = parseManifestDynamicIcons(content.slice(lineStart));
     } else {
       header = content.replace(/\s+$/, '');
     }
