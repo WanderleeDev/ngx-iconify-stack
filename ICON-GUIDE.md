@@ -173,5 +173,5 @@ npm run ngx-iconify-stack:list-sets
 
 - Lista cada set con `prefix`, `name`, `total` y `category` (aligned).
 - Flags: `--category <name>` (match exacto de categoría), `--search <term>` (substring case-insensitive en prefix y name), `--limit <N>` (tope de líneas).
-- Es **solo lectura**: nunca escribe archivos, nunca instala paquetes y no hace red. Si falta `@iconify/collections`, imprime cómo instalarlo y sale con código 1 — no auto-instala.
+- El schematic `skill` declara `@iconify/collections` como devDependency y la instala, así el tool funciona desde el primer uso. El tool en sí es **solo lectura**: nunca escribe archivos, nunca instala paquetes y no hace red — si la dep faltara igualmente, imprime cómo instalarla y sale con código 1 (no auto-instala).
 - Con el `prefix` devuelto: `ng g ngx-iconify-stack:add-icon --icon <prefix>:<name>`.

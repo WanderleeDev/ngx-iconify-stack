@@ -91,6 +91,7 @@ describe('skill', () => {
     expect(pkg.scripts[SKILL_SCRIPT]).toBe(
       'ng generate ngx-iconify-stack:skill --project frontend',
     );
+    expect(pkg.devDependencies['@iconify/collections']).toBeDefined();
   });
 
   it('is idempotent: rerunning keeps the tool and scripts in place', async () => {
@@ -102,6 +103,7 @@ describe('skill', () => {
     expect(pkg.scripts[LIST_SETS_SCRIPT]).toBe(
       'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
     );
+    expect(pkg.devDependencies['@iconify/collections']).toBeDefined();
   });
 });
 

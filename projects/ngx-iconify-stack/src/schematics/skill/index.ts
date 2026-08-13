@@ -1,8 +1,14 @@
 import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import { getWorkspace } from '@schematics/angular/utility/workspace';
+import {
+  addPackageJsonDependency,
+  NodeDependencyType,
+} from '@schematics/angular/utility/dependencies';
 import { SkillOptions } from './schema';
 import {
   assertAngularProject,
+  detectPackageManager,
   LIST_SETS_SCRIPT,
   resolveProjectName,
   SKILL_SCRIPT,
@@ -69,7 +75,7 @@ npm run ngx-iconify-stack:list-sets
 
 - Read-only by construction: never writes files, never spawns processes, no network.
 - Options: \`--category <name>\` (exact category match), \`--search <term>\` (case-insensitive substring on prefix and name), \`--limit <N>\` (positive integer cap).
-- If \`@iconify/collections\` is not installed it prints an install hint and exits 1 — it NEVER auto-installs.
+- This schematic adds \`@iconify/collections\` as a devDependency and installs it, so the tool works out of the box. If it is somehow absent, the tool prints an install hint and exits 1 — it NEVER auto-installs.
 - Use the returned \`prefix\` to add icons offline: \`ng g ngx-iconify-stack:add-icon --icon <prefix>:<name>\`.
 
 ## Component Example
@@ -113,7 +119,7 @@ export const appConfig: ApplicationConfig = {
 |-----------|---------|---------|
 | \`generate-icon-subset\` | \`ng g ngx-iconify-stack:generate-icon-subset --project <name>\` | Scans templates for \`icon="prefix:name"\` literals, merges the dynamic-icon manifest, builds \`src/ngx-iconify/icon-subset.ts\`, declares + installs missing \`@iconify-json/*\` sets, wires \`prebuild\`, and patches the provider. |
 | \`add-icon\` | \`ng g ngx-iconify-stack:add-icon --project <name> --icon mdi:home\` (repeatable) | Validates \`prefix:name\`, installs the set if missing, appends the icon to \`src/ngx-iconify/icon-manifest.ts\` (idempotent), and regenerates the subset through the same pipeline. |
-| \`skill\` | \`ng g ngx-iconify-stack:skill --project <name>\` | Regenerates the AI agent skill under \`.agents/skills/ngx-iconify-stack\`. |
+| \`skill\` | \`ng g ngx-iconify-stack:skill --project <name>\` | Regenerates the AI agent skill under \`.agents/skills/ngx-iconify-stack\`, declares the \`@iconify/collections\` devDependency for the catalog tool, and adds the \`list-sets\` npm script. |
 | \`list-sets\` | \`npm run ngx-iconify-stack:list-sets\` (or \`node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs\`) | Lists the Iconify icon-set catalog (read-only, never installs): \`--category\`, \`--search\`, \`--limit\`. |
 
 ### Dynamic icon manifest (\`src/ngx-iconify/icon-manifest.ts\`)
@@ -320,6 +326,10 @@ if (rows.length > 0) {
 
 // ── Schematic logic ─────────────────────────────────────────────────────────
 const SKILL_ROOT = '.agents/skills/ngx-iconify-stack';
+
+/** devDependency required by the read-only catalog tool (`list-sets.mjs`). */
+export const CATALOG_PACKAGE = '@iconify/collections';
+export const CATALOG_VERSION = '^1.0.724';
 const FILES: { path: string; content: string }[] = [
   { path: `${SKILL_ROOT}/SKILL${MD}`, content: SKILL_CONTENT },
   { path: `${SKILL_ROOT}/references/api-reference${MD}`, content: API_REFERENCE_CONTENT },
@@ -339,6 +349,23 @@ export function generateSkill(tree: Tree, context: SchematicContext): void {
   }
 }
 
+/**
+ * Ensure the catalog tool's devDependency is declared. `overwrite: false`
+ * keeps an existing (possibly newer) specifier untouched, so reruns are
+ * idempotent. Returns true when the dependency was added — callers should
+ * then schedule a package install so the tool works out of the box.
+ */
+export function ensureCatalogDependency(tree: Tree): boolean {
+  const before = tree.read('/package.json')?.toString();
+  addPackageJsonDependency(tree, {
+    type: NodeDependencyType.Dev,
+    name: CATALOG_PACKAGE,
+    version: CATALOG_VERSION,
+    overwrite: false,
+  });
+  return before !== tree.read('/package.json')?.toString();
+}
+
 export function skill(options: SkillOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     const projectName = await resolveProjectName(tree, options);
@@ -349,6 +376,21 @@ export function skill(options: SkillOptions): Rule {
     context.logger.info(`Generating AI agent skill for project: ${projectName}`);
 
     generateSkill(tree, context);
+
+    // Ensure the catalog tool's devDependency is declared and installed so
+    // `list-sets.mjs` works out of the box on the first run.
+    if (ensureCatalogDependency(tree)) {
+      context.addTask(
+        new NodePackageInstallTask({ packageManager: detectPackageManager(tree) }),
+      );
+      context.logger.info(
+        ` \u001b[32m✔\u001b[0m package.json (${CATALOG_PACKAGE} devDependency added)`,
+      );
+    } else {
+      context.logger.info(
+        ` \u001b[90mℹ\u001b[0m package.json (${CATALOG_PACKAGE} devDependency already present)`,
+      );
+    }
 
     // Ensure the regeneration script exists so the skill can be refreshed later.
     const pkgPath = '/package.json';
