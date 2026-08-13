@@ -5,6 +5,7 @@ import {
   LOG_UNCHANGED,
   LOG_UPDATED,
   patchAppConfig,
+  providerCallFor,
   resolveProject,
   resolveProjectName,
   wireIconifyScripts,
@@ -23,7 +24,7 @@ import { NgAddOptions } from './schema';
 export function ngAdd(options: NgAddOptions): Rule {
   const autohost = options.mode !== 'cdn';
   return chain([
-    addIconifyDependency(),
+    addIconifyDependency(options),
     ...(autohost
       ? // autohost (default): the subset schematic owns the whole flow —
         // scan, subset file, @iconify-json/* deps, prebuild wiring, and the
@@ -41,7 +42,7 @@ export function ngAdd(options: NgAddOptions): Rule {
   ]);
 }
 
-function addIconifyDependency(): Rule {
+function addIconifyDependency(options: NgAddOptions): Rule {
   return (tree: Tree) => {
     addPackageJsonDependency(tree, {
       type: NodeDependencyType.Default,
@@ -55,12 +56,17 @@ function addIconifyDependency(): Rule {
       version: '^2.0.0',
       overwrite: false,
     });
-    addPackageJsonDependency(tree, {
-      type: NodeDependencyType.Dev,
-      name: CATALOG_PACKAGE,
-      version: CATALOG_VERSION,
-      overwrite: false,
-    });
+    // The catalog tool's devDependency only makes sense when the skill is
+    // installed; in cdn mode without the skill no tool is generated, so the
+    // dependency would be dead weight. (The skill step adds it on its own.)
+    if (options.installSkill !== false) {
+      addPackageJsonDependency(tree, {
+        type: NodeDependencyType.Dev,
+        name: CATALOG_PACKAGE,
+        version: CATALOG_VERSION,
+        overwrite: false,
+      });
+    }
     return tree;
   };
 }
@@ -73,7 +79,7 @@ function addProvider(options: NgAddOptions): Rule {
       tree,
       context,
       sourceRoot,
-      'provideIconify()',
+      providerCallFor('cdn'),
       'provideIconify',
       'ngx-iconify-stack',
       projectName,

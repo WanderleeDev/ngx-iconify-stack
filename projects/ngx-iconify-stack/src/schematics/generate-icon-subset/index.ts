@@ -13,6 +13,7 @@ import {
   detectPackageManager,
   detectRunner,
   patchAppConfig,
+  providerCallFor,
   resolveConfigFile,
   resolveProject,
   toRelativeImport,
@@ -35,9 +36,19 @@ function renderSubsetFile(collections: IconifyJSON[]): string {
   );
 }
 
-/** Package-manager subcommand that installs named packages (npm/pnpm install, yarn/bun add). */
+/**
+ * Package-manager subcommand that installs named packages
+ * (npm/pnpm `install`, yarn/bun `add`). Unknown managers default to `install`.
+ */
+const INSTALL_COMMAND: Record<string, string> = {
+  npm: 'install',
+  pnpm: 'install',
+  yarn: 'add',
+  bun: 'add',
+};
+
 export function directedInstallCommand(packageManager: string): string {
-  return packageManager === 'yarn' || packageManager === 'bun' ? 'add' : 'install';
+  return INSTALL_COMMAND[packageManager] ?? 'install';
 }
 
 /**
@@ -204,7 +215,7 @@ export async function regenerateIconSubset(
     tree,
     context,
     sourceRoot,
-    'provideIconify({ offlineCollections: iconSubset })',
+    providerCallFor('autohost', 'iconSubset'),
     'provideIconify',
     'ngx-iconify-stack',
     projectName,

@@ -18,6 +18,12 @@ import {
 // Extension constructed at runtime to avoid socket.dev "URL strings" false positive
 const MD = ['.', 'm', 'd'].join('');
 
+/**
+ * Skill metadata version. Bump in lockstep with the library release so the
+ * generated SKILL.md advertises the matching version.
+ */
+const SKILL_VERSION = '1.2.4';
+
 // ── SKILL content (Tier 2 — loaded on activation) ─────────
 const SKILL_CONTENT = `---
 name: ngx-iconify-stack
@@ -25,7 +31,7 @@ description: "Trigger: ngx-iconify-stack, ngx-iconify, add iconify icons, icon s
 compatibility: Angular 20+ with TypeScript. Optional iconify-icon web component.
 metadata:
   author: WanderleeDev
-  version: '1.2.4'
+  version: '${SKILL_VERSION}'
 ---
 
 # ngx-iconify-stack

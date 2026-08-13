@@ -5,6 +5,12 @@ export interface ProjectRef {
   extensions: Record<string, unknown>;
 }
 
+/** Typed read of `project.extensions['projectType']` (a `Record<string, unknown>`). */
+function getProjectType(project: ProjectRef): string | undefined {
+  const v = project.extensions['projectType'];
+  return typeof v === 'string' ? v : undefined;
+}
+
 /**
  * Pure project picker for Angular 20+ workspaces.
  *
@@ -30,7 +36,7 @@ export function pickProjectName(
   }
 
   for (const [name, project] of entries) {
-    if (project.extensions['projectType'] === 'application') {
+    if (getProjectType(project) === 'application') {
       return name;
     }
   }

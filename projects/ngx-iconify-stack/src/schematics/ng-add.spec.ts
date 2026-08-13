@@ -123,4 +123,20 @@ describe('ngAdd mode', () => {
     expect(pkg.scripts['ngx-iconify-stack:generate-icons']).toBeUndefined();
     expect(pkg.scripts['prebuild']).toBeUndefined();
   });
+
+  it('cdn mode with installSkill=false adds no catalog devDependency and no list-sets script', async () => {
+    const result = await runRule(
+      ngAdd({ project: 'frontend', mode: 'cdn', installSkill: false }),
+      createWorkspace(),
+      stubContext(),
+    );
+
+    const pkg = readJson(result, '/package.json');
+    expect(pkg.devDependencies['@iconify/collections']).toBeUndefined();
+    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBeUndefined();
+
+    // The runtime and typing deps remain unconditional.
+    expect(pkg.dependencies['iconify-icon']).toBeDefined();
+    expect(pkg.devDependencies['@iconify/types']).toBeDefined();
+  });
 });

@@ -430,6 +430,23 @@ function removeIconifyScripts(pkg: { scripts?: Record<string, string> }): boolea
   return changed;
 }
 
+/**
+ * Build the `provideIconify(...)` call string fed to `patchAppConfig`.
+ * Single source of truth for the provider patch so ng-add (cdn) and
+ * generate-icon-subset (autohost) cannot drift apart.
+ * - `cdn`: bare `provideIconify()` — CDN-only, no offline subset.
+ * - `autohost` with `subsetImport`: `provideIconify({ offlineCollections: <ref> })`.
+ */
+export function providerCallFor(
+  mode: 'cdn' | 'autohost',
+  subsetImport?: string,
+): string {
+  if (mode === 'cdn') return 'provideIconify()';
+  return subsetImport
+    ? `provideIconify({ offlineCollections: ${subsetImport} })`
+    : 'provideIconify()';
+}
+
 export async function patchAppConfig(
   tree: Tree,
   context: SchematicContext,
