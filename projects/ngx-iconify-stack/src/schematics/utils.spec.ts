@@ -5,9 +5,11 @@ import {
   detectPackageManager,
   detectRunner,
   ICONS_SCRIPT,
+  LIST_SETS_SCRIPT,
   looksLikeNestMain,
   SKILL_SCRIPT,
   wireIconifyScripts,
+  wireListSetsScript,
   wireSkillScript,
 } from './utils';
 
@@ -173,6 +175,35 @@ describe('wireSkillScript', () => {
       } as Record<string, string>,
     };
     expect(wireSkillScript(pkg, 'frontend')).toBe('unchanged');
+  });
+});
+
+describe('wireListSetsScript', () => {
+  const EXPECTED = 'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs';
+
+  it('adds the list-sets script when missing', () => {
+    const pkg = { scripts: {} as Record<string, string> };
+    expect(wireListSetsScript(pkg)).toBe('added');
+    expect(pkg.scripts[LIST_SETS_SCRIPT]).toBe(EXPECTED);
+  });
+
+  it('reports unchanged when the script already points at the tool', () => {
+    const pkg = { scripts: { [LIST_SETS_SCRIPT]: EXPECTED } as Record<string, string> };
+    expect(wireListSetsScript(pkg)).toBe('unchanged');
+  });
+
+  it('rewrites a stale value (self-heal)', () => {
+    const pkg = {
+      scripts: { [LIST_SETS_SCRIPT]: 'node tools/list-sets.mjs' } as Record<string, string>,
+    };
+    expect(wireListSetsScript(pkg)).toBe('updated');
+    expect(pkg.scripts[LIST_SETS_SCRIPT]).toBe(EXPECTED);
+  });
+
+  it('ignores the runner param — the command runs node directly, even in nx workspaces', () => {
+    const pkg = { scripts: {} as Record<string, string> };
+    expect(wireListSetsScript(pkg, 'nx')).toBe('added');
+    expect(pkg.scripts[LIST_SETS_SCRIPT]).toBe(EXPECTED);
   });
 });
 
