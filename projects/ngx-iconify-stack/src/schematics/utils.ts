@@ -19,6 +19,18 @@ export const SKILL_SCRIPT = 'ngx-iconify-stack:skill';
 /** Package.json script that lists the Iconify icon-set catalog (read-only tool). */
 export const LIST_SETS_SCRIPT = 'ngx-iconify-stack:list-sets';
 
+/**
+ * Split an Iconify reference into its `prefix` and `name`. Returns null when
+ * there is no colon separator (i.e. not a `prefix:name` reference). The single
+ * canonical split for the schematics; `lib/icon-helpers.ts` carries a linked
+ * copy because the runtime library cannot import schematics code.
+ */
+export function splitIconRef(ref: string): { prefix: string; name: string } | null {
+  const sep = ref.indexOf(':');
+  if (sep === -1) return null;
+  return { prefix: ref.slice(0, sep), name: ref.slice(sep + 1) };
+}
+
 /** Outcome of an idempotent package.json script wiring. */
 export type WireResult = 'added' | 'updated' | 'unchanged';
 

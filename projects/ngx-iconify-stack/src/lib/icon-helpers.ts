@@ -8,6 +8,18 @@ export interface IconLookupResult {
 }
 
 /**
+ * Split an Iconify reference into its `prefix` and `name`, or null when there
+ * is no colon. Deliberate copy of `splitIconRef` in
+ * `schematics/utils.ts` — the runtime library cannot import schematics code,
+ * so this stays in sync by hand.
+ */
+function splitIconRef(ref: string): { prefix: string; name: string } | null {
+  const sep = ref.indexOf(':');
+  if (sep === -1) return null;
+  return { prefix: ref.slice(0, sep), name: ref.slice(sep + 1) };
+}
+
+/**
  * Look up an icon reference ("prefix:name") in a list of offline collections.
  * Splitting `prefix:name` stays manual (first colon); alias resolution is
  * delegated to `getIconData` from @iconify/utils. Returns the SVG body and
@@ -19,11 +31,10 @@ export function lookupIcon(
 ): IconLookupResult | null {
   if (!collections || !iconRef) return null;
 
-  const sep = iconRef.indexOf(':');
-  if (sep === -1) return null;
+  const parts = splitIconRef(iconRef);
+  if (!parts) return null;
 
-  const prefix = iconRef.slice(0, sep);
-  const name = iconRef.slice(sep + 1);
+  const { prefix, name } = parts;
   const set = collections.find((c) => c.prefix === prefix);
   if (!set) return null;
 

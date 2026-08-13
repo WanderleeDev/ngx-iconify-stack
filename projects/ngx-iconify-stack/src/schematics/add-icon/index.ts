@@ -2,8 +2,9 @@ import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devk
 import type { IconifyJSON } from '@iconify/types';
 import { getIconData } from '@iconify/utils';
 import { AddIconOptions } from './schema';
-import { resolveProject } from '../utils';
+import { resolveProject, splitIconRef } from '../utils';
 import {
+  ICON_REF_PATTERN,
   iconManifestPath,
   iconSetJsonPath,
   parseManifestDynamicIcons,
@@ -20,9 +21,6 @@ const MANIFEST_HEADER = [
   '// 🔧 MANUAL — fuente de verdad. El scanner no ve iconos dinámicos (signals,',
   '// servicios): si querés que uno entre al subset SSR, decláralo acá.',
 ].join('\n');
-
-/** A valid Iconify reference is exactly `prefix:name` (no extra colons/spaces). */
-const ICON_REF_PATTERN = /^[\w-]+:[\w-]+$/;
 
 function normalizeIcons(icon: string | string[] | undefined): string[] {
   if (!icon) return [];
@@ -91,7 +89,7 @@ export function addIcon(options: AddIconOptions): Rule {
     const missingPrefixes = [
       ...new Set(
         refs
-          .map((ref) => ref.slice(0, ref.indexOf(':')))
+          .map((ref) => splitIconRef(ref)!.prefix)
           .filter((prefix) => readJsonFile(tree, iconSetJsonPath(prefix)) === null),
       ),
     ];
@@ -101,9 +99,7 @@ export function addIcon(options: AddIconOptions): Rule {
 
     // Validate existence within each installed set (alias-aware via @iconify/utils).
     for (const ref of refs) {
-      const sep = ref.indexOf(':');
-      const prefix = ref.slice(0, sep);
-      const name = ref.slice(sep + 1);
+      const { prefix, name } = splitIconRef(ref)!;
       const fullSet = readJsonFile(tree, iconSetJsonPath(prefix)) as IconifyJSON | null;
       if (fullSet === null) {
         throw new SchematicsException(

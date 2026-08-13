@@ -2,13 +2,20 @@
 // Behavior pinned by the subset schematic contract: the factory now
 // executes scanning/subsetting directly instead of emitting a script file.
 import { Tree } from '@angular-devkit/schematics';
-import type { IconifyIcon, IconifyJSON } from '@iconify/types';
-import { getIconData, getIcons } from '@iconify/utils';
+import type { IconifyJSON } from '@iconify/types';
+import { getIcons } from '@iconify/utils';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { splitIconRef } from '../utils';
 
-/** Pinned reference pattern: `icon`/`icons` followed by `:` or `=` and a quoted `prefix:name` (handles nested quotes). */
-export const ICON_REFERENCE_PATTERN = /(?:icon|icons)\s*[:=]\s*["'](?:["']?([\w-]+:[\w-]+)["']?)["']/;
+/** Base `prefix:name` fragment shared by the validation and scan patterns. */
+const ICON_REF_SOURCE = '[\\w-]+:[\\w-]+';
+/** Pinned validation pattern: a whole string must be a `prefix:name` reference. */
+export const ICON_REF_PATTERN = new RegExp(`^${ICON_REF_SOURCE}$`);
+/** Pinned scan pattern: `icon`/`icons` followed by `:` or `=` and a quoted `prefix:name` (handles nested quotes). */
+export const ICON_REFERENCE_PATTERN = new RegExp(
+  `(?:icon|icons)\\s*[:=]\\s*["'](?:["']?(${ICON_REF_SOURCE})["']?)["']`,
+);
 /** Default icon box size when the set does not declare width/height. */
 export const DEFAULT_ICON_SIZE = 24;
 
@@ -57,10 +64,9 @@ export function mergeManifestIcons(
   if (!tree.exists(manifestPath)) return [];
   const refs = parseManifestDynamicIcons(tree.read(manifestPath)!.toString('utf8'));
   for (const ref of refs) {
-    const sep = ref.indexOf(':');
-    if (sep === -1) continue;
-    const prefix = ref.slice(0, sep);
-    const name = ref.slice(sep + 1);
+    const parts = splitIconRef(ref);
+    if (!parts) continue;
+    const { prefix, name } = parts;
     const names = found.get(prefix);
     if (names) {
       names.add(name);
@@ -115,15 +121,14 @@ export function scanIcons(tree: Tree, sourceRoot: string): Map<string, Set<strin
     // A fresh global regex per file avoids lastIndex carryover between files.
     for (const match of content.matchAll(new RegExp(ICON_REFERENCE_PATTERN.source, 'g'))) {
       const ref = match[1];
-      const sep = ref.indexOf(':');
-      if (sep === -1) continue;
+      const parts = splitIconRef(ref);
+      if (!parts) continue;
 
       const matchStart = match.index ?? 0;
       const tag = tagTextAt(content, matchStart, matchStart + match[0].length);
       if (/\bforceCdn\b/.test(tag)) continue;
 
-      const prefix = ref.slice(0, sep);
-      const name = ref.slice(sep + 1);
+      const { prefix, name } = parts;
       const names = found.get(prefix);
       if (names) {
         names.add(name);
@@ -160,15 +165,6 @@ export function readJsonFile(tree: Tree, path: string): unknown | null {
   } catch {
     return null;
   }
-}
-
-/**
- * Resolve a name inside a set (concrete icon or alias chain) via
- * `getIconData` from @iconify/utils. Returns the icon body, or undefined when
- * the name resolves to nothing.
- */
-export function resolveIcon(fullSet: IconifyJSON, name: string): IconifyIcon | undefined {
-  return getIconData(fullSet, name) ?? undefined;
 }
 
 /**
