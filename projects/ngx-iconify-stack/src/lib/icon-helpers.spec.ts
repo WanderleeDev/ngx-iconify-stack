@@ -112,16 +112,26 @@ describe('lookupIcon', () => {
     expect(result?.height).toBe(48);
   });
 
-  it('gives up after 10 alias hops instead of looping forever', () => {
+  it('resolves deep alias chains through @iconify/utils (no fixed depth cap)', () => {
     const aliases: NonNullable<IconifyJSON['aliases']> = {};
     for (let i = 1; i <= 11; i++) {
       aliases[`a${i}`] = { parent: i === 11 ? 'target' : `a${i + 1}` };
     }
     const set = makeCollection({
-      icons: { target: { body: '<path d="target"/>' } },
+      icons: { target: { body: '<path d="target"/>', width: 24, height: 24 } },
       aliases,
     });
-    expect(lookupIcon('mdi:a1', [set])).toBeNull();
+    // The old hand-rolled loop capped at 10 hops; getIconData resolves the full chain.
+    const result = lookupIcon('mdi:a1', [set]);
+    expect(result?.body).toBe('<path d="target"/>');
+  });
+
+  it('returns null for a cyclic alias chain instead of looping forever', () => {
+    const set = makeCollection({
+      icons: { x: { body: '<path d="x"/>' } },
+      aliases: { a: { parent: 'b' }, b: { parent: 'a' } },
+    });
+    expect(lookupIcon('mdi:a', [set])).toBeNull();
   });
 
   it('returns null for an alias whose parent does not exist', () => {

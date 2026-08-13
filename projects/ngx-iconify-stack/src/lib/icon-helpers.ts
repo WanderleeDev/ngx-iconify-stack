@@ -1,4 +1,5 @@
 import type { IconifyJSON } from '@iconify/types';
+import { getIconData } from '@iconify/utils';
 
 export interface IconLookupResult {
   body: string;
@@ -8,7 +9,9 @@ export interface IconLookupResult {
 
 /**
  * Look up an icon reference ("prefix:name") in a list of offline collections.
- * Resolves alias chains. Returns the SVG body and dimensions, or null if not found.
+ * Splitting `prefix:name` stays manual (first colon); alias resolution is
+ * delegated to `getIconData` from @iconify/utils. Returns the SVG body and
+ * dimensions, or null if not found.
  */
 export function lookupIcon(
   iconRef: string,
@@ -24,37 +27,12 @@ export function lookupIcon(
   const set = collections.find((c) => c.prefix === prefix);
   if (!set) return null;
 
-  let body: string | undefined;
-  let iconWidth: number | undefined;
-  let iconHeight: number | undefined;
-
-  const icon = set.icons?.[name];
-  if (icon) {
-    body = icon.body;
-    iconWidth = icon.width;
-    iconHeight = icon.height;
-  } else if (set.aliases?.[name]) {
-    // Resolve alias chain (e.g. renamed icons)
-    let alias = set.aliases[name];
-    let depth = 0;
-    while (alias?.parent && depth < 10) {
-      const resolved = set.icons?.[alias.parent];
-      if (resolved) {
-        body = resolved.body;
-        iconWidth = resolved.width;
-        iconHeight = resolved.height;
-        break;
-      }
-      alias = set.aliases?.[alias.parent];
-      depth++;
-    }
-  }
-
-  if (!body) return null;
+  const icon = getIconData(set, name);
+  if (!icon) return null;
 
   return {
-    body,
-    width: iconWidth ?? set.width ?? 24,
-    height: iconHeight ?? set.height ?? 24,
+    body: icon.body,
+    width: icon.width ?? set.width ?? 24,
+    height: icon.height ?? set.height ?? 24,
   };
 }

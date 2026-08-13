@@ -123,6 +123,19 @@ describe('addIcon', () => {
     ).rejects.toThrow(/expected prefix:name/);
   });
 
+  it('rejects a three-segment provider ref like catppuccin:frappe:home', async () => {
+    // `a:b:c` is provider:prefix:name for custom Iconify API providers, NOT an
+    // offline-subset reference — the pinned pattern keeps it out of scope.
+    const workspace = createWorkspace();
+    await expect(
+      runRule(
+        addIcon({ project: 'frontend', icon: 'catppuccin:frappe:home' }),
+        workspace,
+        stubContext(),
+      ),
+    ).rejects.toThrow(/expected prefix:name/);
+  });
+
   it('throws a clear error for an icon that does not exist in the set', async () => {
     const workspace = createWorkspace();
     installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });

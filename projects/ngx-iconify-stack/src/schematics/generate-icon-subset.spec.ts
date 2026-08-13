@@ -304,6 +304,32 @@ describe('generateIconSubset', () => {
     expect(subset).not.toContain('"alert"');
   });
 
+  it('keeps a name present only as an alias in the subset (aliases preserved)', async () => {
+    const workspace = createWorkspace();
+    // `home` exists ONLY as an alias pointing at `house` — getIcons must copy
+    // the parent into icons and keep the alias under the requested name.
+    workspace.create(
+      '/node_modules/@iconify-json/mdi/icons.json',
+      JSON.stringify({
+        prefix: 'mdi',
+        icons: { house: { body: '<path d="M1 2"/>' } },
+        aliases: { home: { parent: 'house' } },
+      }),
+    );
+
+    const tree = await runRule(
+      generateIconSubset({ project: 'frontend' }),
+      workspace,
+      stubContext(),
+    );
+
+    const subset = tree.read('/src/ngx-iconify/icon-subset.ts')!.toString();
+    expect(subset).toContain('"prefix": "mdi"');
+    expect(subset).toContain('"house"');
+    expect(subset).toContain('"home"');
+    expect(subset).toContain('"parent": "house"');
+  });
+
   it('leaves the subset unchanged when no manifest exists', async () => {
     const workspace = createWorkspace();
     installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });

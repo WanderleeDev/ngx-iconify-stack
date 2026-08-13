@@ -3,13 +3,12 @@
 // executes scanning/subsetting directly instead of emitting a script file.
 import { Tree } from '@angular-devkit/schematics';
 import type { IconifyIcon, IconifyJSON } from '@iconify/types';
+import { getIconData, getIcons } from '@iconify/utils';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /** Pinned reference pattern: `icon`/`icons` followed by `:` or `=` and a quoted `prefix:name` (handles nested quotes). */
 export const ICON_REFERENCE_PATTERN = /(?:icon|icons)\s*[:=]\s*["'](?:["']?([\w-]+:[\w-]+)["']?)["']/;
-/** Maximum alias-chain depth before an icon is treated as unresolved. */
-export const MAX_ALIAS_DEPTH = 10;
 /** Default icon box size when the set does not declare width/height. */
 export const DEFAULT_ICON_SIZE = 24;
 
@@ -76,6 +75,9 @@ export function mergeManifestIcons(
 export interface SubsetLogger {
   warn(message: string): void;
 }
+
+/** `getIcons` returns an IconifyJSON plus a getIcons-only `not_found` field. */
+type IconSubsetResult = IconifyJSON & { not_found?: string[] };
 
 /**
  * Extract the full tag text (`<...>`) containing a match at `matchStart`.
@@ -161,25 +163,20 @@ export function readJsonFile(tree: Tree, path: string): unknown | null {
 }
 
 /**
- * Resolve a name inside a set: concrete icon first, then the alias chain
- * (parent traversal, depth cap MAX_ALIAS_DEPTH). Returns the icon body, or
- * undefined when the name resolves to nothing.
+ * Resolve a name inside a set (concrete icon or alias chain) via
+ * `getIconData` from @iconify/utils. Returns the icon body, or undefined when
+ * the name resolves to nothing.
  */
 export function resolveIcon(fullSet: IconifyJSON, name: string): IconifyIcon | undefined {
-  if (fullSet.icons[name]) return fullSet.icons[name];
-  let resolved = name;
-  let depth = 0;
-  while (fullSet.aliases?.[resolved]?.parent && depth < MAX_ALIAS_DEPTH) {
-    resolved = fullSet.aliases[resolved].parent;
-    depth++;
-  }
-  return fullSet.icons[resolved];
+  return getIconData(fullSet, name) ?? undefined;
 }
 
 /**
  * Build an `IconifyJSON[]` subset from the scanned `prefix -> names` map. Reads each
- * set's `icons.json`, resolves alias chains (parent traversal, depth cap 10, body
- * copied under the alias name), and warns + skips what cannot be resolved.
+ * set's `icons.json` and delegates alias resolution + subset extraction to
+ * `getIcons` from @iconify/utils. Missing names land in `result.not_found`,
+ * are warned and excluded from `icons`; a set whose icons.json is absent is
+ * warned and skipped entirely.
  */
 export function buildSubset(
   tree: Tree,
@@ -195,21 +192,24 @@ export function buildSubset(
       continue;
     }
 
-    const subset: IconifyJSON = {
-      prefix,
-      icons: {},
-      width: fullSet.width ?? DEFAULT_ICON_SIZE,
-      height: fullSet.height ?? DEFAULT_ICON_SIZE,
-    };
-
-    for (const name of names) {
-      const icon = resolveIcon(fullSet, name);
-      if (icon) {
-        subset.icons[name] = icon;
-      } else {
-        logger.warn(`Icon "${prefix}:${name}" not found in set`);
-      }
+    const subset = getIcons(fullSet, [...names], true) as IconSubsetResult | null;
+    if (subset === null) {
+      for (const name of names) logger.warn(`Icon "${prefix}:${name}" not found in set`);
+      continue;
     }
+
+    for (const name of subset.not_found ?? []) {
+      logger.warn(`Icon "${prefix}:${name}" not found in set`);
+    }
+
+    // Preserve explicit width/height defaults from the full set so the
+    // generated file stays stable (getIcons copies them only when present).
+    if (subset.width === undefined) subset.width = fullSet.width ?? DEFAULT_ICON_SIZE;
+    if (subset.height === undefined) subset.height = fullSet.height ?? DEFAULT_ICON_SIZE;
+
+    // `not_found` is a getIcons-only field, not part of IconifyJSON — keep the
+    // generated subset clean by dropping it.
+    delete subset.not_found;
 
     collections.push(subset);
   }

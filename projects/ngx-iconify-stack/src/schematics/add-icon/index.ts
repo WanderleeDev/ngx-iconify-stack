@@ -1,6 +1,7 @@
 import { getWorkspace } from '@schematics/angular/utility/workspace';
 import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
 import type { IconifyJSON } from '@iconify/types';
+import { getIconData } from '@iconify/utils';
 import { AddIconOptions } from './schema';
 import { assertAngularProject, resolveProjectName } from '../utils';
 import {
@@ -8,7 +9,6 @@ import {
   iconSetJsonPath,
   parseManifestDynamicIcons,
   readJsonFile,
-  resolveIcon,
 } from '../generate-icon-subset/icons';
 import {
   declareAndInstallMissingSets,
@@ -105,7 +105,7 @@ export function addIcon(options: AddIconOptions): Rule {
       declareAndInstallMissingSets(tree, context, missingPrefixes);
     }
 
-    // Validate existence within each installed set (alias-aware).
+    // Validate existence within each installed set (alias-aware via @iconify/utils).
     for (const ref of refs) {
       const sep = ref.indexOf(':');
       const prefix = ref.slice(0, sep);
@@ -116,7 +116,7 @@ export function addIcon(options: AddIconOptions): Rule {
           `Icon set "${prefix}" is not installed — install @iconify-json/${prefix} and re-run.`,
         );
       }
-      if (!resolveIcon(fullSet, name)) {
+      if (!getIconData(fullSet, name)) {
         throw new SchematicsException(
           `Icon "${ref}" not found in set "${prefix}" — ` +
             `browse https://icon-sets.iconify.design/${prefix}/ for valid names.`,
