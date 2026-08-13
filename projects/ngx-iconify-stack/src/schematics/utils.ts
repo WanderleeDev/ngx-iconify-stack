@@ -19,6 +19,31 @@ export const SKILL_SCRIPT = 'ngx-iconify-stack:skill';
 /** Package.json script that lists the Iconify icon-set catalog (read-only tool). */
 export const LIST_SETS_SCRIPT = 'ngx-iconify-stack:list-sets';
 
+/** Outcome of an idempotent package.json script wiring. */
+export type WireResult = 'added' | 'updated' | 'unchanged';
+
+/**
+ * Idempotent wiring of a single npm script: sets `pkg.scripts[key]` to
+ * `command` when missing ('added') or different ('updated'), and leaves it
+ * untouched when already equal ('unchanged'). The generic that the typed
+ * wrappers delegate to.
+ */
+export function wireScript(
+  pkg: { scripts?: Record<string, string> },
+  key: string,
+  command: string,
+): WireResult {
+  pkg.scripts ??= {};
+  const existing = pkg.scripts[key];
+  if (!existing) {
+    pkg.scripts[key] = command;
+    return 'added';
+  }
+  if (existing === command) return 'unchanged';
+  pkg.scripts[key] = command;
+  return 'updated';
+}
+
 /**
  * Resolve the target Angular project for a schematic (Angular 20+).
  * See {@link pickProjectName} for selection rules — no legacy `defaultProject`.
@@ -106,17 +131,12 @@ export function wireSkillScript(
   pkg: { scripts?: Record<string, string> },
   projectName: string,
   runner: 'nx' | 'ng' = 'ng',
-): 'added' | 'updated' | 'unchanged' {
-  pkg.scripts ??= {};
-  const command = `${runner} generate ngx-iconify-stack:skill --project ${projectName}`;
-  const existing = pkg.scripts[SKILL_SCRIPT];
-  if (!existing) {
-    pkg.scripts[SKILL_SCRIPT] = command;
-    return 'added';
-  }
-  if (existing === command) return 'unchanged';
-  pkg.scripts[SKILL_SCRIPT] = command;
-  return 'updated';
+): WireResult {
+  return wireScript(
+    pkg,
+    SKILL_SCRIPT,
+    `${runner} generate ngx-iconify-stack:skill --project ${projectName}`,
+  );
 }
 
 /**
@@ -131,17 +151,56 @@ export function wireSkillScript(
 export function wireListSetsScript(
   pkg: { scripts?: Record<string, string> },
   _runner: 'nx' | 'ng' = 'ng',
-): 'added' | 'updated' | 'unchanged' {
-  pkg.scripts ??= {};
-  const command = 'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs';
-  const existing = pkg.scripts[LIST_SETS_SCRIPT];
-  if (!existing) {
-    pkg.scripts[LIST_SETS_SCRIPT] = command;
-    return 'added';
+): WireResult {
+  return wireScript(
+    pkg,
+    LIST_SETS_SCRIPT,
+    'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
+  );
+}
+
+/**
+ * Apply a batch of idempotent script wirings to `/package.json` and persist
+ * the file at most once. Each wire mutates `pkg.scripts` and returns its
+ * outcome; the caller supplies the wire closures (which also carry the
+ * command detail used in the 'updated' log, e.g. `--project <name>`).
+ * Any changed wiring triggers a single rewrite; the file is never written
+ * when nothing changed.
+ */
+export function applyScriptWires(
+  tree: Tree,
+  logger: { info: (message: string) => void },
+  wires: {
+    key: string;
+    wire: (pkg: { scripts?: Record<string, string> }) => WireResult;
+    updatedDetail?: string;
+  }[],
+  pkgPath = '/package.json',
+): void {
+  const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
+    scripts?: Record<string, string>;
+  };
+
+  const results = wires.map(({ key, wire, updatedDetail }) => ({
+    key,
+    result: wire(pkg),
+    updatedDetail,
+  }));
+
+  if (results.some((r) => r.result !== 'unchanged')) {
+    tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
   }
-  if (existing === command) return 'unchanged';
-  pkg.scripts[LIST_SETS_SCRIPT] = command;
-  return 'updated';
+
+  for (const { key, result, updatedDetail } of results) {
+    if (result === 'added') {
+      logger.info(` \u001b[32m✔\u001b[0m package.json (${key} script added)`);
+    } else if (result === 'updated') {
+      const detail = updatedDetail ? ` to ${updatedDetail}` : '';
+      logger.info(` \u001b[33mM\u001b[0m package.json (${key} script updated${detail})`);
+    } else {
+      logger.info(` \u001b[90mℹ\u001b[0m package.json (${key} script already correct — skipped)`);
+    }
+  }
 }
 
 /** Split a `a && b && c` script chain into trimmed segments. */

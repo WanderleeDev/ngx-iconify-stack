@@ -1,6 +1,7 @@
 import { HostTree } from '@angular-devkit/schematics';
 import {
   ADD_ICON_SCRIPT,
+  applyScriptWires,
   assertAngularProject,
   detectPackageManager,
   detectRunner,
@@ -10,6 +11,7 @@ import {
   SKILL_SCRIPT,
   wireIconifyScripts,
   wireListSetsScript,
+  wireScript,
   wireSkillScript,
 } from './utils';
 
@@ -204,6 +206,108 @@ describe('wireListSetsScript', () => {
     const pkg = { scripts: {} as Record<string, string> };
     expect(wireListSetsScript(pkg, 'nx')).toBe('added');
     expect(pkg.scripts[LIST_SETS_SCRIPT]).toBe(EXPECTED);
+  });
+});
+
+describe('wireScript', () => {
+  it('adds a missing script', () => {
+    const pkg = { scripts: {} as Record<string, string> };
+    expect(wireScript(pkg, 'build', 'ng build')).toBe('added');
+    expect(pkg.scripts['build']).toBe('ng build');
+  });
+
+  it('reports unchanged when the script already matches', () => {
+    const pkg = { scripts: { build: 'ng build' } as Record<string, string> };
+    expect(wireScript(pkg, 'build', 'ng build')).toBe('unchanged');
+  });
+
+  it('rewrites a stale value (self-heal)', () => {
+    const pkg = { scripts: { build: 'tsc' } as Record<string, string> };
+    expect(wireScript(pkg, 'build', 'ng build')).toBe('updated');
+    expect(pkg.scripts['build']).toBe('ng build');
+  });
+});
+
+describe('applyScriptWires', () => {
+  function createPkgTree(scripts: Record<string, string> = {}): HostTree {
+    const tree = new HostTree();
+    tree.create('/package.json', JSON.stringify({ name: 'app', scripts }, null, 2) + '\n');
+    return tree;
+  }
+
+  function stubLogger(): { info: (m: string) => void; messages: string[] } {
+    const messages: string[] = [];
+    const info = (m: string) => messages.push(m);
+    return { info, messages };
+  }
+
+  it('persists once when any wiring changes and logs each outcome', () => {
+    const tree = createPkgTree();
+    const logger = stubLogger();
+
+    applyScriptWires(tree, logger as unknown as { info: (m: string) => void }, [
+      { key: SKILL_SCRIPT, wire: (pkg) => wireSkillScript(pkg, 'frontend') },
+      { key: LIST_SETS_SCRIPT, wire: (pkg) => wireListSetsScript(pkg) },
+    ]);
+
+    const pkg = JSON.parse(tree.read('/package.json')!.toString());
+    expect(pkg.scripts[SKILL_SCRIPT]).toBe(
+      'ng generate ngx-iconify-stack:skill --project frontend',
+    );
+    expect(pkg.scripts[LIST_SETS_SCRIPT]).toBe(
+      'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
+    );
+    expect(logger.messages).toHaveLength(2);
+    expect(logger.messages[0]).toContain('script added');
+    expect(logger.messages[1]).toContain('script added');
+  });
+
+  it('logs the updated detail on self-heal and does not rewrite when nothing changed', () => {
+    const tree = createPkgTree({
+      [SKILL_SCRIPT]: 'ng generate ngx-iconify-stack:skill --project backend',
+      [LIST_SETS_SCRIPT]: 'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
+    });
+    const logger = stubLogger();
+    const original = tree.read('/package.json')!.toString();
+
+    applyScriptWires(tree, logger as unknown as { info: (m: string) => void }, [
+      {
+        key: SKILL_SCRIPT,
+        wire: (pkg) => wireSkillScript(pkg, 'frontend'),
+        updatedDetail: '--project frontend',
+      },
+      { key: LIST_SETS_SCRIPT, wire: (pkg) => wireListSetsScript(pkg) },
+    ]);
+
+    const pkg = JSON.parse(tree.read('/package.json')!.toString());
+    expect(pkg.scripts[SKILL_SCRIPT]).toBe(
+      'ng generate ngx-iconify-stack:skill --project frontend',
+    );
+    expect(logger.messages).toHaveLength(2);
+    expect(logger.messages[0]).toContain('updated to --project frontend');
+    expect(logger.messages[1]).toContain('already correct — skipped');
+    // A changed wiring must rewrite; the unchanged one is the same file anyway.
+    expect(tree.read('/package.json')!.toString()).not.toBe(original);
+  });
+
+  it('does not rewrite the file when every wiring is unchanged', () => {
+    const scripts = {
+      [SKILL_SCRIPT]: 'ng generate ngx-iconify-stack:skill --project frontend',
+      [LIST_SETS_SCRIPT]: 'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
+    } as Record<string, string>;
+    const tree = createPkgTree(scripts);
+    const logger = stubLogger();
+    const original = tree.read('/package.json')!.toString();
+
+    applyScriptWires(tree, logger as unknown as { info: (m: string) => void }, [
+      { key: SKILL_SCRIPT, wire: (pkg) => wireSkillScript(pkg, 'frontend') },
+      { key: LIST_SETS_SCRIPT, wire: (pkg) => wireListSetsScript(pkg) },
+    ]);
+
+    expect(tree.read('/package.json')!.toString()).toBe(original);
+    expect(logger.messages).toHaveLength(2);
+    expect(logger.messages[0]).toContain('already correct — skipped');
+    expect(logger.messages[1]).toContain('already correct — skipped');
   });
 });
 

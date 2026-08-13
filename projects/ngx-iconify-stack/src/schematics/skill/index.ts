@@ -7,6 +7,7 @@ import {
 } from '@schematics/angular/utility/dependencies';
 import { SkillOptions } from './schema';
 import {
+  applyScriptWires,
   assertAngularProject,
   detectPackageManager,
   LIST_SETS_SCRIPT,
@@ -392,38 +393,17 @@ export function skill(options: SkillOptions): Rule {
       );
     }
 
-    // Ensure the regeneration script exists so the skill can be refreshed later.
-    const pkgPath = '/package.json';
-    if (tree.exists(pkgPath)) {
-      const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
-        scripts?: Record<string, string>;
-      };
-      const result = wireSkillScript(pkg, projectName);
-      if (result === 'added') {
-        tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-        context.logger.info(` \u001b[32m✔\u001b[0m package.json (${SKILL_SCRIPT} script added)`);
-      } else if (result === 'updated') {
-        tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-        context.logger.info(` \u001b[33mM\u001b[0m package.json (${SKILL_SCRIPT} script updated to --project ${projectName})`);
-      } else {
-        context.logger.info(` \u001b[90mℹ\u001b[0m package.json (${SKILL_SCRIPT} script already present)`);
-      }
-
-      // Wire the read-only catalog tool script (same rewrite protocol).
-      const listSetsResult = wireListSetsScript(pkg);
-      if (listSetsResult === 'added') {
-        tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-        context.logger.info(
-          ` \u001b[32m✔\u001b[0m package.json (${LIST_SETS_SCRIPT} script added)`,
-        );
-      } else if (listSetsResult === 'updated') {
-        tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-        context.logger.info(` \u001b[33mM\u001b[0m package.json (${LIST_SETS_SCRIPT} script updated)`);
-      } else {
-        context.logger.info(
-          ` \u001b[90mℹ\u001b[0m package.json (${LIST_SETS_SCRIPT} script already present)`,
-        );
-      }
+    // Ensure the regeneration script exists so the skill can be refreshed later,
+    // plus the read-only catalog tool script — one persist, uniform logs.
+    if (tree.exists('/package.json')) {
+      applyScriptWires(tree, context.logger, [
+        {
+          key: SKILL_SCRIPT,
+          wire: (pkg) => wireSkillScript(pkg, projectName),
+          updatedDetail: `--project ${projectName}`,
+        },
+        { key: LIST_SETS_SCRIPT, wire: (pkg) => wireListSetsScript(pkg) },
+      ]);
     }
 
     return tree;
