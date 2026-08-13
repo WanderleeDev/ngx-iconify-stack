@@ -1,5 +1,21 @@
 # Changelog
 
+# [1.3.0-next.1](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.3.0-next.0...v1.3.0-next.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* **schematics:** anchor manifest header on the identifier ([e68953f](https://github.com/WanderleeDev/ngx-iconify-stack/commit/e68953f501bc65b5e1c20c85277d9334715b21db))
+* **schematics:** honor quoted '>' in bindings when scanning tags ([2d03c32](https://github.com/WanderleeDev/ngx-iconify-stack/commit/2d03c321e735290159027f85b1a710b72e5911b8))
+* **schematics:** run addRootProvider rule through callRule ([0dffbd9](https://github.com/WanderleeDev/ngx-iconify-stack/commit/0dffbd9201c8da8e1aa58b8af8bbfc1a50ae8791))
+
+
+### Features
+
+* **docs:** add server and cloud-check icons, consolidate tabler ([feeec21](https://github.com/WanderleeDev/ngx-iconify-stack/commit/feeec2181ff48921fcad91541603d97e948ac31c))
+* **schematics:** install @iconify/collections with the skill ([e6651cd](https://github.com/WanderleeDev/ngx-iconify-stack/commit/e6651cd4e1fb95b3d5009121fd0b4303add8b79e))
+* **schematics:** install collections dep and list-sets script via ng-add ([07a5fcc](https://github.com/WanderleeDev/ngx-iconify-stack/commit/07a5fccabf96fcfec39a282ad18b1da53978813f))
+
 # [1.3.0-next.0](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.2.8...v1.3.0-next.0) (2026-08-13)
 
 
