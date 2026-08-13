@@ -253,12 +253,60 @@ export function applyScriptWires(
   }
 }
 
+/**
+ * Wire the skill regeneration script plus the read-only catalog tool script in
+ * a single persist with uniform logs. Shared by ng-add and the skill schematic
+ * so the two scripts can never diverge between entry points.
+ */
+export function wireSkillAndListSetsScripts(
+  tree: Tree,
+  logger: { info: (message: string) => void },
+  projectName: string,
+  runner: 'nx' | 'ng' = 'ng',
+): void {
+  applyScriptWires(tree, logger, [
+    {
+      key: SKILL_SCRIPT,
+      wire: (pkg) => wireSkillScript(pkg, projectName, runner),
+      updatedDetail: `--project ${projectName}`,
+    },
+    { key: LIST_SETS_SCRIPT, wire: (pkg) => wireListSetsScript(pkg) },
+  ]);
+}
+
 /** Split a `a && b && c` script chain into trimmed segments. */
 function splitChain(script: string): string[] {
   return script
     .split('&&')
     .map((seg) => seg.trim())
     .filter(Boolean);
+}
+
+/**
+ * Strip icon segments from `pkg.scripts[key]` using the split → filter →
+ * join-or-delete algorithm shared by the prestart cleanup in
+ * {@link wireIconifyScripts} and the per-key loop in
+ * {@link removeIconifyScripts}. Deletes the script when it would become
+ * empty. Returns true when the script value changed or was removed.
+ */
+function stripScriptSegments(
+  pkg: { scripts?: Record<string, string> },
+  key: string,
+  isIconSegment: (seg: string) => boolean,
+): boolean {
+  pkg.scripts ??= {};
+  const kept = splitChain(pkg.scripts[key] ?? '').filter((seg) => !isIconSegment(seg));
+  if (kept.length > 0) {
+    const next = kept.join(' && ');
+    if (pkg.scripts[key] !== next) {
+      pkg.scripts[key] = next;
+      return true;
+    }
+  } else if (pkg.scripts[key] !== undefined) {
+    delete pkg.scripts[key];
+    return true;
+  }
+  return false;
 }
 
 /** True for legacy `collect-icons` segments or any package manager's marker. */
@@ -330,19 +378,7 @@ export function wireIconifyScripts(
     changed = true;
   }
 
-  const keptPrestart = splitChain(pkg.scripts['prestart'] ?? '').filter(
-    (seg) => !isIconSegment(seg),
-  );
-  if (keptPrestart.length > 0) {
-    const next = keptPrestart.join(' && ');
-    if (pkg.scripts['prestart'] !== next) {
-      pkg.scripts['prestart'] = next;
-      changed = true;
-    }
-  } else if (pkg.scripts['prestart'] !== undefined) {
-    delete pkg.scripts['prestart'];
-    changed = true;
-  }
+  if (stripScriptSegments(pkg, 'prestart', isIconSegment)) changed = true;
 
   if (pkg.scripts['collect-icons'] !== undefined) {
     delete pkg.scripts['collect-icons'];
@@ -374,18 +410,7 @@ function removeIconifyScripts(pkg: { scripts?: Record<string, string> }): boolea
   }
 
   for (const key of ['prebuild', 'prestart']) {
-    const segments = splitChain(pkg.scripts[key] ?? '');
-    const kept = segments.filter((seg) => !isIconSegment(seg));
-    if (kept.length > 0) {
-      const next = kept.join(' && ');
-      if (pkg.scripts[key] !== next) {
-        pkg.scripts[key] = next;
-        changed = true;
-      }
-    } else if (pkg.scripts[key] !== undefined) {
-      delete pkg.scripts[key];
-      changed = true;
-    }
+    if (stripScriptSegments(pkg, key, isIconSegment)) changed = true;
   }
 
   if (pkg.scripts['collect-icons'] !== undefined) {

@@ -6,13 +6,10 @@ import {
 } from '@schematics/angular/utility/dependencies';
 import { SkillOptions } from './schema';
 import {
-  applyScriptWires,
   detectPackageManager,
-  LIST_SETS_SCRIPT,
+  detectRunner,
   resolveProject,
-  SKILL_SCRIPT,
-  wireListSetsScript,
-  wireSkillScript,
+  wireSkillAndListSetsScripts,
 } from '../utils';
 
 // Extension constructed at runtime to avoid socket.dev "URL strings" false positive
@@ -391,14 +388,7 @@ export function skill(options: SkillOptions): Rule {
     // Ensure the regeneration script exists so the skill can be refreshed later,
     // plus the read-only catalog tool script — one persist, uniform logs.
     if (tree.exists('/package.json')) {
-      applyScriptWires(tree, context.logger, [
-        {
-          key: SKILL_SCRIPT,
-          wire: (pkg) => wireSkillScript(pkg, projectName),
-          updatedDetail: `--project ${projectName}`,
-        },
-        { key: LIST_SETS_SCRIPT, wire: (pkg) => wireListSetsScript(pkg) },
-      ]);
+      wireSkillAndListSetsScripts(tree, context.logger, projectName, detectRunner(tree));
     }
 
     return tree;

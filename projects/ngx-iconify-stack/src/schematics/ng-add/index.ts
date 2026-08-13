@@ -1,15 +1,11 @@
 import {
-  applyScriptWires,
   detectPackageManager,
   detectRunner,
-  LIST_SETS_SCRIPT,
   patchAppConfig,
   resolveProject,
   resolveProjectName,
-  SKILL_SCRIPT,
   wireIconifyScripts,
-  wireListSetsScript,
-  wireSkillScript,
+  wireSkillAndListSetsScripts,
 } from '../utils';
 import { Rule, chain, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
@@ -135,14 +131,7 @@ function installSkill(options: NgAddOptions): Rule {
     // Wire the skill regeneration script plus the read-only catalog tool
     // script — one persist, uniform logs.
     if (tree.exists('/package.json')) {
-      applyScriptWires(tree, context.logger, [
-        {
-          key: SKILL_SCRIPT,
-          wire: (pkg) => wireSkillScript(pkg, projectName, detectRunner(tree)),
-          updatedDetail: `--project ${projectName}`,
-        },
-        { key: LIST_SETS_SCRIPT, wire: (pkg) => wireListSetsScript(pkg) },
-      ]);
+      wireSkillAndListSetsScripts(tree, context.logger, projectName, detectRunner(tree));
     }
 
     return tree;
