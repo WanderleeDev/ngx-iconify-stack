@@ -147,13 +147,18 @@ export function scanIcons(tree: Tree, sourceRoot: string): Map<string, Set<strin
  * The tree-first read lets the schematic test harness mock
  * `node_modules/@iconify-json/<prefix>/icons.json` as virtual files.
  */
-export function readJsonFile(tree: Tree, path: string): unknown | null {
+export function readJsonFile(
+  tree: Tree,
+  path: string,
+  logger?: { warn(message: string): void },
+): IconifyJSON | null {
   const treePath = path.startsWith('/') ? path : `/${path}`;
   const treeBuffer = tree.read(treePath);
   if (treeBuffer !== null) {
     try {
-      return JSON.parse(treeBuffer.toString('utf8'));
+      return JSON.parse(treeBuffer.toString('utf8')) as IconifyJSON;
     } catch {
+      logger?.warn(`Malformed JSON in ${path}`);
       return null;
     }
   }
@@ -161,8 +166,9 @@ export function readJsonFile(tree: Tree, path: string): unknown | null {
   const fsPath = resolve(process.cwd(), path);
   if (!existsSync(fsPath)) return null;
   try {
-    return JSON.parse(readFileSync(fsPath, 'utf8'));
+    return JSON.parse(readFileSync(fsPath, 'utf8')) as IconifyJSON;
   } catch {
+    logger?.warn(`Malformed JSON in ${path}`);
     return null;
   }
 }
@@ -182,7 +188,7 @@ export function buildSubset(
   const collections: IconifyJSON[] = [];
 
   for (const [prefix, names] of found) {
-    const fullSet = readJsonFile(tree, iconSetJsonPath(prefix)) as IconifyJSON | null;
+    const fullSet = readJsonFile(tree, iconSetJsonPath(prefix), logger);
     if (fullSet === null) {
       logger.warn(`Set "${prefix}" not found — install @iconify-json/${prefix}`);
       continue;

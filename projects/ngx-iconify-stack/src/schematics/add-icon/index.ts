@@ -84,23 +84,36 @@ export function addIcon(options: AddIconOptions): Rule {
       return ref;
     });
 
+    // Read each set's icons.json once into a cache; the missing-set probe and
+    // the validation loop share it instead of re-reading per ref. Sets that
+    // were missing are re-read after the directed install, which may have just
+    // materialized them on the real filesystem.
+    const sets = new Map<string, IconifyJSON | null>();
+    const readSet = (prefix: string): IconifyJSON | null => {
+      if (!sets.has(prefix)) {
+        sets.set(prefix, readJsonFile(tree, iconSetJsonPath(prefix), context.logger));
+      }
+      return sets.get(prefix) ?? null;
+    };
+
     // A set that is neither installed nor declared counts as missing: declare it
     // and directed-install BEFORE validating, so one run can add the icon end to end.
     const missingPrefixes = [
       ...new Set(
-        refs
-          .map((ref) => splitIconRef(ref)!.prefix)
-          .filter((prefix) => readJsonFile(tree, iconSetJsonPath(prefix)) === null),
+        refs.map((ref) => splitIconRef(ref)!.prefix).filter((prefix) => readSet(prefix) === null),
       ),
     ];
     if (missingPrefixes.length > 0) {
       declareAndInstallMissingSets(tree, context, missingPrefixes);
+      for (const prefix of missingPrefixes) {
+        sets.set(prefix, readJsonFile(tree, iconSetJsonPath(prefix), context.logger));
+      }
     }
 
     // Validate existence within each installed set (alias-aware via @iconify/utils).
     for (const ref of refs) {
       const { prefix, name } = splitIconRef(ref)!;
-      const fullSet = readJsonFile(tree, iconSetJsonPath(prefix)) as IconifyJSON | null;
+      const fullSet = readSet(prefix);
       if (fullSet === null) {
         throw new SchematicsException(
           `Icon set "${prefix}" is not installed — install @iconify-json/${prefix} and re-run.`,

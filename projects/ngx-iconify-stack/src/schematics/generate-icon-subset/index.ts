@@ -86,14 +86,14 @@ function declareMissingSetDeps(
   pkg: { dependencies?: Record<string, string> },
   tree: Tree,
   prefixes: Iterable<string>,
-  logger: { info(message: string): void },
+  logger: { info(message: string): void; warn(message: string): void },
 ): string[] {
   pkg.dependencies ??= {};
   const missing: string[] = [];
   for (const prefix of prefixes) {
     const depName = `@iconify-json/${prefix}`;
     if (pkg.dependencies[depName]) continue;
-    if (readJsonFile(tree, iconSetJsonPath(prefix)) !== null) continue;
+    if (readJsonFile(tree, iconSetJsonPath(prefix), logger) !== null) continue;
     pkg.dependencies[depName] = ICONIFY_JSON_VERSION;
     missing.push(prefix);
     logger.info(`✓ Added ${depName} to dependencies`);
