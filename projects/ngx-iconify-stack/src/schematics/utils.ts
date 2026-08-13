@@ -22,6 +22,20 @@ export const LIST_SETS_SCRIPT = 'ngx-iconify-stack:list-sets';
 /** Outcome of an idempotent package.json script wiring. */
 export type WireResult = 'added' | 'updated' | 'unchanged';
 
+/** ANSI-colored log line for each wiring outcome (lookup table, no if-chain). */
+const WIRE_LOG: Record<
+  WireResult,
+  (key: string, updatedDetail?: string) => string
+> = {
+  added: (key) => ` \u001b[32m✔\u001b[0m package.json (${key} script added)`,
+  updated: (key, detail) => {
+    const suffix = detail ? ` to ${detail}` : '';
+    return ` \u001b[33mM\u001b[0m package.json (${key} script updated${suffix})`;
+  },
+  unchanged: (key) =>
+    ` \u001b[90mℹ\u001b[0m package.json (${key} script already correct — skipped)`,
+};
+
 /**
  * Idempotent wiring of a single npm script: sets `pkg.scripts[key]` to
  * `command` when missing ('added') or different ('updated'), and leaves it
@@ -192,14 +206,7 @@ export function applyScriptWires(
   }
 
   for (const { key, result, updatedDetail } of results) {
-    if (result === 'added') {
-      logger.info(` \u001b[32m✔\u001b[0m package.json (${key} script added)`);
-    } else if (result === 'updated') {
-      const detail = updatedDetail ? ` to ${updatedDetail}` : '';
-      logger.info(` \u001b[33mM\u001b[0m package.json (${key} script updated${detail})`);
-    } else {
-      logger.info(` \u001b[90mℹ\u001b[0m package.json (${key} script already correct — skipped)`);
-    }
+    logger.info(WIRE_LOG[result](key, updatedDetail));
   }
 }
 
