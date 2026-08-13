@@ -1,6 +1,9 @@
 import {
   detectPackageManager,
   detectRunner,
+  ICONS_SCRIPT,
+  LOG_UNCHANGED,
+  LOG_UPDATED,
   patchAppConfig,
   resolveProject,
   resolveProjectName,
@@ -13,7 +16,7 @@ import {
   addPackageJsonDependency,
   NodeDependencyType,
 } from '@schematics/angular/utility/dependencies';
-import { generateSkill } from '../skill/index';
+import { CATALOG_PACKAGE, CATALOG_VERSION, generateSkill } from '../skill/index';
 import { generateIconSubset } from '../generate-icon-subset/index';
 import { NgAddOptions } from './schema';
 
@@ -54,8 +57,8 @@ function addIconifyDependency(): Rule {
     });
     addPackageJsonDependency(tree, {
       type: NodeDependencyType.Dev,
-      name: '@iconify/collections',
-      version: '^1.0.724',
+      name: CATALOG_PACKAGE,
+      version: CATALOG_VERSION,
       overwrite: false,
     });
     return tree;
@@ -90,7 +93,7 @@ function removeAutohostWiring(options: NgAddOptions): Rule {
     const subsetPath = `${sourceRoot}/ngx-iconify/icon-subset.ts`.replace(/^\//, '');
     if (tree.exists(subsetPath)) {
       tree.delete(subsetPath);
-      context.logger.info(` \u001b[33mM\u001b[0m Removed ${subsetPath}`);
+      context.logger.info(`${LOG_UPDATED} Removed ${subsetPath}`);
     }
 
     const pkgPath = '/package.json';
@@ -109,13 +112,13 @@ function removeAutohostWiring(options: NgAddOptions): Rule {
     );
     if (!changed) {
       context.logger.info(
-        ` \u001b[90mℹ\u001b[0m package.json (no ${'ngx-iconify-stack:generate-icons'} wiring to remove — skipped)`,
+        `${LOG_UNCHANGED} package.json (no ${ICONS_SCRIPT} wiring to remove — skipped)`,
       );
       return tree;
     }
     tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
     context.logger.info(
-      ` \u001b[33mM\u001b[0m package.json (removed ${'ngx-iconify-stack:generate-icons'} script + prebuild wiring)`,
+      `${LOG_UPDATED} package.json (removed ${ICONS_SCRIPT} script + prebuild wiring)`,
     );
     return tree;
   };

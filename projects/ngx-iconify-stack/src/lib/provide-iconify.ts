@@ -19,7 +19,7 @@ export function provideIconify(config: NgxIconifyConfig = {}): EnvironmentProvid
       const errorHandler = inject(ErrorHandler);
 
       import('iconify-icon')
-        .then(async ({ addCollection, addAPIProvider }) => {
+        .then(({ addCollection, addAPIProvider }) => {
           if (config.apiProvider) {
             addAPIProvider(config.apiProvider.name, {
               resources: [config.apiProvider.resource],
@@ -28,6 +28,12 @@ export function provideIconify(config: NgxIconifyConfig = {}): EnvironmentProvid
           config.offlineCollections?.forEach((set) => addCollection(set));
         })
         .catch((err: unknown) => {
+          // The dynamic import can only fail when the iconify-icon peer
+          // dependency is missing — surface a hint instead of an opaque
+          // module-not-found error.
+          console.warn(
+            "ngx-iconify-stack: could not load 'iconify-icon' — is the peer dependency installed?",
+          );
           const error = err instanceof Error ? err : new Error(String(err));
           errorHandler.handleError(error);
         });

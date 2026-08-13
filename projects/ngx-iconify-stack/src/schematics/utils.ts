@@ -31,21 +31,30 @@ export function splitIconRef(ref: string): { prefix: string; name: string } | nu
   return { prefix: ref.slice(0, sep), name: ref.slice(sep + 1) };
 }
 
+/** Package managers recognized by the workspace probes. */
+export const PACKAGE_MANAGERS = ['npm', 'yarn', 'pnpm', 'bun'];
+
 /** Outcome of an idempotent package.json script wiring. */
 export type WireResult = 'added' | 'updated' | 'unchanged';
+
+/** ANSI-styled log prefixes shared across schematics (single source of truth). */
+export const LOG_ADDED = ' \u001b[32m✔\u001b[0m';
+export const LOG_UPDATED = ' \u001b[33mM\u001b[0m';
+export const LOG_UNCHANGED = ' \u001b[90mℹ\u001b[0m';
+export const LOG_CREATED = ' \u001b[36mA\u001b[0m';
 
 /** ANSI-colored log line for each wiring outcome (lookup table, no if-chain). */
 const WIRE_LOG: Record<
   WireResult,
   (key: string, updatedDetail?: string) => string
 > = {
-  added: (key) => ` \u001b[32m✔\u001b[0m package.json (${key} script added)`,
+  added: (key) => `${LOG_ADDED} package.json (${key} script added)`,
   updated: (key, detail) => {
     const suffix = detail ? ` to ${detail}` : '';
-    return ` \u001b[33mM\u001b[0m package.json (${key} script updated${suffix})`;
+    return `${LOG_UPDATED} package.json (${key} script updated${suffix})`;
   },
   unchanged: (key) =>
-    ` \u001b[90mℹ\u001b[0m package.json (${key} script already correct — skipped)`,
+    `${LOG_UNCHANGED} package.json (${key} script already correct — skipped)`,
 };
 
 /**
@@ -116,7 +125,7 @@ export function detectPackageManager(tree: Tree): string {
       const pmField = pkg.packageManager;
       if (pmField) {
         const name = pmField.split('@')[0];
-        if (['npm', 'yarn', 'pnpm', 'bun'].includes(name)) return name;
+        if (PACKAGE_MANAGERS.includes(name)) return name;
       }
     }
   } catch {
@@ -313,7 +322,7 @@ function stripScriptSegments(
 function isIconSegment(seg: string): boolean {
   return (
     seg.includes('collect-icons') ||
-    ['npm', 'yarn', 'pnpm', 'bun'].some((pm) => seg === `${pm} run ${ICONS_SCRIPT}`)
+    PACKAGE_MANAGERS.some((pm) => seg === `${pm} run ${ICONS_SCRIPT}`)
   );
 }
 
@@ -425,9 +434,9 @@ export async function patchAppConfig(
   tree: Tree,
   context: SchematicContext,
   projectSourceRoot: string,
-  provideCall: string, // ej: "provideIconify({ offlineCollections: [] })"
-  providerName: string, // ej: "provideIconify"
-  moduleName: string, // ej: "ngx-iconify-stack"
+  provideCall: string, // e.g. "provideIconify({ offlineCollections: [] })"
+  providerName: string, // e.g. "provideIconify"
+  moduleName: string, // e.g. "ngx-iconify-stack"
   projectName?: string,
   extraImports?: { symbol: string; module: string }[],
 ): Promise<void> {
@@ -435,7 +444,7 @@ export async function patchAppConfig(
 
   if (!startFile) {
     context.logger.warn(
-      `⚠ No se encontró app.config.ts ni main.ts. Agregá ${providerName}() manualmente.`,
+      `Could not find app.config.ts or main.ts — add ${providerName}() manually.`,
     );
     return;
   }
@@ -443,7 +452,7 @@ export async function patchAppConfig(
   const content = tree.read(startFile)?.toString() || '';
   const alreadyHasProvider = content.includes(providerName);
 
-  // ── Estrategia 1: addRootProvider oficial (solo si NO existe ya) ──
+  // ── Strategy 1: official addRootProvider (only when not present) ──
   if (projectName && !alreadyHasProvider) {
     try {
       const rule: Rule = addRootProvider(
@@ -461,15 +470,16 @@ export async function patchAppConfig(
         return;
       }
     } catch (e) {
-      context.logger.debug(`addRootProvider falló: ${String(e)}`);
+      context.logger.warn(
+        `addRootProvider failed (${String(e)}) — falling back to the AST-based patch.`,
+      );
     }
   }
 
-  // ── Estrategia 2: AST walker de fallback ──
+  // ── Strategy 2: AST walker fallback ──
   if (
     await applySmartPatch(
       tree,
-      context,
       startFile,
       provideCall,
       providerName,
@@ -480,12 +490,11 @@ export async function patchAppConfig(
     return;
   }
 
-  context.logger.warn(`⚠ No se pudo inyectar/actualizar el provider en ${startFile}.`);
+  context.logger.warn(`Could not inject/update the provider in ${startFile}.`);
 }
 
 async function applySmartPatch(
   tree: Tree,
-  context: SchematicContext,
   filePath: string,
   provideCall: string,
   providerName: string,
@@ -547,7 +556,6 @@ async function applySmartPatch(
       if (tree.exists(resolvedPath)) {
         return applySmartPatch(
           tree,
-          context,
           resolvedPath,
           provideCall,
           providerName,
@@ -573,7 +581,7 @@ async function applySmartPatch(
   return false;
 }
 
-// ── Helpers de AST (idénticos a los tuyos, solo parametrizando el nombre del provider) ──
+// ── AST helpers (provider name parametrized) ──
 
 function walkFirst<T>(root: ts.Node, match: (n: ts.Node) => T | null): T | null {
   let result: T | null = null;

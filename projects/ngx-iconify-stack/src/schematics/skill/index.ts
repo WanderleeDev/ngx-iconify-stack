@@ -8,6 +8,9 @@ import { SkillOptions } from './schema';
 import {
   detectPackageManager,
   detectRunner,
+  LOG_ADDED,
+  LOG_CREATED,
+  LOG_UNCHANGED,
   resolveProject,
   wireSkillAndListSetsScripts,
 } from '../utils';
@@ -204,6 +207,9 @@ function findCollectionsJson() {
 }
 
 function detectPackageManager() {
+  // Mirrors detectPackageManager in schematics/utils.ts. This file is a
+  // dependency-free standalone tool, so the logic is duplicated on purpose —
+  // keep the two in sync by hand.
   try {
     const pkgPath = join(process.cwd(), 'package.json');
     if (existsSync(pkgPath)) {
@@ -337,10 +343,10 @@ export function generateSkill(tree: Tree, context: SchematicContext): void {
   for (const file of FILES) {
     if (tree.exists(file.path)) {
       tree.overwrite(file.path, file.content);
-      context.logger.info(` \u001b[32m✔\u001b[0m ${file.path} (updated)`);
+      context.logger.info(`${LOG_ADDED} ${file.path} (updated)`);
     } else {
       tree.create(file.path, file.content);
-      context.logger.info(` \u001b[36mA\u001b[0m ${file.path}`);
+      context.logger.info(`${LOG_CREATED} ${file.path}`);
     }
   }
 }
@@ -377,11 +383,11 @@ export function skill(options: SkillOptions): Rule {
         new NodePackageInstallTask({ packageManager: detectPackageManager(tree) }),
       );
       context.logger.info(
-        ` \u001b[32m✔\u001b[0m package.json (${CATALOG_PACKAGE} devDependency added)`,
+        `${LOG_ADDED} package.json (${CATALOG_PACKAGE} devDependency added)`,
       );
     } else {
       context.logger.info(
-        ` \u001b[90mℹ\u001b[0m package.json (${CATALOG_PACKAGE} devDependency already present)`,
+        `${LOG_UNCHANGED} package.json (${CATALOG_PACKAGE} devDependency already present)`,
       );
     }
 
