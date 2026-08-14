@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNgxIconifyStackValidateSet",
+  "title": "Validate Set",
+  "description": "Validates that a set prefix exists in the Iconify catalog and prints its metadata",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Target project name (required in multiproject workspaces)",
+      "x-prompt": "Which project should the set be validated against?",
+      "$default": {
+        "$source": "projectName"
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Set prefix to validate (e.g. mdi)",
+      "x-prompt": "Which set prefix should be validated? (e.g. mdi)"
+    }
+  },
+  "required": ["project", "prefix"]
+}

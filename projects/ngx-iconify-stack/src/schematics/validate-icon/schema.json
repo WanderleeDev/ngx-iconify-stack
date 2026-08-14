@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNgxIconifyStackValidateIcon",
+  "title": "Validate Icon",
+  "description": "Validates that an icon reference is well-formed and that the set and icon actually exist",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Target project name (required in multiproject workspaces)",
+      "x-prompt": "Which project should the icon be validated against?",
+      "$default": {
+        "$source": "projectName"
+      }
+    },
+    "icon": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Icon to validate in prefix:name format. Repeatable: --icon mdi:home --icon mdi:user (Angular CLI) or comma-separated: --icon mdi:home,mdi:user (Nx)",
+      "x-prompt": "Which icon should be validated? (prefix:name, e.g. mdi:home)"
+    }
+  },
+  "required": ["project", "icon"]
+}

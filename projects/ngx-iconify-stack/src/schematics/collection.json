@@ -16,6 +16,16 @@
       "factory": "./add-icon/index#addIcon",
       "schema": "./add-icon/schema.json"
     },
+    "validate-icon": {
+      "description": "Validates that an icon reference is well-formed and that the set and icon actually exist",
+      "factory": "./validate-icon/index#validateIcon",
+      "schema": "./validate-icon/schema.json"
+    },
+    "validate-set": {
+      "description": "Validates that a set prefix exists in the Iconify catalog and prints its metadata",
+      "factory": "./validate-set/index#validateSet",
+      "schema": "./validate-set/schema.json"
+    },
     "skill": {
       "description": "Regenerates the AI agent skill (.agents/skills/ngx-iconify-stack) in the target project",
       "factory": "./skill/index#skill",

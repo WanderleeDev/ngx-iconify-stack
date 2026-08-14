@@ -18,6 +18,8 @@ describe('schematic schema contract (multiproject safety)', () => {
   const ngAdd = loadSchema('ng-add');
   const generate = loadSchema('generate-icon-subset');
   const skill = loadSchema('skill');
+  const validateIcon = loadSchema('validate-icon');
+  const validateSet = loadSchema('validate-set');
 
   it('ng-add requires an explicit project', () => {
     expect(ngAdd.required).toContain('project');
@@ -46,5 +48,19 @@ describe('schematic schema contract (multiproject safety)', () => {
 
   it('generate-icon-subset project is a string option', () => {
     expect(generate.properties?.['project']?.type).toBe('string');
+  });
+
+  it('validate-icon requires project and icon, and offers the interactive picker', () => {
+    expect(validateIcon.required).toContain('project');
+    expect(validateIcon.required).toContain('icon');
+    expect(validateIcon.properties?.['project']?.['x-prompt']).toBeDefined();
+    expect(validateIcon.properties?.['project']?.['$default']?.$source).toBe('projectName');
+  });
+
+  it('validate-set requires project and prefix, and offers the interactive picker', () => {
+    expect(validateSet.required).toContain('project');
+    expect(validateSet.required).toContain('prefix');
+    expect(validateSet.properties?.['project']?.['x-prompt']).toBeDefined();
+    expect(validateSet.properties?.['prefix']?.['x-prompt']).toBeDefined();
   });
 });
