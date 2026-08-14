@@ -9,7 +9,7 @@ import {
   resolveProject,
   resolveProjectName,
   wireIconifyScripts,
-  wireSkillAndListSetsScripts,
+  wireSkillScripts,
 } from '../utils';
 import { Rule, chain, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
@@ -137,10 +137,9 @@ function installSkill(options: NgAddOptions): Rule {
     const projectName = await resolveProjectName(tree, options);
     generateSkill(tree, context);
 
-    // Wire the skill regeneration script plus the read-only catalog tool
-    // script — one persist, uniform logs.
+    // Wire the skill regeneration script — one persist, uniform logs.
     if (tree.exists('/package.json')) {
-      wireSkillAndListSetsScripts(tree, context.logger, projectName, detectRunner(tree));
+      wireSkillScripts(tree, context.logger, projectName, detectRunner(tree));
     }
 
     return tree;

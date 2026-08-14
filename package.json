@@ -18,8 +18,7 @@
     "prestart": "npm run ngx-theme-stack:sync",
     "ngx-iconify-stack:generate-icons": "ng generate ngx-iconify-stack:generate-icon-subset --project docs",
     "ngx-iconify-stack:add-icon": "ng generate ngx-iconify-stack:add-icon --project docs",
-    "ngx-iconify-stack:skill": "ng generate ngx-iconify-stack:skill --project docs",
-    "ngx-iconify-stack:list-sets": "node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs"
+    "ngx-iconify-stack:skill": "ng generate ngx-iconify-stack:skill --project docs"
   },
   "private": true,
   "packageManager": "npm@11.12.1",

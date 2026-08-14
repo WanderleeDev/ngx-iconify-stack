@@ -12,7 +12,7 @@ import {
   LOG_CREATED,
   LOG_UNCHANGED,
   resolveProject,
-  wireSkillAndListSetsScripts,
+  wireSkillScripts,
 } from '../utils';
 
 // Extension constructed at runtime to avoid socket.dev "URL strings" false positive
@@ -22,7 +22,7 @@ const MD = ['.', 'm', 'd'].join('');
  * Skill metadata version. Bump in lockstep with the library release so the
  * generated SKILL.md advertises the matching version.
  */
-const SKILL_VERSION = '1.2.4';
+const SKILL_VERSION = '1.3.0';
 
 // ── SKILL content (Tier 2 — loaded on activation) ─────────
 const SKILL_CONTENT = `---
@@ -43,6 +43,7 @@ Signal-based Angular wrapper for [Iconify](https://iconify.design) with SSR-safe
 ## Interaction Rules
 
 - **When adding icons**: ask the user for the icon name in \`prefix:name\` format (e.g. \`mdi:home\`) and whether it must work offline (SSR) or CDN-only is fine.
+- **Validate before choosing**: when choosing icons, ALWAYS validate against the catalog/set first (validate-icon) — never invent icon names. Use list-sets to discover real sets.
 - **Finding icons**: when the user does not know the exact icon name, ASK them which they prefer — offer the [Iconify icon sets catalog](https://icon-sets.iconify.design/) URL so they can browse it themselves, or offer to look it up for them (the agent can fetch that page to find the right set and exact \`prefix:name\`). Never silently decide on their behalf.
 - **SSR/offline**: icons that must render in server HTML need to be in the offline subset — run the subset generation after template changes.
 - **CDN-only**: skip \`offlineCollections\` entirely; the component works without the provider.
@@ -68,19 +69,18 @@ Signal-based Angular wrapper for [Iconify](https://iconify.design) with SSR-safe
 - **API Reference & Config**: [references/api-reference${MD}](references/api-reference${MD})
 - **Iconify icon sets catalog**: [icon-sets.iconify.design](https://icon-sets.iconify.design/) — browse sets and find exact \`prefix:name\` values
 
-## Catalog tool
+## Tools
 
-Discover available Iconify icon sets without leaving the terminal:
+Interact with the Iconify catalog and validate icons through three read-only schematics (they never write files and never install — only \`add-icon\` auto-installs missing sets):
 
-\`\`\`bash
-node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs
-# or the wired npm script:
-npm run ngx-iconify-stack:list-sets
-\`\`\`
+- **\`list-sets\`** — \`ng g ngx-iconify-stack:list-sets --project <name> [--search <term>] [--category <name>] [--limit <N>]\` — list real sets; use BEFORE choosing a set so you never invent one.
+- **\`validate-set\`** — \`ng g ngx-iconify-stack:validate-set --project <name> --prefix <prefix>\` — confirm a set exists + metadata/samples.
+- **\`validate-icon\`** — \`ng g ngx-iconify-stack:validate-icon --project <name> --icon <prefix>:<name>\` (repeatable) — confirm an icon exists; NEVER hallucinate an icon name.
 
-- Read-only by construction: never writes files, never spawns processes, no network.
-- Options: \`--category <name>\` (exact category match), \`--search <term>\` (case-insensitive substring on prefix and name), \`--limit <N>\` (positive integer cap).
-- This schematic adds \`@iconify/collections\` as a devDependency and installs it, so the tool works out of the box. If it is somehow absent, the tool prints an install hint and exits 1 — it NEVER auto-installs.
+When choosing icons, ALWAYS validate against the catalog/set first (validate-icon) — never invent icon names. Use \`list-sets\` to discover real sets.
+
+- Read-only by construction: they read the catalog from \`node_modules/@iconify/collections\` and installed sets from \`node_modules/@iconify-json/<prefix>\` — they never write files, never spawn processes, no network.
+- The \`skill\` schematic declares \`@iconify/collections\` as a devDependency and installs it, so the tools work out of the box.
 - Use the returned \`prefix\` to add icons offline: \`ng g ngx-iconify-stack:add-icon --icon <prefix>:<name>\`.
 
 ## Component Example
@@ -124,8 +124,10 @@ export const appConfig: ApplicationConfig = {
 |-----------|---------|---------|
 | \`generate-icon-subset\` | \`ng g ngx-iconify-stack:generate-icon-subset --project <name>\` | Scans templates for \`icon="prefix:name"\` literals, merges the dynamic-icon manifest, builds \`src/ngx-iconify/icon-subset.ts\`, declares + installs missing \`@iconify-json/*\` sets, wires \`prebuild\`, and patches the provider. |
 | \`add-icon\` | \`ng g ngx-iconify-stack:add-icon --project <name> --icon mdi:home\` (repeatable) | Validates \`prefix:name\`, installs the set if missing, appends the icon to \`src/ngx-iconify/icon-manifest.ts\` (idempotent), and regenerates the subset through the same pipeline. |
-| \`skill\` | \`ng g ngx-iconify-stack:skill --project <name>\` | Regenerates the AI agent skill under \`.agents/skills/ngx-iconify-stack\`, declares the \`@iconify/collections\` devDependency for the catalog tool, and adds the \`list-sets\` npm script. |
-| \`list-sets\` | \`npm run ngx-iconify-stack:list-sets\` (or \`node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs\`) | Lists the Iconify icon-set catalog (read-only, never installs): \`--category\`, \`--search\`, \`--limit\`. |
+| \`skill\` | \`ng g ngx-iconify-stack:skill --project <name>\` | Regenerates the AI agent skill under \`.agents/skills/ngx-iconify-stack\` and declares the \`@iconify/collections\` devDependency for the read-only catalog tools. |
+| \`list-sets\` | \`ng g ngx-iconify-stack:list-sets --project <name> [--search <term>] [--category <name>] [--limit <N>]\` | Lists real Iconify sets from the catalog (read-only, never installs). Use BEFORE choosing a set so you never invent one. |
+| \`validate-set\` | \`ng g ngx-iconify-stack:validate-set --project <name> --prefix <prefix>\` | Confirms a set exists in the catalog and prints its metadata + samples (read-only). |
+| \`validate-icon\` | \`ng g ngx-iconify-stack:validate-icon --project <name> --icon <prefix>:<name>\` (repeatable) | Validates that an icon reference is well-formed AND the set/icon actually exist (read-only); fails hard on unknown sets/icons. |
 
 ### Dynamic icon manifest (\`src/ngx-iconify/icon-manifest.ts\`)
 
@@ -181,168 +183,16 @@ import { NgxIconify } from 'ngx-iconify-stack';
 export class ExampleComponent {}
 `;
 
-// ── tools/list-sets.mjs (read-only catalog tool, safe by construction) ─────
-// Pure Node ESM using only builtins. NEVER writes files, spawns processes,
-// fetches the network, or installs anything. Generated by the skill schematic.
-const LIST_SETS_MJS = `#!/usr/bin/env node
-// list-sets.mjs — read-only Iconify icon-set catalog tool.
-// Safe by construction: no writes, no child processes, no network, no installs.
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
-
-function findCollectionsJson() {
-  const candidates = [];
-  let dir = resolve(SCRIPT_DIR);
-  for (;;) {
-    candidates.push(join(dir, 'node_modules', '@iconify', 'collections', 'collections.json'));
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  dir = resolve(process.cwd());
-  for (;;) {
-    candidates.push(join(dir, 'node_modules', '@iconify', 'collections', 'collections.json'));
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  return candidates.find((candidate) => existsSync(candidate)) || null;
-}
-
-function detectPackageManager() {
-  // Mirrors detectPackageManager in schematics/utils.ts. This file is a
-  // dependency-free standalone tool, so the logic is duplicated on purpose —
-  // keep the two in sync by hand.
-  try {
-    const pkgPath = join(process.cwd(), 'package.json');
-    if (existsSync(pkgPath)) {
-      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-      if (pkg && typeof pkg.packageManager === 'string') {
-        return pkg.packageManager.split('@')[0];
-      }
-    }
-  } catch {
-    // malformed package.json — fall through to lockfile detection
-  }
-  if (existsSync(join(process.cwd(), 'pnpm-lock.yaml'))) return 'pnpm';
-  if (existsSync(join(process.cwd(), 'yarn.lock'))) return 'yarn';
-  if (existsSync(join(process.cwd(), 'bun.lockb'))) return 'bun';
-  if (existsSync(join(process.cwd(), 'package-lock.json'))) return 'npm';
-  return 'npm';
-}
-
-function printUsage() {
-  console.log('Usage: node list-sets.mjs [--category <name>] [--search <term>] [--limit <N>]');
-  console.log('  --category <name>  only sets whose category matches exactly');
-  console.log('  --search <term>    case-insensitive substring match on prefix and name');
-  console.log('  --limit <N>        cap the number of sets printed (positive integer)');
-}
-
-const args = process.argv.slice(2);
-let category = null;
-let search = null;
-let limit = Infinity;
-
-let i = 0;
-while (i < args.length) {
-  const arg = args[i];
-  const value = args[i + 1];
-  if (arg === '--category') {
-    if (value === undefined || value.startsWith('--')) {
-      printUsage();
-      process.exit(1);
-    }
-    category = value;
-    i += 2;
-  } else if (arg === '--search') {
-    if (value === undefined || value.startsWith('--')) {
-      printUsage();
-      process.exit(1);
-    }
-    search = value;
-    i += 2;
-  } else if (arg === '--limit') {
-    const n = Number(value);
-    if (value === undefined || value.startsWith('--') || !Number.isInteger(n) || n <= 0) {
-      printUsage();
-      process.exit(1);
-    }
-    limit = n;
-    i += 2;
-  } else {
-    printUsage();
-    process.exit(1);
-  }
-}
-
-const collectionsPath = findCollectionsJson();
-if (collectionsPath === null) {
-  const pm = detectPackageManager();
-  console.log(
-    '@iconify/collections is not installed. Install it with: ' +
-      pm +
-      ' install -D @iconify/collections',
-  );
-  process.exit(1);
-}
-
-let collections;
-try {
-  collections = JSON.parse(readFileSync(collectionsPath, 'utf8'));
-} catch (error) {
-  console.log('Failed to parse ' + collectionsPath + ': ' + String(error));
-  process.exit(1);
-}
-
-const rows = [];
-for (const prefix of Object.keys(collections)) {
-  const info = collections[prefix] || {};
-  const name = info.name || '';
-  const total = typeof info.total === 'number' ? info.total : 0;
-  const cat = info.category || '';
-  if (category !== null && cat !== category) continue;
-  if (search !== null) {
-    const needle = search.toLowerCase();
-    if (!prefix.toLowerCase().includes(needle) && !name.toLowerCase().includes(needle)) {
-      continue;
-    }
-  }
-  rows.push({ prefix, name, total, cat });
-}
-
-console.log('Available icon sets (' + Object.keys(collections).length + ')');
-if (rows.length > 0) {
-  const shown = rows.slice(0, limit);
-  const prefixWidth = Math.max(8, ...shown.map((row) => row.prefix.length));
-  const nameWidth = Math.max(4, ...shown.map((row) => row.name.length));
-  for (const row of shown) {
-    console.log(
-      row.prefix.padEnd(prefixWidth) +
-        '  ' +
-        row.name.padEnd(nameWidth) +
-        '  ' +
-        String(row.total).padStart(6) +
-        '  ' +
-        row.cat,
-    );
-  }
-}
-`;
-
 // ── Schematic logic ─────────────────────────────────────────────────────────
 const SKILL_ROOT = '.agents/skills/ngx-iconify-stack';
 
-/** devDependency required by the read-only catalog tool (`list-sets.mjs`). */
+/** devDependency required by the read-only catalog schematics. */
 export const CATALOG_PACKAGE = '@iconify/collections';
 export const CATALOG_VERSION = '^1.0.724';
 const FILES: { path: string; content: string }[] = [
   { path: `${SKILL_ROOT}/SKILL${MD}`, content: SKILL_CONTENT },
   { path: `${SKILL_ROOT}/references/api-reference${MD}`, content: API_REFERENCE_CONTENT },
   { path: `${SKILL_ROOT}/assets/example.component.ts`, content: EXAMPLE_COMPONENT_CONTENT },
-  { path: `${SKILL_ROOT}/tools/list-sets.mjs`, content: LIST_SETS_MJS },
 ];
 
 export function generateSkill(tree: Tree, context: SchematicContext): void {
@@ -358,10 +208,11 @@ export function generateSkill(tree: Tree, context: SchematicContext): void {
 }
 
 /**
- * Ensure the catalog tool's devDependency is declared. `overwrite: false`
+ * Ensure the catalog devDependency is declared. `overwrite: false`
  * keeps an existing (possibly newer) specifier untouched, so reruns are
  * idempotent. Returns true when the dependency was added — callers should
- * then schedule a package install so the tool works out of the box.
+ * then schedule a package install so the read-only catalog schematics work
+ * out of the box.
  */
 export function ensureCatalogDependency(tree: Tree): boolean {
   const before = tree.read('/package.json')?.toString();
@@ -382,8 +233,9 @@ export function skill(options: SkillOptions): Rule {
 
     generateSkill(tree, context);
 
-    // Ensure the catalog tool's devDependency is declared and installed so
-    // `list-sets.mjs` works out of the box on the first run.
+    // Ensure the catalog devDependency is declared and installed so the
+    // read-only catalog schematics (list-sets/validate-set/validate-icon)
+    // work out of the box on the first run.
     if (ensureCatalogDependency(tree)) {
       context.addTask(
         new NodePackageInstallTask({ packageManager: detectPackageManager(tree) }),
@@ -397,10 +249,10 @@ export function skill(options: SkillOptions): Rule {
       );
     }
 
-    // Ensure the regeneration script exists so the skill can be refreshed later,
-    // plus the read-only catalog tool script — one persist, uniform logs.
+    // Ensure the regeneration script exists so the skill can be refreshed
+    // later — one persist, uniform logs.
     if (tree.exists('/package.json')) {
-      wireSkillAndListSetsScripts(tree, context.logger, projectName, detectRunner(tree));
+      wireSkillScripts(tree, context.logger, projectName, detectRunner(tree));
     }
 
     return tree;

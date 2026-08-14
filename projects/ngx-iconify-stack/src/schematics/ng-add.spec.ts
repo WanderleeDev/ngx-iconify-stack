@@ -75,10 +75,9 @@ describe('ngAdd mode', () => {
     );
     expect(pkg.scripts['prebuild']).toContain('ngx-iconify-stack:generate-icons');
 
-    // The skill is installed by default: catalog script + collections dep.
-    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBe(
-      'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
-    );
+    // The skill is installed by default: catalog devDependency, no standalone
+    // list-sets script (the agent uses `ng g ngx-iconify-stack:list-sets`).
+    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBeUndefined();
     expect(pkg.devDependencies['@iconify/collections']).toBeDefined();
   });
 
@@ -100,10 +99,8 @@ describe('ngAdd mode', () => {
     expect(pkg.scripts['ngx-iconify-stack:generate-icons']).toBeUndefined();
     expect(pkg.scripts['prebuild']).toBeUndefined();
 
-    // cdn mode still installs the skill (catalog tool + collections dep).
-    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBe(
-      'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
-    );
+    // cdn mode still installs the skill (catalog devDependency only).
+    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBeUndefined();
     expect(pkg.devDependencies['@iconify/collections']).toBeDefined();
   });
 

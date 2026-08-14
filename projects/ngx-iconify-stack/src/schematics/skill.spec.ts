@@ -1,13 +1,10 @@
-import { HostTree, Tree } from '@angular-devkit/schematics';
-import { execFile } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { HostTree } from '@angular-devkit/schematics';
 import { skill } from './skill';
 import { runRule } from './spec-run-rule';
-import { LIST_SETS_SCRIPT, SKILL_SCRIPT } from './utils';
+import { SKILL_SCRIPT } from './utils';
 
-const TOOL_PATH = '.agents/skills/ngx-iconify-stack/tools/list-sets.mjs';
+const TOOLS_ROOT = '.agents/skills/ngx-iconify-stack';
+const TOOL_PATH = `${TOOLS_ROOT}/tools/list-sets.mjs`;
 
 function stubContext(): import('@angular-devkit/schematics').SchematicContext {
   return {
@@ -65,146 +62,48 @@ function createWorkspace(): HostTree {
 }
 
 describe('skill', () => {
-  it('generates the skill files, including the catalog tool, and wires both scripts', async () => {
+  it('generates the skill files, documents the three read-only tool schematics, and wires the skill script', async () => {
     const tree = await runRule(skill({ project: 'frontend' }), createWorkspace(), stubContext());
 
-    const tool = tree.read(`/${TOOL_PATH}`)!.toString();
-    expect(tool).toContain('#!/usr/bin/env node');
-    expect(tool).toContain('@iconify/collections');
-    expect(tool).not.toContain('writeFileSync');
+    // The standalone list-sets.mjs tool is gone — tools are schematics now.
+    expect(tree.exists(`/${TOOL_PATH}`)).toBe(false);
 
     const skillMd = tree.read('/.agents/skills/ngx-iconify-stack/SKILL.md')!.toString();
-    expect(skillMd).toContain('## Catalog tool');
+    expect(skillMd).toContain('## Tools');
     expect(skillMd).toContain('ngx-iconify-stack:list-sets');
+    expect(skillMd).toContain('ngx-iconify-stack:validate-set');
+    expect(skillMd).toContain('ngx-iconify-stack:validate-icon');
     expect(skillMd).toContain('--category');
     expect(skillMd).toContain('--search');
     expect(skillMd).toContain('--limit');
+    expect(skillMd).toContain('ALWAYS validate against the catalog/set first');
+    expect(skillMd).not.toContain('npm run ngx-iconify-stack:list-sets');
+    expect(skillMd).not.toContain('list-sets.mjs');
 
     const apiRef =
       tree.read('/.agents/skills/ngx-iconify-stack/references/api-reference.md')!.toString();
     expect(apiRef).toContain('| `list-sets` |');
+    expect(apiRef).toContain('| `validate-icon` |');
+    expect(apiRef).toContain('| `validate-set` |');
 
     const pkg = JSON.parse(tree.read('/package.json')!.toString());
-    expect(pkg.scripts[LIST_SETS_SCRIPT]).toBe(
-      'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
-    );
     expect(pkg.scripts[SKILL_SCRIPT]).toBe(
       'ng generate ngx-iconify-stack:skill --project frontend',
     );
+    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBeUndefined();
     expect(pkg.devDependencies['@iconify/collections']).toBeDefined();
   });
 
-  it('is idempotent: rerunning keeps the tool and scripts in place', async () => {
+  it('is idempotent: rerunning keeps the skill files and skill script in place', async () => {
     const first = await runRule(skill({ project: 'frontend' }), createWorkspace(), stubContext());
     const second = await runRule(skill({ project: 'frontend' }), first, stubContext());
 
-    expect(second.exists(`/${TOOL_PATH}`)).toBe(true);
+    expect(second.exists(`/${TOOL_PATH}`)).toBe(false);
+    expect(second.exists(`/${TOOLS_ROOT}/SKILL.md`)).toBe(true);
+    expect(second.exists(`/${TOOLS_ROOT}/references/api-reference.md`)).toBe(true);
+    expect(second.exists(`/${TOOLS_ROOT}/assets/example.component.ts`)).toBe(true);
     const pkg = JSON.parse(second.read('/package.json')!.toString());
-    expect(pkg.scripts[LIST_SETS_SCRIPT]).toBe(
-      'node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs',
-    );
+    expect(pkg.scripts['ngx-iconify-stack:list-sets']).toBeUndefined();
     expect(pkg.devDependencies['@iconify/collections']).toBeDefined();
-  });
-});
-
-describe('list-sets.mjs runtime', () => {
-  let tmp: string;
-  let toolPath: string;
-
-  function runNode(args: string[]): Promise<{ stdout: string; code: number | null }> {
-    return new Promise((resolve, reject) => {
-      execFile(
-        process.execPath,
-        [toolPath, ...args],
-        { cwd: tmp },
-        (error, stdout, stderr) => {
-          if (error) {
-            (error as { stdout?: string }).stdout = stdout;
-            (error as { stderr?: string }).stderr = stderr;
-            reject(error);
-            return;
-          }
-          resolve({ stdout, code: 0 });
-        },
-      );
-    });
-  }
-
-  function writeFixture(sets: Record<string, { name: string; total: number; category?: string }>) {
-    const dir = join(tmp, 'node_modules', '@iconify', 'collections');
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, 'collections.json'), JSON.stringify(sets));
-  }
-
-  function snapshotTree(dir: string): string[] {
-    const entries: string[] = [];
-    for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
-      entries.push(`${entry.name}${entry.isDirectory() ? '/' : ''}`);
-    }
-    return entries.sort();
-  }
-
-  beforeEach(async () => {
-    tmp = mkdtempSync(join(tmpdir(), 'list-sets-'));
-    const tree = await runRule(skill({ project: 'frontend' }), createWorkspace(), stubContext());
-    toolPath = join(tmp, 'list-sets.mjs');
-    writeFileSync(toolPath, tree.read(`/${TOOL_PATH}`)!.toString());
-  });
-
-  it('lists sets and respects --limit', async () => {
-    writeFixture({
-      mdi: { name: 'Material Design Icons', total: 7447, category: 'Material' },
-      lucide: { name: 'Lucide', total: 1111, category: 'General' },
-      tabler: { name: 'Tabler Icons', total: 2222, category: 'General' },
-    });
-
-    const { stdout } = await runNode(['--limit', '2']);
-    const lines = stdout.trim().split('\n');
-    expect(lines[0]).toBe('Available icon sets (3)');
-    expect(lines).toHaveLength(3);
-    expect(lines[1]).toContain('mdi');
-    expect(lines[1]).toContain('7447');
-    expect(lines[2]).toContain('lucide');
-  });
-
-  it('filters by --search and --category', async () => {
-    writeFixture({
-      mdi: { name: 'Material Design Icons', total: 7447, category: 'Material' },
-      lucide: { name: 'Lucide', total: 1111, category: 'General' },
-      'mdi-light': { name: 'Material Design Light', total: 284, category: 'Material' },
-    });
-
-    const searched = await runNode(['--search', 'lucide']);
-    expect(searched.stdout).toContain('Available icon sets (3)');
-    expect(searched.stdout).toContain('lucide');
-    expect(searched.stdout).not.toContain('mdi');
-
-    const categorized = await runNode(['--category', 'Material']);
-    expect(categorized.stdout).toContain('mdi');
-    expect(categorized.stdout).toContain('mdi-light');
-    expect(categorized.stdout).not.toContain('lucide');
-  });
-
-  it('exits 1 with an install hint when @iconify/collections is absent', async () => {
-    await expect(runNode([])).rejects.toMatchObject({
-      code: 1,
-      stdout: expect.stringContaining(
-        '@iconify/collections is not installed. Install it with: npm install -D @iconify/collections',
-      ),
-    });
-  });
-
-  it('never writes files', async () => {
-    writeFixture({
-      mdi: { name: 'Material Design Icons', total: 7447, category: 'Material' },
-    });
-    const before = snapshotTree(tmp);
-
-    await runNode(['--search', 'mdi', '--limit', '1']);
-    await runNode(['--category', 'Material']);
-    await runNode([]);
-
-    expect(snapshotTree(tmp)).toEqual(before);
-    expect(existsSync(join(tmp, 'collections.json'))).toBe(false);
   });
 });
