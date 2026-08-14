@@ -24,74 +24,7 @@
     class="m-0 mb-6 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
   ><code>{{ componentExampleCode }}</code></pre>
 
-  <p class="m-0 mb-3 text-sm font-semibold text-body">Inputs</p>
-  <div class="overflow-x-auto rounded-[0.85rem] border-[1.5px] border-border mb-6">
-    <table class="w-full border-collapse text-[0.875rem]">
-      <thead class="bg-surface-2">
-        <tr>
-          <th
-            scope="col"
-            class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
-          >
-            Input
-          </th>
-          <th
-            scope="col"
-            class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
-          >
-            Type
-          </th>
-          <th
-            scope="col"
-            class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
-          >
-            Default
-          </th>
-          <th
-            scope="col"
-            class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
-          >
-            Description
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (input of inputs; track input.name) {
-          <tr class="hover:bg-[color-mix(in_oklch,var(--color-accent)_4%,transparent)]">
-            <td class="py-3.5 px-4 border-t border-border align-top">
-              <code
-                class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-accent"
-                >{{ input.name }}</code
-              >
-            </td>
-            <td class="py-3.5 px-4 border-t border-border align-top">
-              <code
-                class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-[color-mix(in_oklch,var(--color-accent)_70%,var(--color-text))]"
-                >{{ input.type }}</code
-              >
-            </td>
-            <td class="py-3.5 px-4 border-t border-border align-top">
-              @if (input.default === 'required') {
-                <span class="font-bold text-accent text-[0.85rem]">required</span>
-              } @else if (input.default === '—') {
-                <span class="text-muted italic">—</span>
-              } @else {
-                <code
-                  class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border"
-                  >{{ input.default }}</code
-                >
-              }
-            </td>
-            <td
-              class="py-3.5 px-4 border-t border-border align-top text-muted leading-[1.5] min-w-[200px]"
-            >
-              {{ input.description }}
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+  <docs-api-table />
 
   <p class="m-0 mb-3 text-muted leading-relaxed">
     <code
