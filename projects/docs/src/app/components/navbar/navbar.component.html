@@ -7,7 +7,7 @@
     aria-label="Main navigation"
   >
     <a
-      href="/"
+      routerLink="/"
       class="flex items-center gap-2 no-underline font-bold text-[0.95rem]"
       aria-label="ngx-iconify-stack home"
     >
@@ -19,6 +19,15 @@
     </a>
 
     <div class="flex items-center gap-2">
+      <a
+        id="nav-docs-link"
+        routerLink="/docs"
+        routerLinkActive="nav-link-active"
+        class="flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold text-muted no-underline transition-all duration-150 hover:text-accent hover:bg-surface-2"
+        aria-label="Documentation"
+      >
+        Docs
+      </a>
       <a
         id="nav-npm-link"
         href="https://www.npmjs.com/package/ngx-iconify-stack"
