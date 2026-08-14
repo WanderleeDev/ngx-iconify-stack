@@ -1,6 +1,6 @@
 {
   "name": "ngx-iconify-workspace",
-  "version": "1.3.0-next.1",
+  "version": "1.3.0-next.2",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

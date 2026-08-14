@@ -1,5 +1,18 @@
 # Changelog
 
+# [1.3.0-next.2](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.3.0-next.1...v1.3.0-next.2) (2026-08-14)
+
+
+### Bug Fixes
+
+* **lib:** make iconify-icon peer-dep hint actionable in provide-iconify ([bdf2f49](https://github.com/WanderleeDev/ngx-iconify-stack/commit/bdf2f491cf41aaaac9b0d4ca2ef0880625551655))
+
+
+### Features
+
+* **schematics:** add list-sets schematic as the catalog tool ([e2d9958](https://github.com/WanderleeDev/ngx-iconify-stack/commit/e2d9958421ca8679ccb6fd223bae203214c53f5b))
+* **schematics:** add validate-icon and validate-set schematics ([d0d5dbe](https://github.com/WanderleeDev/ngx-iconify-stack/commit/d0d5dbe2079057a3d7e1b713ae84a7c6cc9efaae))
+
 # [1.3.0-next.1](https://github.com/WanderleeDev/ngx-iconify-stack/compare/v1.3.0-next.0...v1.3.0-next.1) (2026-08-13)
 
 
