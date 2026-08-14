@@ -1,0 +1,70 @@
+<main id="main-content" role="main" class="max-w-[900px] mx-auto px-6 py-6">
+  <div class="flex items-center gap-3 mb-4">
+    <ngx-iconify icon="mdi:server" [size]="22" class="text-accent flex-shrink-0" />
+    <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+      Provider configuration
+    </h2>
+  </div>
+
+  <p class="m-0 mb-4 text-muted leading-relaxed">
+    <code
+      class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+      >provideIconify(config)</code
+    >
+    is an environment providers function. Configure it
+    <strong class="text-body">once</strong> at the root — never inside a lazy or feature module.
+  </p>
+
+  <pre
+    class="m-0 mb-6 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+  ><code>{{ providerConfigCode }}</code></pre>
+
+  <p class="m-0 mb-3 text-sm font-semibold text-body">Options</p>
+  <div class="overflow-x-auto rounded-[0.85rem] border-[1.5px] border-border">
+    <table class="w-full border-collapse text-[0.875rem]">
+      <thead class="bg-surface-2">
+        <tr>
+          <th
+            scope="col"
+            class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+          >
+            Option
+          </th>
+          <th
+            scope="col"
+            class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+          >
+            Type
+          </th>
+          <th
+            scope="col"
+            class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+          >
+            Description
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (opt of providerOptions; track opt.name) {
+          <tr class="hover:bg-[color-mix(in_oklch,var(--color-accent)_4%,transparent)]">
+            <td class="py-3.5 px-4 border-t border-border align-top">
+              <code
+                class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-accent"
+                >{{ opt.name }}</code
+              >
+            </td>
+            <td class="py-3.5 px-4 border-t border-border align-top">
+              <code
+                class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border"
+                >{{ opt.type }}</code
+              >
+            </td>
+            <td class="py-3.5 px-4 border-t border-border align-top text-muted leading-[1.5]">
+              {{ opt.description }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</main>

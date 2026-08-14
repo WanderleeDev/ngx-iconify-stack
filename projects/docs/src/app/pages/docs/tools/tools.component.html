@@ -1,0 +1,60 @@
+<main id="main-content" role="main" class="max-w-[900px] mx-auto px-6 py-6">
+  <div class="flex items-center gap-3 mb-4">
+    <ngx-iconify icon="mdi:magnify" [size]="22" class="text-accent flex-shrink-0" />
+    <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+      Catalog & validation tools
+    </h2>
+  </div>
+
+  <p class="m-0 mb-6 text-muted leading-relaxed">
+    Never invent icon names. Discover and validate icons against the real catalog with three
+    read-only schematics. They read
+    <code
+      class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+      >&#64;iconify/collections</code
+    >
+    and your installed
+    <code
+      class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+      >&#64;iconify-json/*</code
+    >
+    sets from
+    <code
+      class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+      >node_modules</code
+    >
+    — they never write files, never spawn processes, and make no network calls.
+  </p>
+
+  <div class="space-y-5 mb-6">
+    @for (tool of catalogTools; track tool.name) {
+      <div>
+        <p class="m-0 mb-1.5 flex items-center gap-2 text-sm font-semibold text-body">
+          <ngx-iconify [icon]="tool.icon" [size]="16" class="text-accent flex-shrink-0" />
+          {{ tool.name }}
+        </p>
+        <p class="m-0 mb-2 text-muted text-sm leading-relaxed">{{ tool.description }}</p>
+        <pre
+          class="m-0 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+        ><code>{{ tool.command }}</code></pre>
+      </div>
+    }
+  </div>
+
+  <p class="m-0 mb-3 text-muted leading-relaxed">
+    Only
+    <code
+      class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+      >add-icon</code
+    >
+    auto-installs missing sets. Use the returned
+    <code
+      class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+      >prefix</code
+    >
+    to add an icon offline:
+  </p>
+  <pre
+    class="m-0 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+  ><code>{{ addIconCommand }}</code></pre>
+</main>

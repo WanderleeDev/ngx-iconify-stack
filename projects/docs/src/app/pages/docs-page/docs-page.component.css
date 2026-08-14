@@ -1,0 +1,13 @@
+a.nav-link {
+  color: var(--color-text-muted);
+}
+
+a.nav-link:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+a.nav-link-active {
+  color: var(--color-accent);
+  background: var(--color-surface-2);
+}

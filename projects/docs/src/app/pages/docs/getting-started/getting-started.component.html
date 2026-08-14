@@ -1,0 +1,77 @@
+<main id="main-content" role="main" class="max-w-[900px] mx-auto px-6 py-6">
+  <div class="flex items-center gap-3 mb-4">
+    <ngx-iconify icon="mdi:rocket-launch" [size]="22" class="text-accent flex-shrink-0" />
+    <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+      Getting started
+    </h2>
+  </div>
+
+  <p class="m-0 mb-4 text-muted leading-relaxed">
+    <strong class="text-body">ngx-iconify-stack</strong> is a Signal-based Angular wrapper for
+    <a
+      href="https://iconify.design"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="text-accent no-underline font-semibold hover:underline"
+      >Iconify</a
+    >. It combines an offline, SSR-safe icon subset with a CDN fallback: icons you reference
+    statically render as inline SVG on the server, while everything else resolves from the
+    Iconify CDN at runtime.
+  </p>
+
+  <p class="m-0 mb-2 text-sm font-semibold text-body">Install</p>
+  <pre
+    class="m-0 mb-5 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+  ><code>{{ installCommand }}</code></pre>
+
+  <p class="m-0 mb-3 text-muted leading-relaxed">
+    The schematic asks which delivery mode you want:
+  </p>
+  <ul class="m-0 p-0 mb-5 list-none space-y-3">
+    <li class="flex gap-3">
+      <ngx-iconify
+        icon="mdi:check-circle"
+        [size]="18"
+        class="text-accent flex-shrink-0 mt-0.5"
+      />
+      <p class="m-0 text-muted leading-relaxed">
+        <strong class="text-body">autohost</strong> (default) — generates the offline icon
+        subset, adds the required
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >&#64;iconify-json/*</code
+        >
+        dependencies (installing missing sets automatically), and wires the
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >prebuild</code
+        >
+        script.
+      </p>
+    </li>
+    <li class="flex gap-3">
+      <ngx-iconify
+        icon="mdi:cloud-check"
+        [size]="18"
+        class="text-accent flex-shrink-0 mt-0.5"
+      />
+      <p class="m-0 text-muted leading-relaxed">
+        <strong class="text-body">cdn</strong> — CDN only: no subset file and no prebuild
+        wiring, you just call
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >provideIconify()</code
+        >.
+      </p>
+    </li>
+  </ul>
+
+  <p class="m-0 text-muted leading-relaxed">
+    If you use the CDN fallback, also install the peer dependency
+    <code
+      class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+      >iconify-icon</code
+    >
+    — the web component that renders CDN icons.
+  </p>
+</main>
