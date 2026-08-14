@@ -162,16 +162,21 @@ Ver `https://icon-sets.iconify.design/` para browsear todos.
 
 ---
 
-## Herramienta de catálogo
+## Herramientas de catálogo y validación
 
-Para descubrir sets y sus prefijos desde la terminal, usá la herramienta read-only incluida en el skill:
+Para descubrir sets y validar iconos desde la terminal, usá los schematics read-only del skill (nunca escriben archivos, nunca instalan):
 
 ```bash
-npm run ngx-iconify-stack:list-sets
-# equivalente: node .agents/skills/ngx-iconify-stack/tools/list-sets.mjs
+# Listar sets reales del catálogo (usar ANTES de elegir un set — nunca inventar uno)
+ng g ngx-iconify-stack:list-sets --project <name> [--search <term>] [--category <name>] [--limit <N>]
+
+# Confirmar que un set existe + metadatos/samples
+ng g ngx-iconify-stack:validate-set --project <name> --prefix <prefix>
+
+# Confirmar que un icono existe (--icon es repetible) — nunca inventar un nombre
+ng g ngx-iconify-stack:validate-icon --project <name> --icon <prefix>:<name>
 ```
 
-- Lista cada set con `prefix`, `name`, `total` y `category` (aligned).
-- Flags: `--category <name>` (match exacto de categoría), `--search <term>` (substring case-insensitive en prefix y name), `--limit <N>` (tope de líneas).
-- El schematic `skill` declara `@iconify/collections` como devDependency y la instala, así el tool funciona desde el primer uso. El tool en sí es **solo lectura**: nunca escribe archivos, nunca instala paquetes y no hace red — si la dep faltara igualmente, imprime cómo instalarla y sale con código 1 (no auto-instala).
-- Con el `prefix` devuelto: `ng g ngx-iconify-stack:add-icon --icon <prefix>:<name>`.
+- Los schematics leen el catálogo de `node_modules/@iconify/collections` y los sets instalados de `node_modules/@iconify-json/<prefix>`.
+- El schematic `skill` declara `@iconify/collections` como devDependency y la instala, así los tools funcionan desde el primer uso. Si la dep faltara igualmente, `list-sets` falla con la instrucción de instalación.
+- Con el `prefix` devuelto: `ng g ngx-iconify-stack:add-icon --icon <prefix>:<name>` (add-icon sí instala sets faltantes automáticamente).
