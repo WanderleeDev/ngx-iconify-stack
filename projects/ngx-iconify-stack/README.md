@@ -14,7 +14,7 @@ Driven by signals, with offline icon subsetting and zero runtime overhead.
 [![SSR](https://img.shields.io/badge/SSR-ready-4ade80.svg?style=flat-square)](https://angular.dev/guide/ssr)
 [![AI Skill](https://img.shields.io/badge/AI%20Skill-ready-6366f1.svg?style=flat-square)](#-ai-code-assistants-integration)
 
-[📦 npm](https://www.npmjs.com/package/ngx-iconify-stack) · [📖 Docs](https://ngx-iconify-stack-docs.wanderlee.site/) · [⭐ Star on GitHub](https://github.com/WanderleeDev/ngx-iconify-stack) · [🔤 Iconify](https://iconify.design)
+[📦 npm](https://www.npmjs.com/package/ngx-iconify-stack) · [📖 Docs](https://ngx-iconify-stack-docs.wanderlee.site/docs) · [⭐ Star on GitHub](https://github.com/WanderleeDev/ngx-iconify-stack) · [🔤 Iconify](https://iconify.design)
 
 </div>
 
@@ -184,6 +184,16 @@ For icon names, transformations, rendering modes, and more — consult the [Icon
 ## 🤖 AI Code Assistants Integration
 
 `ng add` can generate a `SKILL.md` standard file for AI coding assistants (Claude, Cursor, Copilot, and others). It encodes the library's usage patterns — setup, `ngx-iconify` component inputs, icon subsetting, and SSR-safe rendering — so your AI agent works with the library correctly without guessing.
+
+The generated skill also ships three **read-only catalog schematics** that prevent icon hallucination:
+
+| Schematic | Command | Purpose |
+| --------- | ------- | ------- |
+| `list-sets` | `ng g ngx-iconify-stack:list-sets --project <name> [--search <term>] [--category <name>] [--limit <N>]` | Lists real Iconify sets from the catalog (never invent one) |
+| `validate-set` | `ng g ngx-iconify-stack:validate-set --project <name> --prefix <prefix>` | Confirms a set exists and prints its metadata + samples |
+| `validate-icon` | `ng g ngx-iconify-stack:validate-icon --project <name> --icon <prefix>:<name>` (repeatable) | Validates that an icon reference is well-formed AND actually exists — fails hard on unknown sets/icons |
+
+All three are read-only: they read `node_modules/@iconify/collections` and installed `@iconify-json/*` sets, never write files, never spawn processes, and never hit the network. The `skill` schematic declares `@iconify/collections` as a devDependency so the tools work out of the box. Only `add-icon` auto-installs a missing set.
 
 ---
 

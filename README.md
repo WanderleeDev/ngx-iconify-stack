@@ -8,7 +8,7 @@ Welcome to the monorepo workspace for **ngx-iconify-stack**. This repository con
 
 - **[`projects/ngx-iconify-stack/`](./projects/ngx-iconify-stack/)** - The core Angular library source code.
 - **[`projects/ngx-iconify-stack/src/schematics/`](./projects/ngx-iconify-stack/src/schematics/)** - Angular CLI schematics to automate library setup (`ng add`, `generate-icon-subset`, `skill`).
-- **[`projects/docs/`](./projects/docs/)** - Official documentation site — Angular 22 SSR app with the library in action.
+- **[`projects/docs/`](./projects/docs/)** - Official documentation site — Angular 22 SSR app with the library in action. Landing page (`/`) plus a `/docs` route with the full library documentation (provider config, component inputs, rendering modes, schematics, and catalog tools).
 
 ---
 
