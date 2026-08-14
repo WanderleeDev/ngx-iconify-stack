@@ -1,22 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ApiTableSectionComponent } from './components/api-table-section/api-table-section.component';
-import { DemoSectionComponent } from './components/demo-section/demo-section.component';
 import { FooterSectionComponent } from './components/footer-section/footer-section.component';
-import { HeroSectionComponent } from './components/hero-section/hero-section.component';
-import { HowItWorksComponent } from './components/how-it-works/how-it-works.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { HomePageComponent } from './pages/home-page/home-page.component';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NavbarComponent,
-    HeroSectionComponent,
-    HowItWorksComponent,
-    DemoSectionComponent,
-    ApiTableSectionComponent,
-    FooterSectionComponent,
-  ],
+  imports: [NavbarComponent, HomePageComponent, FooterSectionComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+
+.section-divider {
+  max-width: 900px;
+  margin: 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-border) 20%,
+    var(--color-border) 80%,
+    transparent
+  );
+}
