@@ -16,6 +16,11 @@
       "factory": "./add-icon/index#addIcon",
       "schema": "./add-icon/schema.json"
     },
+    "list-sets": {
+      "description": "Lists Iconify icon sets from the catalog with search/category filters (read-only)",
+      "factory": "./list-sets/index#listSets",
+      "schema": "./list-sets/schema.json"
+    },
     "validate-icon": {
       "description": "Validates that an icon reference is well-formed and that the set and icon actually exist",
       "factory": "./validate-icon/index#validateIcon",

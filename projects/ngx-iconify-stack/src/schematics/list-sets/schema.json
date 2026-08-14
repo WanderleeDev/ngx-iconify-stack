@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNgxIconifyStackListSets",
+  "title": "List Iconify Sets",
+  "description": "Lists Iconify icon sets from the catalog, optionally filtered by search/category and capped by limit",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Target project name (required in multiproject workspaces)",
+      "x-prompt": "Which project should the catalog be read for?",
+      "$default": {
+        "$source": "projectName"
+      }
+    },
+    "search": {
+      "type": "string",
+      "description": "Case-insensitive substring matched against set prefix and name"
+    },
+    "category": {
+      "type": "string",
+      "description": "Only sets whose category matches exactly"
+    },
+    "limit": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Cap the number of sets printed (positive integer)"
+    }
+  },
+  "required": ["project"]
+}

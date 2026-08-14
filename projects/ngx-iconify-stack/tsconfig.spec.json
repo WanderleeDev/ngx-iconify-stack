@@ -18,6 +18,7 @@
     "src/schematics/add-icon.spec.ts",
     "src/schematics/skill.spec.ts",
     "src/schematics/validate-icon.spec.ts",
-    "src/schematics/validate-set.spec.ts"
+    "src/schematics/validate-set.spec.ts",
+    "src/schematics/list-sets.spec.ts"
   ]
 }

@@ -18,6 +18,7 @@ describe('schematic schema contract (multiproject safety)', () => {
   const ngAdd = loadSchema('ng-add');
   const generate = loadSchema('generate-icon-subset');
   const skill = loadSchema('skill');
+  const listSets = loadSchema('list-sets');
   const validateIcon = loadSchema('validate-icon');
   const validateSet = loadSchema('validate-set');
 
@@ -48,6 +49,14 @@ describe('schematic schema contract (multiproject safety)', () => {
 
   it('generate-icon-subset project is a string option', () => {
     expect(generate.properties?.['project']?.type).toBe('string');
+  });
+
+  it('list-sets requires an explicit project and a positive integer limit', () => {
+    expect(listSets.required).toContain('project');
+    expect(listSets.properties?.['limit']?.type).toBe('number');
+    expect((listSets.properties?.['limit'] as { minimum?: number } | undefined)?.minimum).toBe(1);
+    expect(listSets.properties?.['search']?.type).toBe('string');
+    expect(listSets.properties?.['category']?.type).toBe('string');
   });
 
   it('validate-icon requires project and icon, and offers the interactive picker', () => {
