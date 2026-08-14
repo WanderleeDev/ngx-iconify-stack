@@ -29,10 +29,11 @@ export function provideIconify(config: NgxIconifyConfig = {}): EnvironmentProvid
         })
         .catch((err: unknown) => {
           // The dynamic import can only fail when the iconify-icon peer
-          // dependency is missing — surface a hint instead of an opaque
-          // module-not-found error.
+          // dependency is missing — surface an actionable hint instead of an
+          // opaque module-not-found error.
           console.warn(
-            "ngx-iconify-stack: could not load 'iconify-icon' — is the peer dependency installed?",
+            "ngx-iconify-stack: could not load 'iconify-icon' — install iconify-icon " +
+              'as a dependency to enable the CDN fallback.',
           );
           const error = err instanceof Error ? err : new Error(String(err));
           errorHandler.handleError(error);
