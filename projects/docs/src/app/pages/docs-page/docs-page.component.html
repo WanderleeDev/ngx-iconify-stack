@@ -1,0 +1,597 @@
+<main id="main-content" role="main" class="max-w-[900px] mx-auto px-6 py-14">
+  <header class="mb-10">
+    <h1
+      class="m-0 mb-3 text-[clamp(2rem,5vw,3rem)] font-extrabold tracking-[-0.04em] bg-gradient-brand [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]"
+    >
+      Documentation
+    </h1>
+    <p class="m-0 max-w-[60ch] text-muted text-base">
+      Everything you need to install, configure, and use
+      <code
+        class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+        >ngx-iconify-stack</code
+      >
+      — from the SSR-safe offline subset to the component inputs and every schematic.
+    </p>
+  </header>
+
+  <nav
+    class="mb-16 p-6 rounded-[0.85rem] border border-border bg-surface-2"
+    aria-label="Table of contents"
+  >
+    <p class="m-0 mb-4 text-[0.75rem] font-bold text-muted uppercase tracking-[0.06em]">
+      On this page
+    </p>
+    <ul class="m-0 p-0 list-none grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
+      @for (item of toc; track item.id) {
+        <li>
+          <a
+            href="#{{ item.id }}"
+            class="no-underline text-muted text-sm font-semibold transition-all duration-150 hover:text-accent"
+            >{{ item.label }}</a
+          >
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <div class="space-y-20">
+    <!-- Getting started -->
+    <section id="getting-started" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-4">
+        <ngx-iconify icon="mdi:rocket-launch" [size]="22" class="text-accent flex-shrink-0" />
+        <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+          Getting started
+        </h2>
+      </div>
+
+      <p class="m-0 mb-4 text-muted leading-relaxed">
+        <strong class="text-body">ngx-iconify-stack</strong> is a Signal-based Angular wrapper for
+        <a
+          href="https://iconify.design"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-accent no-underline font-semibold hover:underline"
+          >Iconify</a
+        >. It combines an offline, SSR-safe icon subset with a CDN fallback: icons you reference
+        statically render as inline SVG on the server, while everything else resolves from the
+        Iconify CDN at runtime.
+      </p>
+
+      <p class="m-0 mb-2 text-sm font-semibold text-body">Install</p>
+      <pre
+        class="m-0 mb-5 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+      ><code>{{ installCommand }}</code></pre>
+
+      <p class="m-0 mb-3 text-muted leading-relaxed">
+        The schematic asks which delivery mode you want:
+      </p>
+      <ul class="m-0 p-0 mb-5 list-none space-y-3">
+        <li class="flex gap-3">
+          <ngx-iconify
+            icon="mdi:check-circle"
+            [size]="18"
+            class="text-accent flex-shrink-0 mt-0.5"
+          />
+          <p class="m-0 text-muted leading-relaxed">
+            <strong class="text-body">autohost</strong> (default) — generates the offline icon
+            subset, adds the required
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >&#64;iconify-json/*</code
+            >
+            dependencies (installing missing sets automatically), and wires the
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >prebuild</code
+            >
+            script.
+          </p>
+        </li>
+        <li class="flex gap-3">
+          <ngx-iconify
+            icon="mdi:cloud-check"
+            [size]="18"
+            class="text-accent flex-shrink-0 mt-0.5"
+          />
+          <p class="m-0 text-muted leading-relaxed">
+            <strong class="text-body">cdn</strong> — CDN only: no subset file and no prebuild
+            wiring, you just call
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >provideIconify()</code
+            >.
+          </p>
+        </li>
+      </ul>
+
+      <p class="m-0 text-muted leading-relaxed">
+        If you use the CDN fallback, also install the peer dependency
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >iconify-icon</code
+        >
+        — the web component that renders CDN icons.
+      </p>
+    </section>
+
+    <!-- Provider configuration -->
+    <section id="provider" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-4">
+        <ngx-iconify icon="mdi:server" [size]="22" class="text-accent flex-shrink-0" />
+        <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+          Provider configuration
+        </h2>
+      </div>
+
+      <p class="m-0 mb-4 text-muted leading-relaxed">
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >provideIconify(config)</code
+        >
+        is an environment providers function. Configure it
+        <strong class="text-body">once</strong> at the root — never inside a lazy or feature module.
+      </p>
+
+      <pre
+        class="m-0 mb-6 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+      ><code>{{ providerConfigCode }}</code></pre>
+
+      <p class="m-0 mb-3 text-sm font-semibold text-body">Options</p>
+      <div class="overflow-x-auto rounded-[0.85rem] border-[1.5px] border-border">
+        <table class="w-full border-collapse text-[0.875rem]">
+          <thead class="bg-surface-2">
+            <tr>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Option
+              </th>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Type
+              </th>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Description
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (opt of providerOptions; track opt.name) {
+              <tr class="hover:bg-[color-mix(in_oklch,var(--color-accent)_4%,transparent)]">
+                <td class="py-3.5 px-4 border-t border-border align-top">
+                  <code
+                    class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-accent"
+                    >{{ opt.name }}</code
+                  >
+                </td>
+                <td class="py-3.5 px-4 border-t border-border align-top">
+                  <code
+                    class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border"
+                    >{{ opt.type }}</code
+                  >
+                </td>
+                <td class="py-3.5 px-4 border-t border-border align-top text-muted leading-[1.5]">
+                  {{ opt.description }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Component usage -->
+    <section id="component" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-4">
+        <ngx-iconify icon="mdi:cog" [size]="22" class="text-accent flex-shrink-0" />
+        <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+          Component usage
+        </h2>
+      </div>
+
+      <p class="m-0 mb-4 text-muted leading-relaxed">
+        Register
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >NgxIconify</code
+        >
+        in any component and render icons with the
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >&lt;ngx-iconify&gt;</code
+        >
+        element:
+      </p>
+
+      <pre
+        class="m-0 mb-6 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+      ><code>{{ componentExampleCode }}</code></pre>
+
+      <p class="m-0 mb-3 text-sm font-semibold text-body">Inputs</p>
+      <div class="overflow-x-auto rounded-[0.85rem] border-[1.5px] border-border mb-6">
+        <table class="w-full border-collapse text-[0.875rem]">
+          <thead class="bg-surface-2">
+            <tr>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Input
+              </th>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Type
+              </th>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Default
+              </th>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Description
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (input of inputs; track input.name) {
+              <tr class="hover:bg-[color-mix(in_oklch,var(--color-accent)_4%,transparent)]">
+                <td class="py-3.5 px-4 border-t border-border align-top">
+                  <code
+                    class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-accent"
+                    >{{ input.name }}</code
+                  >
+                </td>
+                <td class="py-3.5 px-4 border-t border-border align-top">
+                  <code
+                    class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-[color-mix(in_oklch,var(--color-accent)_70%,var(--color-text))]"
+                    >{{ input.type }}</code
+                  >
+                </td>
+                <td class="py-3.5 px-4 border-t border-border align-top">
+                  @if (input.default === 'required') {
+                    <span class="font-bold text-accent text-[0.85rem]">required</span>
+                  } @else if (input.default === '—') {
+                    <span class="text-muted italic">—</span>
+                  } @else {
+                    <code
+                      class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border"
+                      >{{ input.default }}</code
+                    >
+                  }
+                </td>
+                <td
+                  class="py-3.5 px-4 border-t border-border align-top text-muted leading-[1.5] min-w-[200px]"
+                >
+                  {{ input.description }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <p class="m-0 mb-3 text-muted leading-relaxed">
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >inline</code
+        >,
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >forceCdn</code
+        >
+        and
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >noObserver</code
+        >
+        use a
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >booleanAttribute</code
+        >
+        transform, so presence syntax works:
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >&lt;ngx-iconify icon="mdi:home" inline /&gt;</code
+        >
+        is equivalent to
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >[inline]="true"</code
+        >.
+      </p>
+
+      <p class="m-0 text-muted leading-relaxed">
+        All inputs are signals, so dynamic changes recalculate reactively — the component works in
+        zoneless apps. Every input mirrors an
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >&lt;iconify-icon&gt;</code
+        >
+        attribute; see the
+        <a
+          href="https://iconify.design/docs/iconify-icon/#attributes"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-accent no-underline font-semibold hover:underline"
+          >Iconify attribute docs</a
+        >.
+      </p>
+    </section>
+
+    <!-- Rendering modes -->
+    <section id="rendering" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-4">
+        <ngx-iconify icon="mdi:palette" [size]="22" class="text-accent flex-shrink-0" />
+        <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+          Rendering modes
+        </h2>
+      </div>
+
+      <p class="m-0 mb-5 text-muted leading-relaxed">
+        How an icon renders depends on whether it lives in the offline subset:
+      </p>
+
+      <ul class="m-0 p-0 list-none space-y-4">
+        <li class="flex gap-3">
+          <ngx-iconify
+            icon="mdi:shield-check"
+            [size]="18"
+            class="text-accent flex-shrink-0 mt-0.5"
+          />
+          <p class="m-0 text-muted leading-relaxed">
+            <strong class="text-body">In the subset</strong> — rendered as an inline
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >&lt;svg&gt;</code
+            >
+            on the server. No
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >&#64;defer</code
+            >
+            needed and no hydration gap.
+          </p>
+        </li>
+        <li class="flex gap-3">
+          <ngx-iconify
+            icon="mdi:cloud-upload"
+            [size]="18"
+            class="text-accent flex-shrink-0 mt-0.5"
+          />
+          <p class="m-0 text-muted leading-relaxed">
+            <strong class="text-body">Not in the subset</strong> — rendered through the
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >&lt;iconify-icon&gt;</code
+            >
+            web component, resolving from the Iconify CDN at runtime.
+          </p>
+        </li>
+        <li class="flex gap-3">
+          <ngx-iconify icon="mdi:palette" [size]="18" class="text-accent flex-shrink-0 mt-0.5" />
+          <p class="m-0 text-muted leading-relaxed">
+            <strong class="text-body"
+              ><code
+                class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+                >[forceCdn]="true"</code
+              ></strong
+            >
+            — skips the subset lookup and always renders
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >&lt;iconify-icon&gt;</code
+            >
+            from the CDN, even when the icon exists in the subset (useful for icons deliberately
+            kept out of the generated subset). The scanner also EXCLUDES any icon referenced with
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >forceCdn</code
+            >, so regenerating drops it from
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >icon-subset.ts</code
+            >.
+          </p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Offline subset & schematics -->
+    <section id="schematics" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-4">
+        <ngx-iconify icon="mdi:tag-outline" [size]="22" class="text-accent flex-shrink-0" />
+        <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+          Offline subset & schematics
+        </h2>
+      </div>
+
+      <p class="m-0 mb-4 text-muted leading-relaxed">
+        The subset scanner captures
+        <strong class="text-body">only template literals</strong> —
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >&lt;ngx-iconify icon="mdi:home" /&gt;</code
+        >
+        or
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >icon = 'mdi:home'</code
+        >. Icons resolved at runtime from signals or services are not captured (and are not false
+        positives): they resolve via the Iconify CDN by default without breaking.
+      </p>
+
+      <ul class="m-0 p-0 mb-5 list-none space-y-3">
+        <li class="flex gap-3">
+          <ngx-iconify
+            icon="mdi:tag-outline"
+            [size]="18"
+            class="text-accent flex-shrink-0 mt-0.5"
+          />
+          <p class="m-0 text-muted leading-relaxed">
+            To include a dynamic icon in the SSR subset, add it to
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >dynamicSubsetIcons</code
+            >
+            in
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >src/ngx-iconify/icon-manifest.ts</code
+            >, or run
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >add-icon</code
+            >
+            to append it and regenerate.
+          </p>
+        </li>
+        <li class="flex gap-3">
+          <ngx-iconify icon="mdi:refresh" [size]="18" class="text-accent flex-shrink-0 mt-0.5" />
+          <p class="m-0 text-muted leading-relaxed">
+            Regenerate the subset after template changes. Missing
+            <code
+              class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+              >&#64;iconify-json/*</code
+            >
+            sets are declared and installed automatically on the next run.
+          </p>
+        </li>
+      </ul>
+
+      <pre
+        class="m-0 mb-5 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+      ><code>{{ dynamicManifestCode }}</code></pre>
+
+      <pre
+        class="m-0 mb-6 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+      ><code>{{ regenerateCode }}</code></pre>
+
+      <p class="m-0 mb-3 text-sm font-semibold text-body">Schematics</p>
+      <div class="overflow-x-auto rounded-[0.85rem] border-[1.5px] border-border">
+        <table class="w-full border-collapse text-[0.875rem]">
+          <thead class="bg-surface-2">
+            <tr>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Schematic
+              </th>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Command
+              </th>
+              <th
+                scope="col"
+                class="py-3.5 px-4 text-left font-bold text-muted text-[0.78rem] uppercase tracking-[0.06em] whitespace-nowrap"
+              >
+                Purpose
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sch of schematics; track sch.name) {
+              <tr class="hover:bg-[color-mix(in_oklch,var(--color-accent)_4%,transparent)]">
+                <td class="py-3.5 px-4 border-t border-border align-top">
+                  <code
+                    class="font-mono text-[0.82rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border text-accent"
+                    >{{ sch.name }}</code
+                  >
+                </td>
+                <td class="py-3.5 px-4 border-t border-border align-top">
+                  <code
+                    class="font-mono text-[0.78rem] px-2 py-1 rounded-[0.3rem] bg-surface-2 border border-border whitespace-normal break-words"
+                    >{{ sch.command }}</code
+                  >
+                </td>
+                <td
+                  class="py-3.5 px-4 border-t border-border align-top text-muted leading-[1.5] min-w-[200px]"
+                >
+                  {{ sch.purpose }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Catalog & validation tools -->
+    <section id="tools" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-4">
+        <ngx-iconify icon="mdi:magnify" [size]="22" class="text-accent flex-shrink-0" />
+        <h2 class="m-0 text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-[-0.03em]">
+          Catalog & validation tools
+        </h2>
+      </div>
+
+      <p class="m-0 mb-6 text-muted leading-relaxed">
+        Never invent icon names. Discover and validate icons against the real catalog with three
+        read-only schematics. They read
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >&#64;iconify/collections</code
+        >
+        and your installed
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >&#64;iconify-json/*</code
+        >
+        sets from
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >node_modules</code
+        >
+        — they never write files, never spawn processes, and make no network calls.
+      </p>
+
+      <div class="space-y-5 mb-6">
+        @for (tool of catalogTools; track tool.name) {
+          <div>
+            <p class="m-0 mb-1.5 flex items-center gap-2 text-sm font-semibold text-body">
+              <ngx-iconify [icon]="tool.icon" [size]="16" class="text-accent flex-shrink-0" />
+              {{ tool.name }}
+            </p>
+            <p class="m-0 mb-2 text-muted text-sm leading-relaxed">{{ tool.description }}</p>
+            <pre
+              class="m-0 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+            ><code>{{ tool.command }}</code></pre>
+          </div>
+        }
+      </div>
+
+      <p class="m-0 mb-3 text-muted leading-relaxed">
+        Only
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >add-icon</code
+        >
+        auto-installs missing sets. Use the returned
+        <code
+          class="font-mono text-[0.85em] px-1.5 py-0.5 rounded-[0.3rem] bg-surface-2 border border-border"
+          >prefix</code
+        >
+        to add an icon offline:
+      </p>
+      <pre
+        class="m-0 p-4 overflow-x-auto font-mono text-sm leading-[1.7] text-body bg-surface-2 border border-border rounded-lg"
+      ><code>{{ addIconCommand }}</code></pre>
+    </section>
+  </div>
+</main>
