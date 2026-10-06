@@ -9,8 +9,19 @@ import {
   ChangeDetectionStrategy,
   CUSTOM_ELEMENTS_SCHEMA,
   booleanAttribute,
+  isDevMode,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
+/**
+ * Whitelist of safe CSS color values for the `color` input.
+ * Accepts hex (#rgb / #rrggbb / #rrggbbaa), named colors, rgb()/rgba()/
+ * hsl()/hsla() functional notation, and var(--custom-property) references
+ * (with an optional fallback). Anything else is ignored so a malicious value
+ * can never break out of the SVG fill attribute into markup or script.
+ */
+const SAFE_COLOR =
+  /^(?:#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|[a-zA-Z]+|(?:rgb|hsl)a?\(\s*[\d\s.,%\/]+\s*\)|var\(\s*--[A-Za-z0-9_-]+\s*(?:,\s*[^"'();<>]+)?\))$/;
 
 /**
  * Rendered default for the inline `<svg>` when neither `width`/`size` is set.
@@ -175,7 +186,14 @@ export class NgxIconify {
     if (this.forceCdn()) return null;
 
     const iconLookup = lookupIcon(this.icon(), this.config?.offlineCollections);
-    if (!iconLookup) return null;
+    if (!iconLookup) {
+      if (isDevMode() && this.config?.warnOnMissing !== false) {
+        console.warn(
+          `[ngx-iconify] Icon "${this.icon()}" not found in offline subset; falling back to CDN.`,
+        );
+      }
+      return null;
+    }
 
     // SVG width/height attributes stay unitless (a bare number is the native
     // SVG length) and are independent of the CSS-length style computeds.
@@ -187,11 +205,16 @@ export class NgxIconify {
 
     let body = iconLookup.body;
     if (color) {
-      // Monotone icons use fill/stroke="currentColor"; the replacement is
-      // intentionally global because it cannot know which attributes are color
-      // values. That is a documented limitation: a body embedding the literal
-      // text `currentColor` (e.g. in a data-URI or style string) is rewritten.
-      body = body.replace(/currentColor/g, color);
+      const candidate = color.trim();
+      if (SAFE_COLOR.test(candidate)) {
+        // Monotone icons use fill/stroke="currentColor"; the replacement is
+        // intentionally global because it cannot know which attributes are color
+        // values. That is a documented limitation: a body embedding the literal
+        // text `currentColor` (e.g. in a data-URI or style string) is rewritten.
+        body = body.replace(/currentColor/g, candidate);
+      } else if (isDevMode()) {
+        console.warn(`[ngx-iconify] Ignoring unsafe color value: "${color}".`);
+      }
     }
 
     const svg = [

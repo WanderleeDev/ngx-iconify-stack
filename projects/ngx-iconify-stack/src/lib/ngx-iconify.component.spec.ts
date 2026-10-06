@@ -162,27 +162,109 @@ describe('NgxIconify', () => {
     expect(svg.getAttribute('viewBox')).toBe('0 0 48 32');
   });
 
-  it('includes color edge case: javascript: protocol injection (shows risk)', () => {
+  it('warns in dev when icon misses offline subset without forceCdn', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fixture.componentRef.setInput('icon', 'mdi:does-not-exist');
+    fixture.detectChanges();
+
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('stays silent on subset miss when warnOnMissing is false', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [NgxIconify],
+      providers: [
+        {
+          provide: NGX_ICONIFY_CONFIG,
+          useValue: { offlineCollections: [mdiSet], warnOnMissing: false },
+        },
+      ],
+    });
+    const quietFixture = TestBed.createComponent(NgxIconify);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    quietFixture.componentRef.setInput('icon', 'mdi:does-not-exist');
+    quietFixture.detectChanges();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('stays silent on subset miss when forceCdn is set', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fixture.componentRef.setInput('icon', 'mdi:does-not-exist');
+    fixture.componentRef.setInput('forceCdn', true);
+    fixture.detectChanges();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('accepts the full safe color whitelist', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const colors = [
+      '#f00',
+      '#ff0000',
+      '#ff000080',
+      'red',
+      'rgb(255, 0, 0)',
+      'rgba(255, 0, 0, 0.5)',
+      'hsl(0, 100%, 50%)',
+      'hsla(0, 100%, 50%, 0.5)',
+      'var(--icon-color)',
+    ];
+    for (const color of colors) {
+      fixture.componentRef.setInput('icon', 'mdi:home');
+      fixture.componentRef.setInput('color', color);
+      fixture.detectChanges();
+
+      const svg = fixture.nativeElement.querySelector('svg') as SVGElement;
+      expect(svg.querySelector('path')?.getAttribute('fill')).toBe(color);
+    }
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('warns in dev when ignoring an unsafe color value', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fixture.componentRef.setInput('icon', 'mdi:home');
+    fixture.componentRef.setInput('color', 'red" onclick="alert(1)');
+    fixture.detectChanges();
+
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('ignores javascript: protocol color values', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     fixture.componentRef.setInput('icon', 'mdi:home');
     fixture.componentRef.setInput('color', 'javascript:alert("xss")');
     fixture.detectChanges();
 
     const svg = fixture.nativeElement.querySelector('svg') as SVGElement;
     expect(svg).not.toBeNull();
-    // The color value is inserted literally — depends on SVG attribute parsing
-    // This test documents the risk: if color is not validated, it can be injected
+    // The unsafe value is skipped: fill stays currentColor and no
+    // javascript: payload reaches the rendered SVG.
+    expect(svg.querySelector('path')?.getAttribute('fill')).toBe('currentColor');
+    expect(svg.innerHTML).not.toContain('javascript:');
+    warn.mockRestore();
   });
 
-  it('includes color edge case: event handler injection (shows risk)', () => {
+  it('ignores event handler injection in color values', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     fixture.componentRef.setInput('icon', 'mdi:home');
     fixture.componentRef.setInput('color', 'red" onclick="alert(1)');
     fixture.detectChanges();
 
-    // The injected onclick handler should NOT execute when the SVG is rendered
-    // (browsers parse SVG fill attributes, not onclick as HTML attributes)
-    // This test documents the design: color is inserted into a fill attribute, not the DOM
+    // The unsafe value is skipped: fill stays currentColor and no onclick
+    // attribute appears in the rendered SVG.
     const svg = fixture.nativeElement.querySelector('svg') as SVGElement;
     expect(svg).not.toBeNull();
+    expect(svg.querySelector('path')?.getAttribute('fill')).toBe('currentColor');
+    expect(svg.querySelector('[onclick]')).toBeNull();
+    expect(svg.innerHTML).not.toContain('onclick');
+    warn.mockRestore();
   });
 
   it('renders safely with benign color values', () => {
