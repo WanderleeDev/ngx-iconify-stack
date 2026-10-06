@@ -16,7 +16,12 @@ export const ICON_REF_PATTERN = new RegExp(`^${ICON_REF_SOURCE}$`);
 export const ICON_REFERENCE_PATTERN = new RegExp(
   `(?:icon|icons)\\s*[:=]\\s*["'](?:["']?(${ICON_REF_SOURCE})["']?)["']`,
 );
-/** Default icon box size when the set does not declare width/height. */
+/**
+ * Default icon box size when the set does not declare width/height.
+ * Duplicate literal: `ICON_DEFAULTS.size` in `lib/icon.config.ts` is the source
+ * of truth — schematics code cannot import the runtime library (it depends on
+ * @angular/core), so this value must be updated together with it.
+ */
 export const DEFAULT_ICON_SIZE = 24;
 
 /** IconifyJSON path for a set prefix under node_modules. */

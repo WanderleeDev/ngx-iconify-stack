@@ -1,6 +1,6 @@
 import { IconMode } from './types';
 import { lookupIcon } from './icon-helpers';
-import { NGX_ICONIFY_CONFIG } from './icon.config';
+import { NGX_ICONIFY_CONFIG, ICON_DEFAULTS } from './icon.config';
 import {
   Component,
   input,
@@ -22,13 +22,6 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
  */
 const SAFE_COLOR =
   /^(?:#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|[a-zA-Z]+|(?:rgb|hsl)a?\(\s*[\d\s.,%\/]+\s*\)|var\(\s*--[A-Za-z0-9_-]+\s*(?:,\s*[^"'();<>]+)?\))$/;
-
-/**
- * Rendered default for the inline `<svg>` when neither `width`/`size` is set.
- * The schematics side names the sibling concept `DEFAULT_ICON_SIZE` (= 24) in
- * `generate-icon-subset/icons.ts`; this constant is the lib's rendered default.
- */
-const DEFAULT_ICON_WIDTH = '16px';
 
 /**
  * Iconify inline baseline offset — the `vertical-align` adjustment applied to
@@ -162,7 +155,7 @@ export class NgxIconify {
 
   readonly displayWidth = computed<string>(() => {
     const value = this.width() ?? this.size();
-    if (value === undefined) return DEFAULT_ICON_WIDTH;
+    if (value === undefined) return ICON_DEFAULTS.display;
     // Numbers become a px CSS length; string inputs ("1em", "24px", "24")
     // pass through untouched — the style binding applies them as-is.
     return typeof value === 'number' ? `${value}px` : value;
@@ -197,9 +190,9 @@ export class NgxIconify {
 
     // SVG width/height attributes stay unitless (a bare number is the native
     // SVG length) and are independent of the CSS-length style computeds.
-    // No natural-size width defaulting: DEFAULT_ICON_WIDTH unless size/width is
+    // No natural-size width defaulting: ICON_DEFAULTS.display unless size/width is
     // set. Height differs: when unset it falls back to the icon's native height.
-    const w = this.svgDim(this.width() ?? this.size()) ?? DEFAULT_ICON_WIDTH;
+    const w = this.svgDim(this.width() ?? this.size()) ?? ICON_DEFAULTS.display;
     const h = this.svgDim(this.height() ?? this.size()) ?? String(iconLookup.height);
     const color = this.color();
 

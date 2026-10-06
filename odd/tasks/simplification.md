@@ -58,6 +58,12 @@ The lib is well-designed but over-implemented: ~450-line `utils.ts` god-file, 7 
   - GREEN (verified by parent): `npx ng test ngx-iconify-stack --watch=false` → 13 files, 138 tests, all passed.
   - `SAFE_COLOR` whitelist (hex/named/rgb/hsl/var); unsafe values skipped + dev warn. `warnOnMissing` (default true) warns on subset miss → CDN fallback; silent when `forceCdn` or `warnOnMissing: false`.
 
+## Progress (cont.)
+
+- 2026-10-06 PR2 done: `refactor(lib): unify icon size defaults into ICON_DEFAULTS`.
+  - GREEN (worker + parent diff review): `npx ng test ngx-iconify-stack --watch=false` → 13 files, 138 tests, all passed. Zero behavior change, no new tests needed.
+  - `ICON_DEFAULTS = { size: 24, display: '16px' }` in `lib/icon.config.ts`; runtime (`ngx-iconify.ts`, `icon-helpers.ts`) imports it. Schematics `icons.ts` keeps the literal (cannot import runtime lib) with a pointer comment to the source of truth. `splitIconRef` hand-copy intentionally left for PR3.
+
 ## Next step
 
-- PR2: unify size constants into `ICON_DEFAULTS`.
+- PR3: split `utils.ts` + externalize SKILL.md.
