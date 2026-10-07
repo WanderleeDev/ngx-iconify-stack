@@ -1,0 +1,301 @@
+// scan.ts — script wiring + icon-ref split moved verbatim from utils.ts (PR3 Part A; zero behavior change).
+import { Tree } from '@angular-devkit/schematics';
+
+/** Package.json script that (re)generates the offline icon subset. */
+export const ICONS_SCRIPT = 'ngx-iconify-stack:generate-icons';
+
+/**
+ * Legacy `ngx-iconify-stack:add-icon` script target. The standalone add-icon
+ * schematic was merged into `generate-icon-subset --icon` (PR4); this constant
+ * survives only so that stale package.json entries from earlier library
+ * versions keep getting tidied by {@link wireIconifyScripts} / {@link
+ * removeIconifyScripts} instead of shipping a dead script.
+ */
+export const LEGACY_ADD_ICON_SCRIPT = 'ngx-iconify-stack:add-icon';
+
+/** Package.json script that (re)generates the AI agent skill. */
+export const SKILL_SCRIPT = 'ngx-iconify-stack:skill';
+
+/**
+ * Split an Iconify reference into its `prefix` and `name`. Returns null when
+ * there is no colon separator (i.e. not a `prefix:name` reference). The single
+ * canonical split for the schematics; `lib/icon-helpers.ts` carries a linked
+ * copy because the runtime library cannot import schematics code.
+ */
+export function splitIconRef(ref: string): { prefix: string; name: string } | null {
+  const sep = ref.indexOf(':');
+  if (sep === -1) return null;
+  return { prefix: ref.slice(0, sep), name: ref.slice(sep + 1) };
+}
+
+/** Package managers recognized by the workspace probes. */
+export const PACKAGE_MANAGERS = ['npm', 'yarn', 'pnpm', 'bun'];
+
+/** Outcome of an idempotent package.json script wiring. */
+export type WireResult = 'added' | 'updated' | 'unchanged';
+
+/** ANSI-styled log prefixes shared across schematics (single source of truth). */
+export const LOG_ADDED = ' \u001b[32m✔\u001b[0m';
+export const LOG_UPDATED = ' \u001b[33mM\u001b[0m';
+export const LOG_UNCHANGED = ' \u001b[90mℹ\u001b[0m';
+export const LOG_CREATED = ' \u001b[36mA\u001b[0m';
+
+/** ANSI-colored log line for each wiring outcome (lookup table, no if-chain). */
+const WIRE_LOG: Record<
+  WireResult,
+  (key: string, updatedDetail?: string) => string
+> = {
+  added: (key) => `${LOG_ADDED} package.json (${key} script added)`,
+  updated: (key, detail) => {
+    const suffix = detail ? ` to ${detail}` : '';
+    return `${LOG_UPDATED} package.json (${key} script updated${suffix})`;
+  },
+  unchanged: (key) =>
+    `${LOG_UNCHANGED} package.json (${key} script already correct — skipped)`,
+};
+
+/**
+ * Idempotent wiring of a single npm script: sets `pkg.scripts[key]` to
+ * `command` when missing ('added') or different ('updated'), and leaves it
+ * untouched when already equal ('unchanged'). The generic that the typed
+ * wrappers delegate to.
+ */
+export function wireScript(
+  pkg: { scripts?: Record<string, string> },
+  key: string,
+  command: string,
+): WireResult {
+  pkg.scripts ??= {};
+  const existing = pkg.scripts[key];
+  if (!existing) {
+    pkg.scripts[key] = command;
+    return 'added';
+  }
+  if (existing === command) return 'unchanged';
+  pkg.scripts[key] = command;
+  return 'updated';
+}
+
+/**
+ * Idempotent script wiring for the skill generator: adds or rewrites the
+ * `ngx-iconify-stack:skill` script so it always targets the current project.
+ * Returns 'added' | 'updated' | 'unchanged' so callers can log the right
+ * message without duplicating the comparison logic.
+ */
+export function wireSkillScript(
+  pkg: { scripts?: Record<string, string> },
+  projectName: string,
+  runner: 'nx' | 'ng' = 'ng',
+): WireResult {
+  return wireScript(
+    pkg,
+    SKILL_SCRIPT,
+    `${runner} generate ngx-iconify-stack:skill --project ${projectName}`,
+  );
+}
+
+/**
+ * Apply a batch of idempotent script wirings to `/package.json` and persist
+ * the file at most once. Each wire mutates `pkg.scripts` and returns its
+ * outcome; the caller supplies the wire closures (which also carry the
+ * command detail used in the 'updated' log, e.g. `--project <name>`).
+ * Any changed wiring triggers a single rewrite; the file is never written
+ * when nothing changed.
+ */
+export function applyScriptWires(
+  tree: Tree,
+  logger: { info: (message: string) => void },
+  wires: {
+    key: string;
+    wire: (pkg: { scripts?: Record<string, string> }) => WireResult;
+    updatedDetail?: string;
+  }[],
+  pkgPath = '/package.json',
+): void {
+  const pkg = JSON.parse(tree.read(pkgPath)!.toString()) as {
+    scripts?: Record<string, string>;
+  };
+
+  const results = wires.map(({ key, wire, updatedDetail }) => ({
+    key,
+    result: wire(pkg),
+    updatedDetail,
+  }));
+
+  if (results.some((r) => r.result !== 'unchanged')) {
+    tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+  }
+
+  for (const { key, result, updatedDetail } of results) {
+    logger.info(WIRE_LOG[result](key, updatedDetail));
+  }
+}
+
+/**
+ * Wire the skill regeneration script in a single persist with uniform logs.
+ * Shared by ng-add and the skill schematic so the two entry points cannot
+ * diverge.
+ */
+export function wireSkillScripts(
+  tree: Tree,
+  logger: { info: (message: string) => void },
+  projectName: string,
+  runner: 'nx' | 'ng' = 'ng',
+): void {
+  applyScriptWires(tree, logger, [
+    {
+      key: SKILL_SCRIPT,
+      wire: (pkg) => wireSkillScript(pkg, projectName, runner),
+      updatedDetail: `--project ${projectName}`,
+    },
+  ]);
+}
+
+/** Split a `a && b && c` script chain into trimmed segments. */
+function splitChain(script: string): string[] {
+  return script
+    .split('&&')
+    .map((seg) => seg.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Strip icon segments from `pkg.scripts[key]` using the split → filter →
+ * join-or-delete algorithm shared by the prestart cleanup in
+ * {@link wireIconifyScripts} and the per-key loop in
+ * {@link removeIconifyScripts}. Deletes the script when it would become
+ * empty. Returns true when the script value changed or was removed.
+ */
+function stripScriptSegments(
+  pkg: { scripts?: Record<string, string> },
+  key: string,
+  isIconSegment: (seg: string) => boolean,
+): boolean {
+  pkg.scripts ??= {};
+  const kept = splitChain(pkg.scripts[key] ?? '').filter((seg) => !isIconSegment(seg));
+  if (kept.length > 0) {
+    const next = kept.join(' && ');
+    if (pkg.scripts[key] !== next) {
+      pkg.scripts[key] = next;
+      return true;
+    }
+  } else if (pkg.scripts[key] !== undefined) {
+    delete pkg.scripts[key];
+    return true;
+  }
+  return false;
+}
+
+/** True for legacy `collect-icons` segments or any package manager's marker. */
+function isIconSegment(seg: string): boolean {
+  return (
+    seg.includes('collect-icons') ||
+    PACKAGE_MANAGERS.some((pm) => seg === `${pm} run ${ICONS_SCRIPT}`)
+  );
+}
+
+/**
+ * Idempotent script wiring (marker-based, so reruns never double-append):
+ * adds the `ngx-iconify-stack:generate-icons` script (removing the legacy
+ * `icons` entry) and the `ngx-iconify-stack:add-icon` script, creates
+ * `prebuild` when missing or chains into it, strips icon segments from
+ * `prestart`, and removes the dead legacy `collect-icons`. The `prebuild`
+ * wiring uses the detected package manager runner (`${pm} run`) so
+ * pnpm/yarn/bun workspaces are not forced through npm. Returns true when the
+ * package.json must be rewritten.
+ *
+ * When `opts.remove` is true the wiring is reversed: the
+ * `ngx-iconify-stack:generate-icons` and `ngx-iconify-stack:add-icon` scripts
+ * are deleted, icon segments are stripped from `prebuild`/`prestart`
+ * (deleting the script when it becomes empty), and the legacy `collect-icons`
+ * entry is dropped. Used by `ng-add` in `cdn` mode to tear down autohost
+ * wiring. Returns true when anything changed, false when already clean
+ * (idempotent).
+ */
+export function wireIconifyScripts(
+  pkg: { scripts?: Record<string, string> },
+  projectName: string,
+  packageManager = 'npm',
+  runner: 'nx' | 'ng' = 'ng',
+  opts?: { remove?: boolean },
+): boolean {
+  pkg.scripts ??= {};
+
+  if (opts?.remove) {
+    return removeIconifyScripts(pkg);
+  }
+
+  let changed = false;
+
+  const expectedIconsScript = `${runner} generate ngx-iconify-stack:generate-icon-subset --project ${projectName}`;
+  if (pkg.scripts[ICONS_SCRIPT] !== expectedIconsScript) {
+    pkg.scripts[ICONS_SCRIPT] = expectedIconsScript;
+    changed = true;
+  }
+
+  // The standalone add-icon schematic was merged into generate-icon-subset
+  // --icon; its legacy package.json script target no longer exists, so any
+  // surviving entry is dead wiring. Tidy it up on every (re)wire.
+  if (pkg.scripts[LEGACY_ADD_ICON_SCRIPT] !== undefined) {
+    delete pkg.scripts[LEGACY_ADD_ICON_SCRIPT];
+    changed = true;
+  }
+
+  const run = `${packageManager} run ${ICONS_SCRIPT}`;
+  const prebuildSegs = splitChain(pkg.scripts['prebuild'] ?? '');
+  if (prebuildSegs.some(isIconSegment)) {
+    const next = prebuildSegs.map((seg) => (isIconSegment(seg) ? run : seg)).join(' && ');
+    if (pkg.scripts['prebuild'] !== next) {
+      pkg.scripts['prebuild'] = next;
+      changed = true;
+    }
+  } else if (prebuildSegs.length > 0) {
+    pkg.scripts['prebuild'] = `${prebuildSegs.join(' && ')} && ${run}`;
+    changed = true;
+  } else if ((pkg.scripts['prebuild'] ?? '') !== run) {
+    pkg.scripts['prebuild'] = run;
+    changed = true;
+  }
+
+  if (stripScriptSegments(pkg, 'prestart', isIconSegment)) changed = true;
+
+  if (pkg.scripts['collect-icons'] !== undefined) {
+    delete pkg.scripts['collect-icons'];
+    changed = true;
+  }
+
+  return changed;
+}
+
+/**
+ * Tear down the autohost wiring added by {@link wireIconifyScripts} (the
+ * non-remove path). Deletes the generate-icons and add-icon scripts, strips
+ * icon segments from `prebuild`/`prestart` (removing the script when it
+ * empties out), and drops the legacy `collect-icons` entry. Idempotent:
+ * returns true when anything changed, false when the scripts are already clean.
+ */
+function removeIconifyScripts(pkg: { scripts?: Record<string, string> }): boolean {
+  pkg.scripts ??= {};
+  let changed = false;
+
+  if (pkg.scripts[ICONS_SCRIPT] !== undefined) {
+    delete pkg.scripts[ICONS_SCRIPT];
+    changed = true;
+  }
+
+  if (pkg.scripts[LEGACY_ADD_ICON_SCRIPT] !== undefined) {
+    delete pkg.scripts[LEGACY_ADD_ICON_SCRIPT];
+    changed = true;
+  }
+
+  for (const key of ['prebuild', 'prestart']) {
+    if (stripScriptSegments(pkg, key, isIconSegment)) changed = true;
+  }
+
+  if (pkg.scripts['collect-icons'] !== undefined) {
+    delete pkg.scripts['collect-icons'];
+    changed = true;
+  }
+
+  return changed;
+}

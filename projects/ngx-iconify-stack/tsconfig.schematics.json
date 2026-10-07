@@ -18,5 +18,5 @@
     "ignoreDeprecations": "6.0"
   },
   "include": ["src/schematics/**/*.ts"],
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "src/schematics/skill/example.ts"]
 }

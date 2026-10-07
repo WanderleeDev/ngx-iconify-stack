@@ -6,7 +6,7 @@ import type { IconifyJSON } from '@iconify/types';
 import { getIcons } from '@iconify/utils';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { splitIconRef } from '../utils';
+import { splitIconRef } from '../scan';
 
 /** Base `prefix:name` fragment shared by the validation and scan patterns. */
 const ICON_REF_SOURCE = '[\\w-]+:[\\w-]+';
