@@ -1,17 +1,1 @@
-{
-  "$schema": "http://json-schema.org/schema",
-  "$id": "SchematicsNgxIconifyStackGenerateIconSubset",
-  "title": "Generate Icon Subset",
-  "description": "Scans your project for icon usage, builds an offline subset, and wires it into the provider",
-  "properties": {
-    "project": {
-      "type": "string",
-      "description": "Target project name (required in multiproject workspaces)",
-      "x-prompt": "Which project should receive the icon subset?",
-      "$default": {
-        "$source": "projectName"
-      }
-    }
-  },
-  "required": ["project"]
-}
+{"$schema":"http://json-schema.org/schema","$id":"SchematicsNgxIconifyStackGenerateIconSubset","title":"Generate Icon Subset","description":"Scans your project for icon usage, builds an offline subset, and wires it into the provider","properties":{"project":{"type":"string","description":"Target project name (required in multiproject workspaces)","x-prompt":"Which project should receive the icon subset?","$default":{"$source":"projectName"}},"icon":{"type":"array","items":{"type":"string"},"description":"Icon to add in prefix:name format. Repeatable: --icon mdi:home --icon mdi:user (Angular CLI) or comma-separated: --icon mdi:home,mdi:user (Nx)","x-prompt":"Which icon should be added to the subset? (prefix:name, e.g. mdi:home)"}},"required":["project"]}

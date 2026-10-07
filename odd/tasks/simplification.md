@@ -37,10 +37,12 @@ The lib is well-designed but over-implemented: ~450-line `utils.ts` god-file, 7 
   - [ ] `skill/SKILL.md`, `skill/api-reference.md`, `skill/example.ts` as real files; `skill/index.ts` reads/copies them.
   - [ ] Zero behavior change: full schematic suite green.
 - [ ] **PR4 — Merge schematics** (`feat(schematics)!: sync-icons + doctor`)
-  - [ ] `add-icon --icon` → flag of `generate-icon-subset` (or renamed `sync-icons`); `list-sets/validate-set/validate-icon` → single `doctor` report.
-  - [ ] `collection.json` aliases for old names (deprecated) or major bump.
-  - [ ] Replace `spawnSync` install with declared deps + `NodePackageInstallTask`; missing set = actionable error, not partial subset.
-  - [ ] Update README + SKILL.md docs.
+  - [x] `add-icon --icon` → flag of `generate-icon-subset` (PART A done); `add-icon` dir deleted, now a thin re-export of the shared `ensureManifestIcons` pipeline.
+  - [x] `list-sets` + `validate-set` + `validate-icon` → single `doctor` report (PART B done): `doctor --list [--search --category --limit]`, `doctor --prefix <p>`, `doctor --icon <ref...>` (repeatable), combinable flags, one consolidated report, hard-fail only on `--icon`/`--prefix` validation errors. Deleted 3 directories + 3 specs; coverage ported to `doctor.spec.ts` (18 tests).
+  - [x] Replaced `spawnSync` install with declared deps + one `NodePackageInstallTask`; missing set → actionable warning + partial subset until install task runs. No `child_process` import remains under `src/`.
+  - [x] `scan.ts` `ADD_ICON_SCRIPT` → `LEGACY_ADD_ICON_SCRIPT`: stale `ngx-iconify-stack:add-icon` package.json entries now tidied on every rewire (dead-script cleanup, not wiring).
+  - [x] Updated README + SKILL.md/api-reference.md docs to `doctor` + `generate-icon-subset --icon`.
+  - **Note for collection.json**: PR4 introduces breaking schematic renames (list-sets/validate-set/validate-icon/add-icon removed, doctor added, generate-icon-subset now accepts --icon). Per plan, this rides a major bump or deprecated aliases — decision deferred to user.
 
 ## Acceptance criteria
 
@@ -64,6 +66,18 @@ The lib is well-designed but over-implemented: ~450-line `utils.ts` god-file, 7 
   - GREEN (worker + parent diff review): `npx ng test ngx-iconify-stack --watch=false` → 13 files, 138 tests, all passed. Zero behavior change, no new tests needed.
   - `ICON_DEFAULTS = { size: 24, display: '16px' }` in `lib/icon.config.ts`; runtime (`ngx-iconify.ts`, `icon-helpers.ts`) imports it. Schematics `icons.ts` keeps the literal (cannot import runtime lib) with a pointer comment to the source of truth. `splitIconRef` hand-copy intentionally left for PR3.
 
+## Progress (cont.)
+
+- 2026-10-06 PR3 done: `refactor(schematics): split utils.ts into scan.ts/patch.ts, externalize skill content to real .md/.ts files`.
+  - GREEN (worker + parent): `npx ng test` 13 files / 138 tests; `npx tsc -p tsconfig.schematics.json --noEmit` clean; `npm run build:lib` clean; SKILL.md/API/example byte-identical in dist vs source via `node dist/.../skill/index.js` + `generateSkill` (5625/4692/396 bytes match).
+  - `utils.ts` (was 709 lines) is now a 136-line barrel; `scan.ts` (293) holds splitIconRef/wiring; `patch.ts` (308) holds patchAppConfig + TS-AST. Skill content now lives in `skill/SKILL.md`, `skill/api-reference.md`, `skill/example.ts` — edited without touching TS.
+
+- 2026-10-06 PR4 done (PART A + PART B): `feat(schematics)!: consolidate catalog tools into doctor, add --icon flag, replace spawnSync with install task`.
+  - GREEN (worker + parent): `npx ng test` 10 files / 134 tests; `npx tsc` clean; `npm run build:lib` clean; dist now has exactly 4 schematics (ng-add, generate-icon-subset, doctor, skill).
+  - `generate-icon-subset` accepts repeatable `--icon` refs (absorbs `add-icon`); three read-only catalog tools consolidated into `doctor` (list / prefix / icon); `installMissingSets` spawnSync replaced with declared deps + `NodePackageInstallTask`.
+  - 16 old files `git rm`'d: list-sets/{index,schema.json,schema.ts}, validate-set/{...}, validate-icon/{...}, add-icon/{...} + their .spec.ts.
+  - `scan.ts` `ADD_ICON_SCRIPT` renamed to `LEGACY_ADD_ICON_SCRIPT` (dead-script cleanup on rewire).
+
 ## Next step
 
-- PR3: split `utils.ts` + externalize SKILL.md.
+- PR4 work-unit commit + close-out on `dev`; then user pushes PRs dev → main.

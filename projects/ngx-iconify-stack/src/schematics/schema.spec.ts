@@ -18,9 +18,7 @@ describe('schematic schema contract (multiproject safety)', () => {
   const ngAdd = loadSchema('ng-add');
   const generate = loadSchema('generate-icon-subset');
   const skill = loadSchema('skill');
-  const listSets = loadSchema('list-sets');
-  const validateIcon = loadSchema('validate-icon');
-  const validateSet = loadSchema('validate-set');
+  const doctor = loadSchema('doctor');
 
   it('ng-add requires an explicit project', () => {
     expect(ngAdd.required).toContain('project');
@@ -51,25 +49,24 @@ describe('schematic schema contract (multiproject safety)', () => {
     expect(generate.properties?.['project']?.type).toBe('string');
   });
 
-  it('list-sets requires an explicit project and a positive integer limit', () => {
-    expect(listSets.required).toContain('project');
-    expect(listSets.properties?.['limit']?.type).toBe('number');
-    expect((listSets.properties?.['limit'] as { minimum?: number } | undefined)?.minimum).toBe(1);
-    expect(listSets.properties?.['search']?.type).toBe('string');
-    expect(listSets.properties?.['category']?.type).toBe('string');
+  it('doctor requires an explicit project, a string prefix, and a positive integer limit', () => {
+    expect(doctor.required).toContain('project');
+    expect(doctor.properties?.['project']?.['x-prompt']).toBeDefined();
+    expect(doctor.properties?.['project']?.['$default']?.$source).toBe('projectName');
+    expect(doctor.properties?.['limit']?.type).toBe('number');
+    expect((doctor.properties?.['limit'] as { minimum?: number } | undefined)?.minimum).toBe(1);
+    expect(doctor.properties?.['search']?.type).toBe('string');
+    expect(doctor.properties?.['category']?.type).toBe('string');
+    expect(doctor.properties?.['prefix']?.type).toBe('string');
+    expect(doctor.properties?.['list']?.type).toBe('boolean');
   });
 
-  it('validate-icon requires project and icon, and offers the interactive picker', () => {
-    expect(validateIcon.required).toContain('project');
-    expect(validateIcon.required).toContain('icon');
-    expect(validateIcon.properties?.['project']?.['x-prompt']).toBeDefined();
-    expect(validateIcon.properties?.['project']?.['$default']?.$source).toBe('projectName');
+  it('doctor icon is a repeatable string array with the interactive picker', () => {
+    expect(doctor.properties?.['icon']?.type).toBe('array');
+    expect(doctor.properties?.['icon']?.['x-prompt']).toBeDefined();
   });
 
-  it('validate-set requires project and prefix, and offers the interactive picker', () => {
-    expect(validateSet.required).toContain('project');
-    expect(validateSet.required).toContain('prefix');
-    expect(validateSet.properties?.['project']?.['x-prompt']).toBeDefined();
-    expect(validateSet.properties?.['prefix']?.['x-prompt']).toBeDefined();
+  it('doctor prefix offers the interactive picker', () => {
+    expect(doctor.properties?.['prefix']?.['x-prompt']).toBeDefined();
   });
 });

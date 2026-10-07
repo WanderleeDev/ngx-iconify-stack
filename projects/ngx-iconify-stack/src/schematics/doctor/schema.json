@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNgxIconifyStackDoctor",
+  "title": "Doctor",
+  "description": "Reports on icon health: list catalog sets (--list), print set metadata (--prefix), and validate icon references (--icon, repeatable). Flags combine into one consolidated report.",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Target project name (required in multiproject workspaces)",
+      "x-prompt": "Which project should the catalog be read for?",
+      "$default": {
+        "$source": "projectName"
+      }
+    },
+    "icon": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Icon to validate in prefix:name format. Repeatable: --icon mdi:home --icon mdi:user (Angular CLI) or comma-separated: --icon mdi:home,mdi:user (Nx)",
+      "x-prompt": "Which icon should be validated? (prefix:name, e.g. mdi:home)"
+    },
+    "list": {
+      "type": "boolean",
+      "description": "List icon sets from the catalog (also the default when neither --icon nor --prefix is given)",
+      "default": false
+    },
+    "search": {
+      "type": "string",
+      "description": "Case-insensitive substring matched against set prefix and name"
+    },
+    "category": {
+      "type": "string",
+      "description": "Only sets whose category matches exactly"
+    },
+    "limit": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Cap the number of sets printed (positive integer)"
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Set prefix to validate (e.g. mdi)",
+      "x-prompt": "Which set prefix should be validated? (e.g. mdi)"
+    }
+  },
+  "required": ["project"]
+}

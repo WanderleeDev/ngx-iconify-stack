@@ -1,29 +1,35 @@
-import { HostTree, Tree } from '@angular-devkit/schematics';
-import { generateIconSubset, directedInstallCommand } from './generate-icon-subset';
+import { HostTree, Tree, SchematicContext } from '@angular-devkit/schematics';
+import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
+import { generateIconSubset } from './generate-icon-subset';
 import { runRule } from './spec-run-rule';
 
-const { spawnSync: mockedSpawnSync } = vi.hoisted(() => ({ spawnSync: vi.fn() }));
+interface RecordedContext extends SchematicContext {
+  warnings: string[];
+  tasks: unknown[];
+}
 
-vi.mock('node:child_process', () => ({
-  default: { spawnSync: mockedSpawnSync },
-  spawnSync: mockedSpawnSync,
-}));
-
-function stubContext(): import('@angular-devkit/schematics').SchematicContext {
+function stubContext(): RecordedContext {
+  const warnings: string[] = [];
+  const tasks: unknown[] = [];
   return {
     logger: {
       info: () => undefined,
       debug: () => undefined,
-      warn: () => undefined,
+      warn: (message: string) => warnings.push(message),
       fatal: () => undefined,
       error: () => undefined,
       log: () => undefined,
     },
-    addTask: () => undefined,
+    addTask: (task: unknown) => {
+      tasks.push(task);
+      return tasks.length;
+    },
     engine: undefined,
     interactive: true,
     strategy: undefined,
-  } as unknown as import('@angular-devkit/schematics').SchematicContext;
+    warnings,
+    tasks,
+  } as unknown as RecordedContext;
 }
 
 function createWorkspace(): HostTree {
@@ -77,28 +83,17 @@ function readJson(tree: Tree, path: string) {
   return JSON.parse(tree.read(path)!.toString());
 }
 
-describe('directedInstallCommand', () => {
-  it('maps npm/pnpm to install and yarn/bun to add', () => {
-    expect(directedInstallCommand('npm')).toBe('install');
-    expect(directedInstallCommand('pnpm')).toBe('install');
-    expect(directedInstallCommand('yarn')).toBe('add');
-    expect(directedInstallCommand('bun')).toBe('add');
-  });
-});
-
 describe('generateIconSubset', () => {
-  beforeEach(() => {
-    mockedSpawnSync.mockClear();
-  });
   it('writes a complete subset when all sets are installed, without touching deps', async () => {
     const workspace = createWorkspace();
     installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });
     installSet(workspace, 'lucide', { 'arrow-right': { body: '<path d="M3 4"/>' } });
 
+    const context = stubContext();
     const tree = await runRule(
       generateIconSubset({ project: 'frontend' }),
       workspace,
-      stubContext(),
+      context,
     );
 
     const subset = tree.read('/src/ngx-iconify/icon-subset.ts')!.toString();
@@ -111,13 +106,13 @@ describe('generateIconSubset', () => {
     expect(pkg.dependencies['@iconify-json/mdi']).toBeUndefined();
     expect(pkg.dependencies['@iconify-json/lucide']).toBeUndefined();
 
-    expect(mockedSpawnSync).not.toHaveBeenCalled();
+    expect(context.tasks).toHaveLength(0);
 
     const config = tree.read('/src/app/app.config.ts')!.toString();
     expect(config).toContain('provideIconify({ offlineCollections: iconSubset })');
   });
 
-  it('declares and directed-installs missing sets before building the subset', async () => {
+  it('declares missing sets, warns the subset is partial, and schedules one install task', async () => {
     const workspace = createWorkspace();
     // heroicons is NOT present in the real workspace node_modules, so the
     // filesystem fallback in readJsonFile treats it as genuinely missing.
@@ -126,22 +121,25 @@ describe('generateIconSubset', () => {
       '<ngx-iconify icon="mdi:home" />\n<ngx-iconify icon="heroicons:arrow-right" />\n',
     );
     installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });
-    mockedSpawnSync.mockReturnValue({ status: 0 } as never);
 
+    const context = stubContext();
     const tree = await runRule(
       generateIconSubset({ project: 'frontend' }),
       workspace,
-      stubContext(),
+      context,
     );
 
     const pkg = readJson(tree, '/package.json');
     expect(pkg.dependencies['@iconify-json/mdi']).toBeUndefined();
     expect(pkg.dependencies['@iconify-json/heroicons']).toBe('^1.0.0');
 
-    expect(mockedSpawnSync).toHaveBeenCalledTimes(1);
-    const [cmd, args] = mockedSpawnSync.mock.calls[0];
-    expect(cmd).toBe('npm');
-    expect(args).toEqual(['install', '@iconify-json/heroicons@^1.0.0']);
+    // A NodePackageInstallTask is scheduled instead of a synchronous spawn,
+    // with a warning that the subset stays partial until it runs.
+    expect(context.tasks).toHaveLength(1);
+    expect(context.tasks[0]).toBeInstanceOf(NodePackageInstallTask);
+    expect(context.warnings.join('\n')).toMatch(/partial until/);
+    // The build-time warning for the still-missing set is preserved too.
+    expect(context.warnings.join('\n')).toMatch(/Set "heroicons" not found/);
 
     // The missing set is skipped (no installed JSON to read in the test tree)
     // but the run does not break.
@@ -149,22 +147,24 @@ describe('generateIconSubset', () => {
     expect(subset).toContain('"prefix": "mdi"');
   });
 
-  it('is idempotent: rerun with everything installed neither adds deps nor installs', async () => {
+  it('is idempotent: rerun with everything installed neither adds deps nor schedules a task', async () => {
     const workspace = createWorkspace();
     installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });
     installSet(workspace, 'lucide', { 'arrow-right': { body: '<path d="M3 4"/>' } });
 
     await runRule(generateIconSubset({ project: 'frontend' }), workspace, stubContext());
+    const context = stubContext();
     const tree = await runRule(
       generateIconSubset({ project: 'frontend' }),
       workspace,
-      stubContext(),
+      context,
     );
 
     const pkg = readJson(tree, '/package.json');
     expect(pkg.dependencies['@iconify-json/mdi']).toBeUndefined();
     expect(pkg.dependencies['@iconify-json/lucide']).toBeUndefined();
-    expect(mockedSpawnSync).not.toHaveBeenCalled();
+    expect(context.tasks).toHaveLength(0);
+    expect(context.warnings).toHaveLength(0);
   });
 
   it('excludes icons referenced with forceCdn from the subset', async () => {
@@ -368,5 +368,47 @@ describe('generateIconSubset', () => {
     expect(subset).toContain('"home"');
     expect(subset).toContain('"prefix": "lucide"');
     expect(subset).toContain('"arrow-right"');
+  });
+
+  it('routes --icon refs through the add-icon pipeline before scanning', async () => {
+    const workspace = createWorkspace();
+    // Template covers mdi:home; the dynamic icon comes ONLY via --icon.
+    workspace.overwrite(
+      '/src/app/app.component.html',
+      '<ngx-iconify icon="mdi:home" />\n',
+    );
+    installSet(workspace, 'mdi', {
+      home: { body: '<path d="M1 2"/>' },
+      user: { body: '<path d="M3 4"/>' },
+    });
+
+    const context = stubContext();
+    const tree = await runRule(
+      generateIconSubset({ project: 'frontend', icon: ['mdi:user'] }),
+      workspace,
+      context,
+    );
+
+    const manifest = tree.read('/src/ngx-iconify/icon-manifest.ts')!.toString();
+    expect(manifest).toContain("'mdi:user'");
+
+    const subset = tree.read('/src/ngx-iconify/icon-subset.ts')!.toString();
+    expect(subset).toContain('"home"');
+    expect(subset).toContain('"user"');
+    // No missing sets → no install task scheduled.
+    expect(context.tasks).toHaveLength(0);
+  });
+
+  it('rejects a malformed --icon ref before scanning', async () => {
+    const workspace = createWorkspace();
+    installSet(workspace, 'mdi', { home: { body: '<path d="M1 2"/>' } });
+
+    await expect(
+      runRule(
+        generateIconSubset({ project: 'frontend', icon: ['nope'] }),
+        workspace,
+        stubContext(),
+      ),
+    ).rejects.toThrow(/expected prefix:name/);
   });
 });

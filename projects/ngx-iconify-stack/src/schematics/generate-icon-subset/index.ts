@@ -1,11 +1,15 @@
-import { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
-import { spawnSync } from 'node:child_process';
+import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
+import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import type { IconifyJSON } from '@iconify/types';
+import { getIconData } from '@iconify/utils';
 import { GenerateIconSubsetOptions } from './schema';
 import {
   buildSubset,
+  ICON_REF_PATTERN,
+  iconManifestPath,
   iconSetJsonPath,
   mergeManifestIcons,
+  parseManifestDynamicIcons,
   readJsonFile,
   scanIcons,
 } from './icons';
@@ -16,6 +20,7 @@ import {
   providerCallFor,
   resolveConfigFile,
   resolveProject,
+  splitIconRef,
   toRelativeImport,
   wireIconifyScripts,
 } from '../utils';
@@ -36,53 +41,84 @@ function renderSubsetFile(collections: IconifyJSON[]): string {
   );
 }
 
-/**
- * Package-manager subcommand that installs named packages
- * (npm/pnpm `install`, yarn/bun `add`). Unknown managers default to `install`.
- */
-const INSTALL_COMMAND: Record<string, string> = {
-  npm: 'install',
-  pnpm: 'install',
-  yarn: 'add',
-  bun: 'add',
-};
+/** Stable header for a NEW manifest (kept verbatim from an existing file). */
+const MANIFEST_HEADER = [
+  '// src/ngx-iconify/icon-manifest.ts',
+  '// 🔧 MANUAL — fuente de verdad. El scanner no ve iconos dinámicos (signals,',
+  '// servicios): si querés que uno entre al subset SSR, decláralo acá.',
+].join('\n');
 
-export function directedInstallCommand(packageManager: string): string {
-  return INSTALL_COMMAND[packageManager] ?? 'install';
+/**
+ * Normalize the repeatable `--icon` flag (single string or array) into refs.
+ */
+export function normalizeIconRefs(icon: string | string[] | undefined): string[] {
+  if (!icon) return [];
+  return Array.isArray(icon) ? icon : [icon];
 }
 
 /**
- * Directed install of ONLY the missing `@iconify-json/<prefix>` sets, run
- * synchronously BEFORE the subset is built so the same run produces a complete
- * subset. Falls back gracefully (warning + partial subset) when the install
- * fails — e.g. CI with a frozen lockfile — instead of breaking the build.
- * Idempotent: a set already installed is never reinstalled.
+ * Persist the refs in `dynamicSubsetIcons` inside the icon manifest. Idempotent:
+ * preserves the file's header comment and any existing entries, and never
+ * duplicates a ref. Sorted output keeps reruns byte-identical.
  */
-export function installMissingSets(
-  missing: string[],
+export function persistManifestIcons(
+  tree: Tree,
+  sourceRoot: string,
+  refs: string[],
+): void {
+  const path = iconManifestPath(sourceRoot);
+  let header = MANIFEST_HEADER;
+  let existing: string[] = [];
+  if (tree.exists(path)) {
+    const content = tree.read(path)!.toString('utf8');
+    // Anchor on the identifier position and the '=' that follows it (rather
+    // than requiring `export const dynamicSubsetIcons` directly) so typed
+    // declarations like `dynamicSubsetIcons: string[] = [...]` are rewritten
+    // in place instead of appending a duplicate declaration.
+    const identIndex = content.indexOf('dynamicSubsetIcons');
+    const headerEnd = identIndex === -1 ? -1 : content.indexOf('=', identIndex);
+    const lineStart = headerEnd === -1 ? -1 : content.lastIndexOf('\n', identIndex) + 1;
+    const isDeclaration =
+      headerEnd !== -1 && /\bexport\b/.test(content.slice(lineStart, headerEnd));
+    if (isDeclaration) {
+      header = content.slice(0, lineStart).replace(/\s+$/, '');
+      existing = parseManifestDynamicIcons(content.slice(lineStart));
+    } else {
+      header = content.replace(/\s+$/, '');
+    }
+  }
+
+  const merged = [...new Set([...existing, ...refs])].sort();
+  const body =
+    `export const dynamicSubsetIcons = [${merged.map((r) => `'${r}'`).join(', ')}] as const;`;
+
+  const next = `${header}\n${body}\n`;
+  if (tree.exists(path)) {
+    tree.overwrite(path, next);
+  } else {
+    tree.create(path, next);
+  }
+}
+
+/**
+ * Warn that the subset will be partial until the install task runs, then
+ * schedule a single `NodePackageInstallTask` so the declared sets actually
+ * get installed. The schematic engine runs the task after the rule finishes;
+ * a set that is still missing at build time is warned and skipped by
+ * `buildSubset` (partial-subset degradation, never a hard failure).
+ */
+function warnAndScheduleInstall(
+  context: SchematicContext,
   packageManager: string,
-  logger: { info(message: string): void; warn(message: string): void },
+  missing: string[],
 ): void {
   const packages = missing.map((prefix) => `@iconify-json/${prefix}@${ICONIFY_JSON_VERSION}`);
-  const command = directedInstallCommand(packageManager);
-  logger.info(`Installing missing icon sets: ${packages.join(', ')}`);
-  try {
-    const result = spawnSync(packageManager, [command, ...packages], {
-      cwd: process.cwd(),
-      stdio: 'inherit',
-    });
-    if (result.status !== 0) {
-      logger.warn(
-        `Install of icon sets failed (exit ${result.status}) — subset will be partial ` +
-          `until you run "${packageManager} ${command} ${packages.join(' ')}" and rebuild.`,
-      );
-    }
-  } catch (err) {
-    logger.warn(
-      `Could not install icon sets (${String(err)}) — subset will be partial until the ` +
-        `sets are installed and the subset is regenerated.`,
-    );
-  }
+  context.logger.warn(
+    `Declared ${packages.join(', ')} in dependencies but the sets are not installed yet — ` +
+      `subset will be partial until the package install task runs. ` +
+      `Rerun the schematic after the install for a complete subset.`,
+  );
+  context.addTask(new NodePackageInstallTask({ packageManager }));
 }
 
 /**
@@ -91,7 +127,7 @@ export function installMissingSets(
  * in dependencies, so reruns never duplicate or reinstall (idempotent). Does
  * not persist — callers decide when to write so the file is written at most
  * once per run. Returns the missing prefixes so callers can schedule the
- * directed install.
+ * package install task.
  */
 function declareMissingSetDeps(
   pkg: { dependencies?: Record<string, string> },
@@ -113,9 +149,10 @@ function declareMissingSetDeps(
 }
 
 /**
- * Declare + directed-install the missing `@iconify-json/<prefix>` sets for the
- * given prefixes. Reads package.json once, applies the declarations, persists
- * only when something changed, then runs the directed install. Shared by
+ * Declare the missing `@iconify-json/<prefix>` sets for the given prefixes:
+ * reads package.json once, applies the declarations, persists only when
+ * something changed, warns that the subset stays partial until the install
+ * task runs, and schedules a single `NodePackageInstallTask`. Shared by
  * generate-icon-subset and add-icon.
  */
 export function declareAndInstallMissingSets(
@@ -137,7 +174,7 @@ export function declareAndInstallMissingSets(
   }
 
   if (missing.length > 0) {
-    installMissingSets(missing, packageManager, context.logger);
+    warnAndScheduleInstall(context, packageManager, missing);
   }
 }
 
@@ -164,8 +201,9 @@ export async function regenerateIconSubset(
   }
 
   // ── 2/4. Declare missing deps + wire scripts against ONE package.json read,
-  // install missing sets BEFORE building the subset, and persist only when
-  // anything actually changed (never an unconditional rewrite). ──
+  // schedule the package install task (the subset stays partial until it
+  // runs), and persist only when anything actually changed (never an
+  // unconditional rewrite). ──
   const pkgPath = '/package.json';
   let missing: string[] = [];
   let scriptsChanged = false;
@@ -185,7 +223,7 @@ export async function regenerateIconSubset(
     const packageManager = detectPackageManager(tree);
     missing = declareMissingSetDeps(pkg, tree, found.keys(), context.logger);
     if (missing.length > 0) {
-      installMissingSets(missing, packageManager, context.logger);
+      warnAndScheduleInstall(context, packageManager, missing);
     }
 
     scriptsChanged = wireIconifyScripts(pkg, projectName, packageManager, detectRunner(tree));
@@ -225,8 +263,88 @@ export async function regenerateIconSubset(
   return projectName;
 }
 
+/**
+ * add-icon persistence + validation pipeline, shared by the `add-icon`
+ * schematic and the `--icon` flag of `generate-icon-subset`: validate ref
+ * shape, declare missing sets (deps + install task), validate existence
+ * inside the installed sets, then persist the refs in the manifest
+ * (idempotent). Throws `SchematicsException` on malformed refs or unknown
+ * icons — explicit icon requests fail loudly, while scanned refs keep the
+ * partial-subset degradation in `buildSubset`.
+ */
+export async function ensureManifestIcons(
+  tree: Tree,
+  context: SchematicContext,
+  sourceRoot: string,
+  refs: string[],
+): Promise<void> {
+  // Validate every ref shape first, so malformed input fails fast.
+  for (const ref of refs) {
+    if (!ICON_REF_PATTERN.test(ref)) {
+      throw new SchematicsException(
+        `Invalid icon reference "${ref}" — expected prefix:name (e.g. mdi:home).`,
+      );
+    }
+  }
+
+  // Read each set's icons.json once into a cache; the missing-set probe and
+  // the validation loop share it instead of re-reading per ref. Sets that
+  // were just declared are re-read after, in case the host already installed
+  // them outside this run.
+  const sets = new Map<string, IconifyJSON | null>();
+  const readSet = (prefix: string): IconifyJSON | null => {
+    if (!sets.has(prefix)) {
+      sets.set(prefix, readJsonFile(tree, iconSetJsonPath(prefix), context.logger));
+    }
+    return sets.get(prefix) ?? null;
+  };
+
+  // A set that is neither installed nor declared counts as missing: declare it
+  // and schedule the install BEFORE validating, so a rerun after the install
+  // completes can add the icon end to end.
+  const missingPrefixes = [
+    ...new Set(
+      refs.map((ref) => splitIconRef(ref)!.prefix).filter((prefix) => readSet(prefix) === null),
+    ),
+  ];
+  if (missingPrefixes.length > 0) {
+    declareAndInstallMissingSets(tree, context, missingPrefixes);
+    for (const prefix of missingPrefixes) {
+      sets.set(prefix, readJsonFile(tree, iconSetJsonPath(prefix), context.logger));
+    }
+  }
+
+  // Validate existence within each installed set (alias-aware via @iconify/utils).
+  for (const ref of refs) {
+    const { prefix, name } = splitIconRef(ref)!;
+    const fullSet = readSet(prefix);
+    if (fullSet === null) {
+      throw new SchematicsException(
+        `Icon set "${prefix}" is not installed — install @iconify-json/${prefix} and re-run.`,
+      );
+    }
+    if (!getIconData(fullSet, name)) {
+      throw new SchematicsException(
+        `Icon "${ref}" not found in set "${prefix}" — ` +
+          `browse https://icon-sets.iconify.design/${prefix}/ for valid names.`,
+      );
+    }
+  }
+
+  persistManifestIcons(tree, sourceRoot, refs);
+  context.logger.info(`✓ Manifest updated at ${iconManifestPath(sourceRoot)}`);
+}
+
 export function generateIconSubset(options: GenerateIconSubsetOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
+    // `--icon` flag: run the requested refs through the add-icon pipeline
+    // (validate + declare + persist) BEFORE the scan/build steps, so one run
+    // can add dynamic icons and regenerate the subset end to end.
+    const refs = normalizeIconRefs(options.icon);
+    if (refs.length > 0) {
+      const { sourceRoot } = await resolveProject(tree, options);
+      await ensureManifestIcons(tree, context, sourceRoot, refs);
+    }
     await regenerateIconSubset(tree, context, options);
   };
 }

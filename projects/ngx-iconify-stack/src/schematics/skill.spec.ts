@@ -62,7 +62,7 @@ function createWorkspace(): HostTree {
 }
 
 describe('skill', () => {
-  it('generates the skill files, documents the three read-only tool schematics, and wires the skill script', async () => {
+  it('generates the skill files, documents the doctor schematic, and wires the skill script', async () => {
     const tree = await runRule(skill({ project: 'frontend' }), createWorkspace(), stubContext());
 
     // The standalone list-sets.mjs tool is gone — tools are schematics now.
@@ -70,9 +70,9 @@ describe('skill', () => {
 
     const skillMd = tree.read('/.agents/skills/ngx-iconify-stack/SKILL.md')!.toString();
     expect(skillMd).toContain('## Tools');
-    expect(skillMd).toContain('ngx-iconify-stack:list-sets');
-    expect(skillMd).toContain('ngx-iconify-stack:validate-set');
-    expect(skillMd).toContain('ngx-iconify-stack:validate-icon');
+    expect(skillMd).toContain('ngx-iconify-stack:doctor --list');
+    expect(skillMd).toContain('ngx-iconify-stack:doctor --prefix');
+    expect(skillMd).toContain('ngx-iconify-stack:doctor --icon');
     expect(skillMd).toContain('--category');
     expect(skillMd).toContain('--search');
     expect(skillMd).toContain('--limit');
@@ -82,9 +82,10 @@ describe('skill', () => {
 
     const apiRef =
       tree.read('/.agents/skills/ngx-iconify-stack/references/api-reference.md')!.toString();
-    expect(apiRef).toContain('| `list-sets` |');
-    expect(apiRef).toContain('| `validate-icon` |');
-    expect(apiRef).toContain('| `validate-set` |');
+    expect(apiRef).toContain('`doctor`');
+    expect(apiRef).toContain('doctor --list');
+    expect(apiRef).toContain('doctor --prefix');
+    expect(apiRef).toContain('doctor --icon');
 
     const pkg = JSON.parse(tree.read('/package.json')!.toString());
     expect(pkg.scripts[SKILL_SCRIPT]).toBe(
